@@ -1,26 +1,49 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
+import {
+  getBibleRefsByLessonId,
+  getGlossaryByLessonId,
+  getLessonBySlug,
+  getPeopleByLessonId,
+  getPlacesByLessonId,
+  getPointsByLessonId,
+  getQuestionsByLessonId,
+  getTopicsByLessonId,
+} from "../../../lib/queries";
+
+const lesson = getLessonBySlug("la-biblia-como-una-sola-historia");
+
+if (!lesson) {
+  throw new Error("No se encontró la lección.");
+}
+
+const bibleRefs = getBibleRefsByLessonId(lesson.id);
+const points = getPointsByLessonId(lesson.id);
+const questions = getQuestionsByLessonId(lesson.id);
+const topics = getTopicsByLessonId(lesson.id);
+const people = getPeopleByLessonId(lesson.id);
+const places = getPlacesByLessonId(lesson.id);
+const glossary = getGlossaryByLessonId(lesson.id);
 ---
 
 <BaseLayout
-  title="La Biblia como una sola historia"
-  description="Primera lección de la ruta Panorama Visual de la Biblia."
+  title={lesson.title}
+  description={lesson.summary ?? "Lección de la Enciclopedia Bíblica Visual."}
 >
   <main class="page">
     <div class="breadcrumb">
       <a href="/">Inicio</a> →
       <a href="/rutas/panorama-visual-de-la-biblia/">Panorama Visual de la Biblia</a> →
-      Lección 1
+      Lección {lesson.lesson_number}
     </div>
 
     <section class="hero">
-      <p class="eyebrow">Lección 1 de 20 · 7–10 minutos</p>
+      <p class="eyebrow">{lesson.eyebrow}</p>
 
-      <h1>La Biblia como una sola historia</h1>
+      <h1>{lesson.title}</h1>
 
       <p class="subtitle">
-        La Biblia no es una colección de historias desconectadas. Es una gran historia
-        acerca de Dios, la humanidad, el pecado, la redención y el cumplimiento en Jesús.
+        {lesson.summary}
       </p>
     </section>
 
@@ -28,10 +51,7 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
       <h2>Idea principal</h2>
 
       <div class="content">
-        <p>
-          La Biblia cuenta una sola historia unida por el plan de Dios:
-          creación, caída, promesa, redención y nueva creación.
-        </p>
+        <p>{lesson.main_idea}</p>
       </div>
     </section>
 
@@ -39,11 +59,9 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
       <h2>Resumen en 5 ideas</h2>
 
       <ol class="list">
-        <li>La Biblia tiene muchos libros, pero una historia central.</li>
-        <li>Esa historia comienza con Dios como Creador.</li>
-        <li>El pecado rompe la relación entre Dios y la humanidad.</li>
-        <li>Dios promete redención y prepara el camino hacia Jesús.</li>
-        <li>Jesús es el centro y cumplimiento de la historia bíblica.</li>
+        {points.map((point) => (
+          <li>{point.point_text}</li>
+        ))}
       </ol>
     </section>
 
@@ -51,10 +69,11 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
       <h2>Pasajes bíblicos principales</h2>
 
       <ul class="pill-list">
-        <li><span>Lucas 24:27</span></li>
-        <li><span>Lucas 24:44</span></li>
-        <li><span>Juan 5:39</span></li>
-        <li><span>2 Timoteo 3:16-17</span></li>
+        {bibleRefs.map((ref) => (
+          <li>
+            <span>{ref.reference}</span>
+          </li>
+        ))}
       </ul>
     </section>
 
@@ -62,21 +81,7 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
       <h2>Explicación sencilla</h2>
 
       <div class="content">
-        <p>
-          La Biblia está formada por muchos libros escritos en distintos momentos,
-          por diferentes autores humanos y en diversos contextos. Sin embargo,
-          no debe estudiarse como si fuera una colección de historias aisladas.
-        </p>
-
-        <p>
-          Desde Génesis hasta Apocalipsis hay un hilo principal: Dios está revelando
-          su carácter, su voluntad y su plan para redimir a la humanidad.
-        </p>
-
-        <p>
-          En el Nuevo Testamento, esa esperanza se cumple en Jesús. Él es el Mesías
-          prometido, el Salvador, el Rey y el centro de toda la historia bíblica.
-        </p>
+        <p>{lesson.explanation}</p>
       </div>
     </section>
 
@@ -97,27 +102,49 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
     <section class="grid">
       <article class="card">
         <h2>Personajes</h2>
-        <p>Jesús, Moisés, los profetas y los apóstoles.</p>
+        <ul class="list">
+          {people.map((person) => (
+            <li>{person.title}</li>
+          ))}
+        </ul>
       </article>
 
       <article class="card">
         <h2>Temas</h2>
-        <p>Redención, Mesías, evangelio, creación y nueva creación.</p>
+        <ul class="list">
+          {topics.map((topic) => (
+            <li>{topic.title}</li>
+          ))}
+        </ul>
       </article>
 
       <article class="card">
         <h2>Glosario</h2>
-        <p>Biblia, testamento, redención, Mesías y evangelio.</p>
+        <ul class="list">
+          {glossary.map((term) => (
+            <li>{term.title}</li>
+          ))}
+        </ul>
       </article>
+    </section>
+
+    <section class="section">
+      <h2>Lugares relacionados</h2>
+
+      <ul class="pill-list">
+        {places.map((place) => (
+          <li>
+            <span>{place.title}</span>
+          </li>
+        ))}
+      </ul>
     </section>
 
     <section class="section">
       <h2>Qué debo recordar</h2>
 
       <div class="content">
-        <p>
-          Toda la Biblia apunta al plan de Dios cumplido en Jesús.
-        </p>
+        <p>{lesson.remember}</p>
       </div>
     </section>
 
@@ -125,9 +152,9 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
       <h2>Preguntas de estudio</h2>
 
       <ol class="list">
-        <li>¿Quién es el protagonista principal de la Biblia?</li>
-        <li>¿Por qué no debemos estudiar la Biblia como historias desconectadas?</li>
-        <li>¿Por qué Jesús es el centro de la historia bíblica?</li>
+        {questions.map((question) => (
+          <li>{question.question_text}</li>
+        ))}
       </ol>
     </section>
 

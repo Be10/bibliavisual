@@ -1,47 +1,32 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getRouteBySlug, getLessonsByRouteId } from "../../../lib/queries";
 
-const lessons = [
-  "La Biblia como una sola historia",
-  "Dios crea todas las cosas",
-  "La caída y el pecado",
-  "La primera promesa de redención",
-  "Noé, el juicio y la misericordia",
-  "Babel y las naciones",
-  "Abraham y la promesa",
-  "El pacto con Abraham",
-  "Isaac, Jacob y las doce tribus",
-  "José y Egipto",
-  "Moisés y el Éxodo",
-  "La ley y el pacto en Sinaí",
-  "El tabernáculo y la presencia de Dios",
-  "La tierra prometida",
-  "Los jueces y la necesidad de un rey",
-  "David y el reino",
-  "El templo y la adoración",
-  "Profetas, exilio y esperanza",
-  "Jesús, el Mesías prometido",
-  "Cruz, resurrección, iglesia y nueva creación",
-];
+const route = getRouteBySlug("panorama-visual-de-la-biblia");
+
+if (!route) {
+  throw new Error("No se encontró la ruta Panorama Visual de la Biblia.");
+}
+
+const lessons = getLessonsByRouteId(route.id);
 ---
 
 <BaseLayout
-  title="Panorama Visual de la Biblia"
-  description="Ruta guiada para entender la Biblia como una sola historia desde la creación hasta la nueva creación."
+  title={route.title}
+  description={route.description ?? "Ruta guiada para estudiar la Biblia visualmente."}
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Rutas → Panorama Visual de la Biblia
+      <a href="/">Inicio</a> → Rutas → {route.title}
     </div>
 
     <section class="hero">
-      <p class="eyebrow">Ruta principal · 20 lecciones</p>
+      <p class="eyebrow">Ruta principal · {lessons.length} lecciones</p>
 
-      <h1>Panorama Visual de la Biblia</h1>
+      <h1>{route.title}</h1>
 
       <p class="subtitle">
-        Una ruta guiada para entender la Biblia como una sola historia centrada en Dios,
-        la redención y el cumplimiento en Jesús.
+        {route.description}
       </p>
 
       <div class="actions">
@@ -54,17 +39,17 @@ const lessons = [
     <section class="grid">
       <article class="card">
         <h2>Nivel</h2>
-        <p>Básico a intermedio bajo.</p>
+        <p>{route.level}</p>
       </article>
 
       <article class="card">
         <h2>Duración</h2>
-        <p>20 lecciones de 7 a 10 minutos.</p>
+        <p>{route.estimated_duration}</p>
       </article>
 
       <article class="card">
-        <h2>Objetivo</h2>
-        <p>Comprender el hilo principal de la historia bíblica.</p>
+        <h2>Estado</h2>
+        <p>{route.status}</p>
       </article>
     </section>
 
@@ -72,12 +57,14 @@ const lessons = [
       <h2>Lecciones de la ruta</h2>
 
       <ol class="list">
-        {lessons.map((lesson, index) => (
+        {lessons.map((lesson) => (
           <li>
-            {index === 0 ? (
-              <a href="/lecciones/la-biblia-como-una-sola-historia/">{lesson}</a>
+            {lesson.status !== "Borrador" ? (
+              <a href={`/lecciones/${lesson.slug}/`}>
+                {lesson.title}
+              </a>
             ) : (
-              <span>{lesson}</span>
+              <span>{lesson.title} · próximamente</span>
             )}
           </li>
         ))}
