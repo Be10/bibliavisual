@@ -9,9 +9,20 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "db:reset": "node scripts/reset-db.mjs"
   },
   "dependencies": {
-    "astro": "^7.0.3"
+    "astro": "^7.0.3",
+    "better-sqlite3": "^12.11.1"
+  },
+  "allowScripts": {
+    "better-sqlite3@12.11.1": true,
+    "esbuild@0.28.1": true,
+    "sharp@0.34.5": true
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/sharp": "^0.31.1"
   }
 }
