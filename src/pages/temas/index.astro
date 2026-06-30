@@ -1,0 +1,38 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllTopics } from "../../lib/queries";
+
+const topics = getAllTopics().filter((topic) => topic.status !== "Borrador");
+---
+
+<BaseLayout
+  title="Temas bíblicos"
+  description="Explora temas bíblicos conectados con lecciones, personajes, lugares y pasajes."
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> → Temas
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">Exploración libre</p>
+
+      <h1>Temas bíblicos</h1>
+
+      <p class="subtitle">
+        Conceptos importantes para estudiar la Biblia de forma conectada:
+        redención, Mesías, evangelio, creación, nueva creación y más.
+      </p>
+    </section>
+
+    <section class="entity-list">
+      {topics.map((topic) => (
+        <a href={`/temas/${topic.slug}/`} class="entity-card">
+          <span class="meta">Tema</span>
+          <h2>{topic.title}</h2>
+          <p>{topic.definition ?? "Definición pendiente."}</p>
+        </a>
+      ))}
+    </section>
+  </main>
+</BaseLayout>

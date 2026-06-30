@@ -27,7 +27,10 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
 
       <nav class="nav">
         <a href="/rutas/panorama-visual-de-la-biblia/">Ruta principal</a>
-        <a href="/lecciones/la-biblia-como-una-sola-historia/">Lección 1</a>
+        <a href="/temas/">Temas</a>
+        <a href="/personajes/">Personajes</a>
+        <a href="/lugares/">Lugares</a>
+        <a href="/glosario/">Glosario</a>
       </nav>
     </header>
 
@@ -227,6 +230,54 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     font-weight: 650;
   }
 
+    .entity-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .entity-card {
+    display: block;
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+    border: 1px solid #eadcc4;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      box-shadow 160ms ease,
+      border-color 160ms ease;
+  }
+
+  .entity-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 16px 36px rgba(45, 36, 24, 0.08);
+  }
+
+  .entity-card h2 {
+    margin: 0 0 8px;
+    font-size: 1.15rem;
+    color: #2d2418;
+  }
+
+  .entity-card p {
+    margin: 0;
+    line-height: 1.6;
+    color: #6a5c4d;
+  }
+
+  .meta {
+    display: inline-flex;
+    margin-bottom: 12px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #8a5a2b;
+  }
+
   @media (max-width: 760px) {
     .site-header {
       align-items: flex-start;
@@ -238,6 +289,10 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     }
 
     .grid {
+      grid-template-columns: 1fr;
+    }
+
+    .entity-list {
       grid-template-columns: 1fr;
     }
 

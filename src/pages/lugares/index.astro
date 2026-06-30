@@ -1,0 +1,38 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllPlaces } from "../../lib/queries";
+
+const places = getAllPlaces().filter((place) => place.status !== "Borrador");
+---
+
+<BaseLayout
+  title="Lugares bíblicos"
+  description="Explora lugares bíblicos conectados con eventos, personajes, temas y lecciones."
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> → Lugares
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">Mapa bíblico futuro</p>
+
+      <h1>Lugares bíblicos</h1>
+
+      <p class="subtitle">
+        Ciudades, regiones, rutas y lugares importantes dentro de la historia bíblica.
+        Más adelante esta sección alimentará el mapa interactivo.
+      </p>
+    </section>
+
+    <section class="entity-list">
+      {places.map((place) => (
+        <a href={`/lugares/${place.slug}/`} class="entity-card">
+          <span class="meta">{place.place_type ?? "Lugar"}</span>
+          <h2>{place.name}</h2>
+          <p>{place.summary ?? "Descripción pendiente."}</p>
+        </a>
+      ))}
+    </section>
+  </main>
+</BaseLayout>

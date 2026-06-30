@@ -1,0 +1,38 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllGlossaryTerms } from "../../lib/queries";
+
+const terms = getAllGlossaryTerms().filter((term) => term.status !== "Borrador");
+---
+
+<BaseLayout
+  title="Glosario visual"
+  description="Explora términos bíblicos explicados de forma simple y visual."
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> → Glosario
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">Glosario visual</p>
+
+      <h1>Glosario visual</h1>
+
+      <p class="subtitle">
+        Palabras y conceptos importantes explicados de forma sencilla para ayudar
+        al estudio bíblico personal.
+      </p>
+    </section>
+
+    <section class="entity-list">
+      {terms.map((term) => (
+        <a href={`/glosario/${term.slug}/`} class="entity-card">
+          <span class="meta">Término</span>
+          <h2>{term.term}</h2>
+          <p>{term.definition ?? "Definición pendiente."}</p>
+        </a>
+      ))}
+    </section>
+  </main>
+</BaseLayout>

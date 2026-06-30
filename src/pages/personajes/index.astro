@@ -1,0 +1,38 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllPeople } from "../../lib/queries";
+
+const people = getAllPeople().filter((person) => person.status !== "Borrador");
+---
+
+<BaseLayout
+  title="Personajes bíblicos"
+  description="Explora personajes bíblicos conectados con eventos, temas, lugares y lecciones."
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> → Personajes
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">Exploración libre</p>
+
+      <h1>Personajes bíblicos</h1>
+
+      <p class="subtitle">
+        Biografías y fichas de personajes relacionados con la historia bíblica,
+        sus eventos, lugares, temas y conexiones principales.
+      </p>
+    </section>
+
+    <section class="entity-list">
+      {people.map((person) => (
+        <a href={`/personajes/${person.slug}/`} class="entity-card">
+          <span class="meta">Personaje</span>
+          <h2>{person.name}</h2>
+          <p>{person.summary ?? "Biografía pendiente."}</p>
+        </a>
+      ))}
+    </section>
+  </main>
+</BaseLayout>
