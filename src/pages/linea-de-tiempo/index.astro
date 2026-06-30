@@ -1,0 +1,64 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllEvents } from "../../lib/queries";
+
+const events = getAllEvents().filter(
+  (event) => event.status !== "Borrador" && event.appears_on_timeline
+);
+---
+
+<BaseLayout
+  title="Línea de tiempo bíblica"
+  description="Línea de tiempo visual de los eventos principales de la historia bíblica."
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> → Línea de tiempo
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">Panorama cronológico</p>
+
+      <h1>Línea de tiempo bíblica</h1>
+
+      <p class="subtitle">
+        Una vista ordenada de los eventos principales de la historia bíblica.
+        Esta sección crecerá hasta conectar libros, personajes, lugares, temas y recursos visuales.
+      </p>
+
+      <div class="actions">
+        <a href="/eventos/" class="button secondary">
+          Ver todos los eventos
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Eventos principales</h2>
+
+      <div class="timeline">
+        {events.map((event) => (
+          <article class="timeline-item">
+            <div class="timeline-date">
+              {event.approximate_date ?? "Fecha pendiente"}
+            </div>
+
+            <a href={`/eventos/${event.slug}/`} class="timeline-card">
+              <span class="meta">{event.biblical_period ?? "Evento bíblico"}</span>
+
+              <h2>{event.title}</h2>
+
+              <p>{event.summary ?? "Resumen pendiente."}</p>
+
+              <div class="timeline-meta">
+                {event.event_type && <span>{event.event_type}</span>}
+                {event.temporal_certainty && <span>Certeza: {event.temporal_certainty}</span>}
+                {event.appears_on_map ? <span>Mapa</span> : <span>Sin mapa</span>}
+              </div>
+            </a>
+          </article>
+        ))}
+      </div>
+    </section>
+  </main>
+</BaseLayout>
