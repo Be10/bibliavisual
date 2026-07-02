@@ -1,5 +1,7 @@
 PRAGMA foreign_keys = ON;
 
+DROP TABLE IF EXISTS event_books;
+DROP TABLE IF EXISTS lesson_books;
 DROP TABLE IF EXISTS event_topics;
 DROP TABLE IF EXISTS event_places;
 DROP TABLE IF EXISTS event_people;
@@ -17,6 +19,7 @@ DROP TABLE IF EXISTS glossary_terms;
 DROP TABLE IF EXISTS places;
 DROP TABLE IF EXISTS people;
 DROP TABLE IF EXISTS topics;
+DROP TABLE IF EXISTS books;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS lessons;
 DROP TABLE IF EXISTS routes;
@@ -29,6 +32,19 @@ CREATE TABLE routes (
   description TEXT,
   level TEXT,
   estimated_duration TEXT,
+  status TEXT NOT NULL DEFAULT 'Borrador'
+);
+
+CREATE TABLE books (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  abbreviation TEXT,
+  testament TEXT NOT NULL,
+  order_number INTEGER NOT NULL,
+  category TEXT,
+  genre TEXT,
+  summary TEXT,
   status TEXT NOT NULL DEFAULT 'Borrador'
 );
 
@@ -155,6 +171,14 @@ CREATE TABLE lesson_events (
   FOREIGN KEY (event_id) REFERENCES events(id)
 );
 
+CREATE TABLE lesson_books (
+  lesson_id TEXT NOT NULL,
+  book_id TEXT NOT NULL,
+  PRIMARY KEY (lesson_id, book_id),
+  FOREIGN KEY (lesson_id) REFERENCES lessons(id),
+  FOREIGN KEY (book_id) REFERENCES books(id)
+);
+
 CREATE TABLE lesson_people (
   lesson_id TEXT NOT NULL,
   person_id TEXT NOT NULL,
@@ -209,4 +233,12 @@ CREATE TABLE event_topics (
   PRIMARY KEY (event_id, topic_id),
   FOREIGN KEY (event_id) REFERENCES events(id),
   FOREIGN KEY (topic_id) REFERENCES topics(id)
+);
+
+CREATE TABLE event_books (
+  event_id TEXT NOT NULL,
+  book_id TEXT NOT NULL,
+  PRIMARY KEY (event_id, book_id),
+  FOREIGN KEY (event_id) REFERENCES events(id),
+  FOREIGN KEY (book_id) REFERENCES books(id)
 );

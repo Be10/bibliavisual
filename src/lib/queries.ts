@@ -455,3 +455,84 @@ export function getTopicsByEventId(eventId: string): RelatedItem[] {
     )
     .all(eventId) as RelatedItem[];
 }
+
+export type Book = {
+  id: string;
+  name: string;
+  slug: string;
+  abbreviation: string | null;
+  testament: string;
+  order_number: number;
+  category: string | null;
+  genre: string | null;
+  summary: string | null;
+  status: string;
+};
+
+export function getAllBooks(): Book[] {
+  return db
+    .prepare(
+      `
+      SELECT *
+      FROM books
+      ORDER BY order_number ASC
+      `
+    )
+    .all() as Book[];
+}
+
+export function getBooksByLessonId(lessonId: string): Book[] {
+  return db
+    .prepare(
+      `
+      SELECT books.*
+      FROM lesson_books
+      JOIN books ON books.id = lesson_books.book_id
+      WHERE lesson_books.lesson_id = ?
+      ORDER BY books.order_number ASC
+      `
+    )
+    .all(lessonId) as Book[];
+}
+
+export function getBooksByEventId(eventId: string): Book[] {
+  return db
+    .prepare(
+      `
+      SELECT books.*
+      FROM event_books
+      JOIN books ON books.id = event_books.book_id
+      WHERE event_books.event_id = ?
+      ORDER BY books.order_number ASC
+      `
+    )
+    .all(eventId) as Book[];
+}
+
+export function getLessonsByBookId(bookId: string): Lesson[] {
+  return db
+    .prepare(
+      `
+      SELECT lessons.*
+      FROM lesson_books
+      JOIN lessons ON lessons.id = lesson_books.lesson_id
+      WHERE lesson_books.book_id = ?
+      ORDER BY lessons.lesson_number ASC
+      `
+    )
+    .all(bookId) as Lesson[];
+}
+
+export function getEventsByBookId(bookId: string): Event[] {
+  return db
+    .prepare(
+      `
+      SELECT events.*
+      FROM event_books
+      JOIN events ON events.id = event_books.event_id
+      WHERE event_books.book_id = ?
+      ORDER BY events.chronological_order ASC, events.title ASC
+      `
+    )
+    .all(bookId) as Event[];
+}

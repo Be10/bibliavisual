@@ -11,6 +11,84 @@ INSERT INTO routes (
   'Publicado básico'
 );
 
+INSERT INTO books (
+  id, name, slug, abbreviation, testament, order_number, category, genre, summary, status
+) VALUES
+('book-genesis', 'Génesis', 'genesis', 'Gn', 'Antiguo Testamento', 1, 'Pentateuco', 'Narrativa / Ley', 'Presenta el origen de la creación, el pecado, las naciones y la promesa de Dios.', 'Publicado básico'),
+('book-exodo', 'Éxodo', 'exodo', 'Ex', 'Antiguo Testamento', 2, 'Pentateuco', 'Narrativa / Ley', 'Relata la liberación de Israel de Egipto y el pacto en Sinaí.', 'Publicado básico'),
+('book-levitico', 'Levítico', 'levitico', 'Lv', 'Antiguo Testamento', 3, 'Pentateuco', 'Ley', 'Explica la santidad, los sacrificios y el sacerdocio en Israel.', 'Publicado básico'),
+('book-numeros', 'Números', 'numeros', 'Nm', 'Antiguo Testamento', 4, 'Pentateuco', 'Narrativa / Ley', 'Describe el peregrinaje de Israel por el desierto.', 'Publicado básico'),
+('book-deuteronomio', 'Deuteronomio', 'deuteronomio', 'Dt', 'Antiguo Testamento', 5, 'Pentateuco', 'Ley / Discurso', 'Moisés recuerda la Ley y llama a Israel a obedecer a Dios.', 'Publicado básico'),
+
+('book-josue', 'Josué', 'josue', 'Jos', 'Antiguo Testamento', 6, 'Históricos', 'Narrativa histórica', 'Relata la entrada de Israel en la tierra prometida.', 'Publicado básico'),
+('book-jueces', 'Jueces', 'jueces', 'Jue', 'Antiguo Testamento', 7, 'Históricos', 'Narrativa histórica', 'Muestra el ciclo de pecado, opresión, clamor y liberación en Israel.', 'Publicado básico'),
+('book-rut', 'Rut', 'rut', 'Rt', 'Antiguo Testamento', 8, 'Históricos', 'Narrativa', 'Historia de fidelidad, redención familiar y la línea de David.', 'Publicado básico'),
+('book-1-samuel', '1 Samuel', '1-samuel', '1 S', 'Antiguo Testamento', 9, 'Históricos', 'Narrativa histórica', 'Presenta a Samuel, Saúl y el comienzo del reinado de David.', 'Publicado básico'),
+('book-2-samuel', '2 Samuel', '2-samuel', '2 S', 'Antiguo Testamento', 10, 'Históricos', 'Narrativa histórica', 'Relata el reinado de David y el pacto davídico.', 'Publicado básico'),
+('book-1-reyes', '1 Reyes', '1-reyes', '1 R', 'Antiguo Testamento', 11, 'Históricos', 'Narrativa histórica', 'Describe el reinado de Salomón, el templo y la división del reino.', 'Publicado básico'),
+('book-2-reyes', '2 Reyes', '2-reyes', '2 R', 'Antiguo Testamento', 12, 'Históricos', 'Narrativa histórica', 'Relata la caída de Israel y Judá y el camino al exilio.', 'Publicado básico'),
+('book-1-cronicas', '1 Crónicas', '1-cronicas', '1 Cr', 'Antiguo Testamento', 13, 'Históricos', 'Narrativa histórica / genealogía', 'Repasa la historia de Israel con énfasis en David, el templo y la adoración.', 'Publicado básico'),
+('book-2-cronicas', '2 Crónicas', '2-cronicas', '2 Cr', 'Antiguo Testamento', 14, 'Históricos', 'Narrativa histórica', 'Presenta la historia de los reyes de Judá con énfasis en el templo.', 'Publicado básico'),
+('book-esdras', 'Esdras', 'esdras', 'Esd', 'Antiguo Testamento', 15, 'Históricos', 'Narrativa histórica', 'Relata el regreso del exilio y la restauración del templo y la Ley.', 'Publicado básico'),
+('book-nehemias', 'Nehemías', 'nehemias', 'Neh', 'Antiguo Testamento', 16, 'Históricos', 'Narrativa histórica', 'Relata la reconstrucción de los muros de Jerusalén.', 'Publicado básico'),
+('book-ester', 'Ester', 'ester', 'Est', 'Antiguo Testamento', 17, 'Históricos', 'Narrativa', 'Muestra la providencia de Dios al preservar a su pueblo.', 'Publicado básico'),
+
+('book-job', 'Job', 'job', 'Job', 'Antiguo Testamento', 18, 'Poéticos', 'Sabiduría / poesía', 'Explora el sufrimiento, la justicia de Dios y la fidelidad en la prueba.', 'Publicado básico'),
+('book-salmos', 'Salmos', 'salmos', 'Sal', 'Antiguo Testamento', 19, 'Poéticos', 'Poesía / oración / alabanza', 'Colección de cantos y oraciones para adorar, lamentar y confiar en Dios.', 'Publicado básico'),
+('book-proverbios', 'Proverbios', 'proverbios', 'Pr', 'Antiguo Testamento', 20, 'Poéticos', 'Sabiduría', 'Enseña sabiduría práctica para vivir delante de Dios.', 'Publicado básico'),
+('book-eclesiastes', 'Eclesiastés', 'eclesiastes', 'Ec', 'Antiguo Testamento', 21, 'Poéticos', 'Sabiduría', 'Reflexiona sobre la vida, la vanidad y el temor de Dios.', 'Publicado básico'),
+('book-cantares', 'Cantares', 'cantares', 'Cnt', 'Antiguo Testamento', 22, 'Poéticos', 'Poesía', 'Celebra el amor dentro del marco del diseño de Dios.', 'Publicado básico'),
+
+('book-isaias', 'Isaías', 'isaias', 'Is', 'Antiguo Testamento', 23, 'Profetas mayores', 'Profecía', 'Anuncia juicio, esperanza y la venida del Siervo del Señor.', 'Publicado básico'),
+('book-jeremias', 'Jeremías', 'jeremias', 'Jer', 'Antiguo Testamento', 24, 'Profetas mayores', 'Profecía', 'Llama al arrepentimiento y anuncia el nuevo pacto.', 'Publicado básico'),
+('book-lamentaciones', 'Lamentaciones', 'lamentaciones', 'Lm', 'Antiguo Testamento', 25, 'Profetas mayores', 'Lamento / poesía', 'Lamenta la destrucción de Jerusalén y reconoce la fidelidad de Dios.', 'Publicado básico'),
+('book-ezequiel', 'Ezequiel', 'ezequiel', 'Ez', 'Antiguo Testamento', 26, 'Profetas mayores', 'Profecía', 'Habla del juicio, la gloria de Dios y la restauración futura.', 'Publicado básico'),
+('book-daniel', 'Daniel', 'daniel', 'Dn', 'Antiguo Testamento', 27, 'Profetas mayores', 'Narrativa / profecía apocalíptica', 'Muestra la fidelidad de Dios sobre los reinos humanos.', 'Publicado básico'),
+
+('book-oseas', 'Oseas', 'oseas', 'Os', 'Antiguo Testamento', 28, 'Profetas menores', 'Profecía', 'Muestra el amor fiel de Dios hacia un pueblo infiel.', 'Publicado básico'),
+('book-joel', 'Joel', 'joel', 'Jl', 'Antiguo Testamento', 29, 'Profetas menores', 'Profecía', 'Anuncia el día del Señor y la promesa del Espíritu.', 'Publicado básico'),
+('book-amos', 'Amós', 'amos', 'Am', 'Antiguo Testamento', 30, 'Profetas menores', 'Profecía', 'Denuncia la injusticia y llama a la rectitud.', 'Publicado básico'),
+('book-abdias', 'Abdías', 'abdias', 'Abd', 'Antiguo Testamento', 31, 'Profetas menores', 'Profecía', 'Anuncia juicio contra Edom y esperanza para el pueblo de Dios.', 'Publicado básico'),
+('book-jonas', 'Jonás', 'jonas', 'Jon', 'Antiguo Testamento', 32, 'Profetas menores', 'Narrativa profética', 'Muestra la misericordia de Dios hacia las naciones.', 'Publicado básico'),
+('book-miqueas', 'Miqueas', 'miqueas', 'Mi', 'Antiguo Testamento', 33, 'Profetas menores', 'Profecía', 'Anuncia juicio, justicia y esperanza mesiánica.', 'Publicado básico'),
+('book-nahum', 'Nahúm', 'nahum', 'Nah', 'Antiguo Testamento', 34, 'Profetas menores', 'Profecía', 'Anuncia juicio sobre Nínive.', 'Publicado básico'),
+('book-habacuc', 'Habacuc', 'habacuc', 'Hab', 'Antiguo Testamento', 35, 'Profetas menores', 'Profecía / diálogo', 'Reflexiona sobre la justicia de Dios y la fe.', 'Publicado básico'),
+('book-sofonias', 'Sofonías', 'sofonias', 'Sof', 'Antiguo Testamento', 36, 'Profetas menores', 'Profecía', 'Anuncia el día del Señor y la restauración.', 'Publicado básico'),
+('book-hageo', 'Hageo', 'hageo', 'Hag', 'Antiguo Testamento', 37, 'Profetas menores', 'Profecía', 'Llama a reconstruir el templo después del exilio.', 'Publicado básico'),
+('book-zacarias', 'Zacarías', 'zacarias', 'Zac', 'Antiguo Testamento', 38, 'Profetas menores', 'Profecía / visiones', 'Anuncia restauración y esperanza mesiánica.', 'Publicado básico'),
+('book-malaquias', 'Malaquías', 'malaquias', 'Mal', 'Antiguo Testamento', 39, 'Profetas menores', 'Profecía', 'Llama al pueblo a volver a Dios y anuncia la venida del mensajero.', 'Publicado básico'),
+
+('book-mateo', 'Mateo', 'mateo', 'Mt', 'Nuevo Testamento', 40, 'Evangelios', 'Evangelio', 'Presenta a Jesús como el Mesías y Rey prometido.', 'Publicado básico'),
+('book-marcos', 'Marcos', 'marcos', 'Mr', 'Nuevo Testamento', 41, 'Evangelios', 'Evangelio', 'Presenta a Jesús como el Siervo poderoso que anuncia el reino.', 'Publicado básico'),
+('book-lucas', 'Lucas', 'lucas', 'Lc', 'Nuevo Testamento', 42, 'Evangelios', 'Evangelio', 'Presenta la vida y obra de Jesús con énfasis en la salvación.', 'Publicado básico'),
+('book-juan', 'Juan', 'juan', 'Jn', 'Nuevo Testamento', 43, 'Evangelios', 'Evangelio', 'Presenta a Jesús como el Hijo de Dios para que creamos en Él.', 'Publicado básico'),
+('book-hechos', 'Hechos', 'hechos', 'Hch', 'Nuevo Testamento', 44, 'Historia de la iglesia', 'Narrativa histórica', 'Relata la expansión del evangelio por medio de la iglesia primitiva.', 'Publicado básico'),
+
+('book-romanos', 'Romanos', 'romanos', 'Ro', 'Nuevo Testamento', 45, 'Cartas paulinas', 'Carta doctrinal', 'Expone el evangelio, la justicia de Dios y la vida en Cristo.', 'Publicado básico'),
+('book-1-corintios', '1 Corintios', '1-corintios', '1 Co', 'Nuevo Testamento', 46, 'Cartas paulinas', 'Carta', 'Corrige problemas de la iglesia y enseña sobre la vida cristiana.', 'Publicado básico'),
+('book-2-corintios', '2 Corintios', '2-corintios', '2 Co', 'Nuevo Testamento', 47, 'Cartas paulinas', 'Carta', 'Defiende el ministerio apostólico y muestra la gracia de Dios en la debilidad.', 'Publicado básico'),
+('book-galatas', 'Gálatas', 'galatas', 'Gá', 'Nuevo Testamento', 48, 'Cartas paulinas', 'Carta doctrinal', 'Defiende la justificación por la fe y la libertad en Cristo.', 'Publicado básico'),
+('book-efesios', 'Efesios', 'efesios', 'Ef', 'Nuevo Testamento', 49, 'Cartas paulinas', 'Carta doctrinal', 'Explica la identidad de la iglesia en Cristo.', 'Publicado básico'),
+('book-filipenses', 'Filipenses', 'filipenses', 'Fil', 'Nuevo Testamento', 50, 'Cartas paulinas', 'Carta', 'Llama al gozo, la humildad y la perseverancia en Cristo.', 'Publicado básico'),
+('book-colosenses', 'Colosenses', 'colosenses', 'Col', 'Nuevo Testamento', 51, 'Cartas paulinas', 'Carta doctrinal', 'Presenta la supremacía de Cristo sobre todas las cosas.', 'Publicado básico'),
+('book-1-tesalonicenses', '1 Tesalonicenses', '1-tesalonicenses', '1 Ts', 'Nuevo Testamento', 52, 'Cartas paulinas', 'Carta', 'Anima a la iglesia a vivir en santidad y esperanza.', 'Publicado básico'),
+('book-2-tesalonicenses', '2 Tesalonicenses', '2-tesalonicenses', '2 Ts', 'Nuevo Testamento', 53, 'Cartas paulinas', 'Carta', 'Aclara enseñanzas sobre la venida del Señor y la perseverancia.', 'Publicado básico'),
+('book-1-timoteo', '1 Timoteo', '1-timoteo', '1 Ti', 'Nuevo Testamento', 54, 'Cartas pastorales', 'Carta pastoral', 'Instruye sobre la vida y el orden de la iglesia.', 'Publicado básico'),
+('book-2-timoteo', '2 Timoteo', '2-timoteo', '2 Ti', 'Nuevo Testamento', 55, 'Cartas pastorales', 'Carta pastoral', 'Anima a perseverar fielmente en la Palabra y el ministerio.', 'Publicado básico'),
+('book-tito', 'Tito', 'tito', 'Tit', 'Nuevo Testamento', 56, 'Cartas pastorales', 'Carta pastoral', 'Instruye sobre liderazgo, doctrina sana y buenas obras.', 'Publicado básico'),
+('book-filemon', 'Filemón', 'filemon', 'Flm', 'Nuevo Testamento', 57, 'Cartas paulinas', 'Carta personal', 'Muestra el perdón y la reconciliación en Cristo.', 'Publicado básico'),
+
+('book-hebreos', 'Hebreos', 'hebreos', 'He', 'Nuevo Testamento', 58, 'Cartas generales', 'Exhortación / carta', 'Presenta a Cristo como superior y cumplimiento del sacerdocio y los sacrificios.', 'Publicado básico'),
+('book-santiago', 'Santiago', 'santiago', 'Stg', 'Nuevo Testamento', 59, 'Cartas generales', 'Carta práctica', 'Enseña una fe viva que se expresa en obras.', 'Publicado básico'),
+('book-1-pedro', '1 Pedro', '1-pedro', '1 P', 'Nuevo Testamento', 60, 'Cartas generales', 'Carta', 'Anima a sufrir fielmente con esperanza en Cristo.', 'Publicado básico'),
+('book-2-pedro', '2 Pedro', '2-pedro', '2 P', 'Nuevo Testamento', 61, 'Cartas generales', 'Carta', 'Advierte contra falsos maestros y llama a crecer en la gracia.', 'Publicado básico'),
+('book-1-juan', '1 Juan', '1-juan', '1 Jn', 'Nuevo Testamento', 62, 'Cartas generales', 'Carta', 'Enseña sobre la vida eterna, el amor y la verdad en Cristo.', 'Publicado básico'),
+('book-2-juan', '2 Juan', '2-juan', '2 Jn', 'Nuevo Testamento', 63, 'Cartas generales', 'Carta', 'Llama a permanecer en la verdad y el amor.', 'Publicado básico'),
+('book-3-juan', '3 Juan', '3-juan', '3 Jn', 'Nuevo Testamento', 64, 'Cartas generales', 'Carta', 'Anima la hospitalidad y la fidelidad en la verdad.', 'Publicado básico'),
+('book-judas', 'Judas', 'judas', 'Jud', 'Nuevo Testamento', 65, 'Cartas generales', 'Carta', 'Exhorta a contender por la fe y resistir el error.', 'Publicado básico'),
+('book-apocalipsis', 'Apocalipsis', 'apocalipsis', 'Ap', 'Nuevo Testamento', 66, 'Profecía / Apocalíptico', 'Apocalíptico / profecía', 'Muestra la victoria final de Cristo y la nueva creación.', 'Publicado básico'
+);
+
 INSERT INTO lessons (
   id, route_id, lesson_number, title, slug, eyebrow, main_idea, summary, explanation, remember, application, estimated_time, status
 ) VALUES (
@@ -204,12 +282,31 @@ INSERT INTO event_topics (event_id, topic_id) VALUES
 ('eve-venida-de-jesus', 'tem-evangelio'),
 ('eve-venida-de-jesus', 'tem-redencion');
 
+INSERT INTO event_books (event_id, book_id) VALUES
+('eve-historia-biblica-general', 'book-genesis'),
+('eve-historia-biblica-general', 'book-lucas'),
+('eve-historia-biblica-general', 'book-juan'),
+('eve-historia-biblica-general', 'book-apocalipsis'),
+('eve-creacion', 'book-genesis'),
+('eve-caida', 'book-genesis'),
+('eve-promesa-redencion', 'book-genesis'),
+('eve-venida-de-jesus', 'book-mateo'),
+('eve-venida-de-jesus', 'book-lucas'),
+('eve-venida-de-jesus', 'book-juan');
+
 INSERT INTO lesson_events (lesson_id, event_id) VALUES
 ('lec-biblia-una-sola-historia', 'eve-historia-biblica-general'),
 ('lec-biblia-una-sola-historia', 'eve-creacion'),
 ('lec-biblia-una-sola-historia', 'eve-caida'),
 ('lec-biblia-una-sola-historia', 'eve-promesa-redencion'),
 ('lec-biblia-una-sola-historia', 'eve-venida-de-jesus');
+
+INSERT INTO lesson_books (lesson_id, book_id) VALUES
+('lec-biblia-una-sola-historia', 'book-genesis'),
+('lec-biblia-una-sola-historia', 'book-lucas'),
+('lec-biblia-una-sola-historia', 'book-juan'),
+('lec-biblia-una-sola-historia', 'book-2-timoteo'),
+('lec-biblia-una-sola-historia', 'book-apocalipsis');
 
 INSERT INTO lesson_people (lesson_id, person_id) VALUES
 ('lec-biblia-una-sola-historia', 'per-jesus'),

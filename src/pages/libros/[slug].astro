@@ -1,0 +1,118 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import {
+  getAllBooks,
+  getEventsByBookId,
+  getLessonsByBookId,
+  type Book,
+  type Event,
+  type Lesson,
+} from "../../lib/queries";
+
+type Props = {
+  book: Book;
+  lessons: Lesson[];
+  events: Event[];
+};
+
+export function getStaticPaths() {
+  const books = getAllBooks();
+
+  return books
+    .filter((book) => book.status !== "Borrador")
+    .map((book) => ({
+      params: { slug: book.slug },
+      props: {
+        book,
+        lessons: getLessonsByBookId(book.id),
+        events: getEventsByBookId(book.id),
+      },
+    }));
+}
+
+const { book, lessons, events } = Astro.props;
+---
+
+<BaseLayout
+  title={book.name}
+  description={book.summary ?? "Libro bíblico de la Enciclopedia Bíblica Visual."}
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> → <a href="/libros/">Libros</a> → {book.name}
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">{book.testament} · {book.category}</p>
+
+      <h1>{book.name}</h1>
+
+      {book.summary && (
+        <p class="subtitle">
+          {book.summary}
+        </p>
+      )}
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Orden bíblico</h2>
+        <p>{book.order_number}</p>
+      </article>
+
+      <article class="card">
+        <h2>Abreviatura</h2>
+        <p>{book.abbreviation ?? "Pendiente"}</p>
+      </article>
+
+      <article class="card">
+        <h2>Género</h2>
+        <p>{book.genre ?? "Pendiente"}</p>
+      </article>
+    </section>
+
+    <section class="section">
+      <h2>Resumen</h2>
+
+      <div class="content">
+        <p>{book.summary ?? "Resumen pendiente."}</p>
+      </div>
+    </section>
+
+    {lessons.length > 0 && (
+      <section class="section">
+        <h2>Lecciones relacionadas</h2>
+
+        <ul class="pill-list">
+          {lessons.map((lesson) => (
+            <li>
+              <a href={`/lecciones/${lesson.slug}/`}>{lesson.title}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {events.length > 0 && (
+      <section class="section">
+        <h2>Eventos relacionados</h2>
+
+        <div class="entity-list">
+          {events.map((event) => (
+            <a href={`/eventos/${event.slug}/`} class="entity-card">
+              <span class="meta">{event.biblical_period ?? "Evento"}</span>
+              <h2>{event.title}</h2>
+              <p>{event.summary ?? "Resumen pendiente."}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section class="section">
+      <a href="/libros/" class="button secondary">
+        Volver a libros
+      </a>
+    </section>
+  </main>
+</BaseLayout>

@@ -4,6 +4,7 @@ import {
   getAllLessons,
   getBibleRefsByLessonId,
   getEventsByLessonId,
+  getBooksByLessonId,
   getGlossaryByLessonId,
   getPeopleByLessonId,
   getPlacesByLessonId,
@@ -11,6 +12,7 @@ import {
   getQuestionsByLessonId,
   getTopicsByLessonId,
   type Event,
+  type Book,
   type Lesson,
   type LessonBibleRef,
   type LessonPoint,
@@ -28,6 +30,7 @@ type Props = {
   places: RelatedItem[];
   glossary: RelatedItem[];
   events: Event[];
+  books: Book[];
 };
 
 export function getStaticPaths() {
@@ -47,6 +50,7 @@ export function getStaticPaths() {
         places: getPlacesByLessonId(lesson.id),
         glossary: getGlossaryByLessonId(lesson.id),
         events: getEventsByLessonId(lesson.id),
+        books: getBooksByLessonId(lesson.id),
       },
     }));
 }
@@ -61,6 +65,7 @@ const {
   places,
   glossary,
   events,
+  books,
 } = Astro.props;
 ---
 
@@ -117,6 +122,20 @@ const {
           {bibleRefs.map((ref) => (
             <li>
               <span>{ref.reference}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {books.length > 0 && (
+      <section class="section">
+        <h2>Libros relacionados</h2>
+
+        <ul class="pill-list">
+          {books.map((book) => (
+            <li>
+              <a href={`/libros/${book.slug}/`}>{book.name}</a>
             </li>
           ))}
         </ul>

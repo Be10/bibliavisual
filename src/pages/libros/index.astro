@@ -1,0 +1,64 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllBooks } from "../../lib/queries";
+
+const books = getAllBooks().filter((book) => book.status !== "Borrador");
+
+const oldTestamentBooks = books.filter(
+  (book) => book.testament === "Antiguo Testamento"
+);
+
+const newTestamentBooks = books.filter(
+  (book) => book.testament === "Nuevo Testamento"
+);
+---
+
+<BaseLayout
+  title="Libros bíblicos"
+  description="Explora los 66 libros bíblicos con resúmenes, conexiones, eventos y lecciones relacionadas."
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> → Libros
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">66 libros bíblicos</p>
+
+      <h1>Libros bíblicos</h1>
+
+      <p class="subtitle">
+        Explora los libros de la Biblia como parte de una historia conectada:
+        creación, promesa, redención, cumplimiento en Jesús y nueva creación.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Antiguo Testamento</h2>
+
+      <div class="entity-list">
+        {oldTestamentBooks.map((book) => (
+          <a href={`/libros/${book.slug}/`} class="entity-card">
+            <span class="meta">{book.category ?? book.testament}</span>
+            <h2>{book.name}</h2>
+            <p>{book.summary ?? "Resumen pendiente."}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Nuevo Testamento</h2>
+
+      <div class="entity-list">
+        {newTestamentBooks.map((book) => (
+          <a href={`/libros/${book.slug}/`} class="entity-card">
+            <span class="meta">{book.category ?? book.testament}</span>
+            <h2>{book.name}</h2>
+            <p>{book.summary ?? "Resumen pendiente."}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+  </main>
+</BaseLayout>

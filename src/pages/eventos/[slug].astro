@@ -2,16 +2,19 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllEvents,
+  getBooksByEventId,
   getPeopleByEventId,
   getPlacesByEventId,
   getTopicsByEventId,
   type Event,
+  type Book,
   type EventRelatedPlace,
   type RelatedItem,
 } from "../../lib/queries";
 
 type Props = {
   event: Event;
+  books: Book[];
   people: RelatedItem[];
   places: EventRelatedPlace[];
   topics: RelatedItem[];
@@ -26,6 +29,7 @@ export function getStaticPaths() {
       params: { slug: event.slug },
       props: {
         event,
+        books: getBooksByEventId(event.id),
         people: getPeopleByEventId(event.id),
         places: getPlacesByEventId(event.id),
         topics: getTopicsByEventId(event.id),
@@ -33,7 +37,7 @@ export function getStaticPaths() {
     }));
 }
 
-const { event, people, places, topics } = Astro.props;
+const { event, people, places, topics, books } = Astro.props;
 
 const firstMappablePlace = places.find(
   (place) => place.latitude !== null && place.longitude !== null
@@ -93,6 +97,20 @@ const firstMappablePlace = places.find(
         <p>{event.description ?? "Descripción pendiente."}</p>
       </div>
     </section>
+
+    {books.length > 0 && (
+      <section class="section">
+        <h2>Libros relacionados</h2>
+
+        <ul class="pill-list">
+          {books.map((book) => (
+            <li>
+              <a href={`/libros/${book.slug}/`}>{book.name}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
 
     {(places.length > 0 || people.length > 0 || topics.length > 0) && (
       <section class="grid">
