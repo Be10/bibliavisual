@@ -536,3 +536,98 @@ export function getEventsByBookId(bookId: string): Event[] {
     )
     .all(bookId) as Event[];
 }
+
+export type Passage = {
+  id: string;
+  display_reference: string;
+  slug: string;
+  book_id: string;
+  book_name: string;
+  book_slug: string;
+  start_chapter: number;
+  start_verse: number | null;
+  end_chapter: number;
+  end_verse: number | null;
+  summary: string | null;
+  status: string;
+};
+
+export function getAllPassages(): Passage[] {
+  return db
+    .prepare(
+      `
+      SELECT
+        passages.*,
+        books.name AS book_name,
+        books.slug AS book_slug
+      FROM passages
+      JOIN books ON books.id = passages.book_id
+      ORDER BY books.order_number ASC, passages.start_chapter ASC, passages.start_verse ASC
+      `
+    )
+    .all() as Passage[];
+}
+
+export function getPassagesByLessonId(lessonId: string): Passage[] {
+  return db
+    .prepare(
+      `
+      SELECT
+        passages.*,
+        books.name AS book_name,
+        books.slug AS book_slug
+      FROM lesson_passages
+      JOIN passages ON passages.id = lesson_passages.passage_id
+      JOIN books ON books.id = passages.book_id
+      WHERE lesson_passages.lesson_id = ?
+      ORDER BY lesson_passages.position ASC
+      `
+    )
+    .all(lessonId) as Passage[];
+}
+
+export function getPassagesByEventId(eventId: string): Passage[] {
+  return db
+    .prepare(
+      `
+      SELECT
+        passages.*,
+        books.name AS book_name,
+        books.slug AS book_slug
+      FROM event_passages
+      JOIN passages ON passages.id = event_passages.passage_id
+      JOIN books ON books.id = passages.book_id
+      WHERE event_passages.event_id = ?
+      ORDER BY event_passages.position ASC
+      `
+    )
+    .all(eventId) as Passage[];
+}
+
+export function getLessonsByPassageId(passageId: string): Lesson[] {
+  return db
+    .prepare(
+      `
+      SELECT lessons.*
+      FROM lesson_passages
+      JOIN lessons ON lessons.id = lesson_passages.lesson_id
+      WHERE lesson_passages.passage_id = ?
+      ORDER BY lessons.lesson_number ASC
+      `
+    )
+    .all(passageId) as Lesson[];
+}
+
+export function getEventsByPassageId(passageId: string): Event[] {
+  return db
+    .prepare(
+      `
+      SELECT events.*
+      FROM event_passages
+      JOIN events ON events.id = event_passages.event_id
+      WHERE event_passages.passage_id = ?
+      ORDER BY events.chronological_order ASC, events.title ASC
+      `
+    )
+    .all(passageId) as Event[];
+}

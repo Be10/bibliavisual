@@ -22,10 +22,16 @@ db.exec(seed);
 
 const routeCount = db.prepare("SELECT COUNT(*) AS count FROM routes").get();
 const lessonCount = db.prepare("SELECT COUNT(*) AS count FROM lessons").get();
+const bookCount = db.prepare("SELECT COUNT(*) AS count FROM books").get();
+const passageCount = db.prepare("SELECT COUNT(*) AS count FROM passages").get();
+const versionCount = db.prepare("SELECT COUNT(*) AS count FROM bible_versions").get();
 
 db.close();
 
 console.log("Base de datos creada correctamente.");
 console.log(`Rutas: ${routeCount.count}`);
 console.log(`Lecciones: ${lessonCount.count}`);
+console.log(`Libros: ${bookCount.count}`);
+console.log(`Versiones bíblicas: ${versionCount.count}`);
+console.log(`Pasajes: ${passageCount.count}`);
 console.log(`Archivo: ${dbPath}`);

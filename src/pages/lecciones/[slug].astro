@@ -11,6 +11,7 @@ import {
   getPointsByLessonId,
   getQuestionsByLessonId,
   getTopicsByLessonId,
+  getPassagesByLessonId,
   type Event,
   type Book,
   type Lesson,
@@ -18,6 +19,7 @@ import {
   type LessonPoint,
   type LessonQuestion,
   type RelatedItem,
+  type Passage,
 } from "../../lib/queries";
 
 type Props = {
@@ -31,6 +33,7 @@ type Props = {
   glossary: RelatedItem[];
   events: Event[];
   books: Book[];
+  passages: Passage[];
 };
 
 export function getStaticPaths() {
@@ -51,6 +54,7 @@ export function getStaticPaths() {
         glossary: getGlossaryByLessonId(lesson.id),
         events: getEventsByLessonId(lesson.id),
         books: getBooksByLessonId(lesson.id),
+        passages: getPassagesByLessonId(lesson.id),
       },
     }));
 }
@@ -66,6 +70,7 @@ const {
   glossary,
   events,
   books,
+  passages,
 } = Astro.props;
 ---
 
@@ -114,18 +119,32 @@ const {
       </section>
     )}
 
-    {bibleRefs.length > 0 && (
+    {passages.length > 0 ? (
       <section class="section">
         <h2>Pasajes bíblicos principales</h2>
 
         <ul class="pill-list">
-          {bibleRefs.map((ref) => (
+          {passages.map((passage) => (
             <li>
-              <span>{ref.reference}</span>
+              <a href={`/pasajes/${passage.slug}/`}>{passage.display_reference}</a>
             </li>
           ))}
         </ul>
       </section>
+    ) : (
+      bibleRefs.length > 0 && (
+        <section class="section">
+          <h2>Pasajes bíblicos principales</h2>
+
+          <ul class="pill-list">
+            {bibleRefs.map((ref) => (
+              <li>
+                <span>{ref.reference}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
     )}
 
     {books.length > 0 && (

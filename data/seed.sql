@@ -89,6 +89,168 @@ INSERT INTO books (
 ('book-apocalipsis', 'Apocalipsis', 'apocalipsis', 'Ap', 'Nuevo Testamento', 66, 'Profecía / Apocalíptico', 'Apocalíptico / profecía', 'Muestra la victoria final de Cristo y la nueva creación.', 'Publicado básico'
 );
 
+INSERT INTO bible_versions (
+  id,
+  name,
+  abbreviation,
+  language,
+  copyright_status,
+  copyright_notice,
+  license_notes,
+  permission_scope,
+  source_notes,
+  status
+) VALUES
+(
+  'rvr1960',
+  'Reina-Valera 1960',
+  'RVR1960',
+  'es',
+  'Copyright / uso bajo licencia',
+  'Texto bíblico: Reina-Valera 1960® © Sociedades Bíblicas en América Latina, 1960. Derechos renovados © Sociedades Bíblicas Unidas, 1988. Usado con permiso.',
+  'La versión Reina-Valera 1960® es una marca registrada y su uso debe ajustarse a la licencia/permiso obtenido.',
+  'Pendiente de documentar según el permiso otorgado.',
+  'Pendiente: registrar fuente autorizada del texto digital.',
+  'Publicado básico'
+);
+
+INSERT INTO passages (
+  id, display_reference, slug, book_id, start_chapter, start_verse,
+  end_chapter, end_verse, summary, status
+) VALUES
+(
+  'pas-lucas-24-27',
+  'Lucas 24:27',
+  'lucas-24-27',
+  'book-lucas',
+  24,
+  27,
+  24,
+  27,
+  'Jesús explicó cómo las Escrituras apuntaban hacia Él.',
+  'Publicado básico'
+),
+(
+  'pas-lucas-24-44',
+  'Lucas 24:44',
+  'lucas-24-44',
+  'book-lucas',
+  24,
+  44,
+  24,
+  44,
+  'Jesús habló de lo escrito acerca de Él en la Ley, los Profetas y los Salmos.',
+  'Publicado básico'
+),
+(
+  'pas-juan-5-39',
+  'Juan 5:39',
+  'juan-5-39',
+  'book-juan',
+  5,
+  39,
+  5,
+  39,
+  'Las Escrituras dan testimonio de Jesús.',
+  'Publicado básico'
+),
+(
+  'pas-2-timoteo-3-16-17',
+  '2 Timoteo 3:16-17',
+  '2-timoteo-3-16-17',
+  'book-2-timoteo',
+  3,
+  16,
+  3,
+  17,
+  'La Escritura es útil para enseñar, corregir e instruir.',
+  'Publicado básico'
+),
+(
+  'pas-genesis-1-2',
+  'Génesis 1–2',
+  'genesis-1-2',
+  'book-genesis',
+  1,
+  NULL,
+  2,
+  NULL,
+  'Dios crea todas las cosas y establece el orden de la creación.',
+  'Publicado básico'
+),
+(
+  'pas-genesis-3',
+  'Génesis 3',
+  'genesis-3',
+  'book-genesis',
+  3,
+  NULL,
+  3,
+  NULL,
+  'Relata la caída, la entrada del pecado y la primera promesa de redención.',
+  'Publicado básico'
+),
+(
+  'pas-genesis-3-15',
+  'Génesis 3:15',
+  'genesis-3-15',
+  'book-genesis',
+  3,
+  15,
+  3,
+  15,
+  'Primera promesa de victoria sobre el mal.',
+  'Publicado básico'
+),
+(
+  'pas-mateo-1-18-25',
+  'Mateo 1:18-25',
+  'mateo-1-18-25',
+  'book-mateo',
+  1,
+  18,
+  1,
+  25,
+  'Anuncio y nacimiento de Jesús como cumplimiento de la promesa.',
+  'Publicado básico'
+),
+(
+  'pas-lucas-2-1-20',
+  'Lucas 2:1-20',
+  'lucas-2-1-20',
+  'book-lucas',
+  2,
+  1,
+  2,
+  20,
+  'Nacimiento de Jesús y anuncio a los pastores.',
+  'Publicado básico'
+),
+(
+  'pas-juan-1-1-18',
+  'Juan 1:1-18',
+  'juan-1-1-18',
+  'book-juan',
+  1,
+  1,
+  1,
+  18,
+  'Jesús es presentado como el Verbo hecho carne.',
+  'Publicado básico'
+),
+(
+  'pas-apocalipsis-21-22',
+  'Apocalipsis 21–22',
+  'apocalipsis-21-22',
+  'book-apocalipsis',
+  21,
+  NULL,
+  22,
+  NULL,
+  'Esperanza final de la nueva creación.',
+  'Publicado básico'
+);
+
 INSERT INTO lessons (
   id, route_id, lesson_number, title, slug, eyebrow, main_idea, summary, explanation, remember, application, estimated_time, status
 ) VALUES (
@@ -294,6 +456,17 @@ INSERT INTO event_books (event_id, book_id) VALUES
 ('eve-venida-de-jesus', 'book-lucas'),
 ('eve-venida-de-jesus', 'book-juan');
 
+INSERT INTO event_passages (event_id, passage_id, relation_type, position) VALUES
+('eve-historia-biblica-general', 'pas-genesis-1-2', 'panorama', 1),
+('eve-historia-biblica-general', 'pas-lucas-24-27', 'panorama', 2),
+('eve-historia-biblica-general', 'pas-apocalipsis-21-22', 'panorama', 3),
+('eve-creacion', 'pas-genesis-1-2', 'principal', 1),
+('eve-caida', 'pas-genesis-3', 'principal', 1),
+('eve-promesa-redencion', 'pas-genesis-3-15', 'principal', 1),
+('eve-venida-de-jesus', 'pas-mateo-1-18-25', 'principal', 1),
+('eve-venida-de-jesus', 'pas-lucas-2-1-20', 'principal', 2),
+('eve-venida-de-jesus', 'pas-juan-1-1-18', 'principal', 3);
+
 INSERT INTO lesson_events (lesson_id, event_id) VALUES
 ('lec-biblia-una-sola-historia', 'eve-historia-biblica-general'),
 ('lec-biblia-una-sola-historia', 'eve-creacion'),
@@ -307,6 +480,12 @@ INSERT INTO lesson_books (lesson_id, book_id) VALUES
 ('lec-biblia-una-sola-historia', 'book-juan'),
 ('lec-biblia-una-sola-historia', 'book-2-timoteo'),
 ('lec-biblia-una-sola-historia', 'book-apocalipsis');
+
+INSERT INTO lesson_passages (lesson_id, passage_id, relation_type, position) VALUES
+('lec-biblia-una-sola-historia', 'pas-lucas-24-27', 'principal', 1),
+('lec-biblia-una-sola-historia', 'pas-lucas-24-44', 'principal', 2),
+('lec-biblia-una-sola-historia', 'pas-juan-5-39', 'principal', 3),
+('lec-biblia-una-sola-historia', 'pas-2-timoteo-3-16-17', 'principal', 4);
 
 INSERT INTO lesson_people (lesson_id, person_id) VALUES
 ('lec-biblia-una-sola-historia', 'per-jesus'),

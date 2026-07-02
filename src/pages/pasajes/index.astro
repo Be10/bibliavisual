@@ -1,0 +1,39 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllPassages } from "../../lib/queries";
+
+const passages = getAllPassages().filter((passage) => passage.status !== "Borrador");
+---
+
+<BaseLayout
+  title="Pasajes bíblicos"
+  description="Explora pasajes bíblicos relacionados con lecciones, eventos, libros y temas."
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> → Pasajes
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">Referencias bíblicas conectadas</p>
+
+      <h1>Pasajes bíblicos</h1>
+
+      <p class="subtitle">
+        Esta sección conecta referencias bíblicas con lecciones, eventos, libros,
+        temas, personajes y lugares. Más adelante incluirá el texto bíblico RVR1960
+        conforme al permiso/licencia correspondiente.
+      </p>
+    </section>
+
+    <section class="entity-list">
+      {passages.map((passage) => (
+        <a href={`/pasajes/${passage.slug}/`} class="entity-card">
+          <span class="meta">{passage.book_name}</span>
+          <h2>{passage.display_reference}</h2>
+          <p>{passage.summary ?? "Resumen pendiente."}</p>
+        </a>
+      ))}
+    </section>
+  </main>
+</BaseLayout>

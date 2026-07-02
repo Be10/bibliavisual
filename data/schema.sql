@@ -1,5 +1,11 @@
 PRAGMA foreign_keys = ON;
 
+DROP TABLE IF EXISTS event_passages;
+DROP TABLE IF EXISTS lesson_passages;
+DROP TABLE IF EXISTS passages;
+DROP TABLE IF EXISTS bible_verses;
+DROP TABLE IF EXISTS bible_chapters;
+DROP TABLE IF EXISTS bible_versions;
 DROP TABLE IF EXISTS event_books;
 DROP TABLE IF EXISTS lesson_books;
 DROP TABLE IF EXISTS event_topics;
@@ -46,6 +52,55 @@ CREATE TABLE books (
   genre TEXT,
   summary TEXT,
   status TEXT NOT NULL DEFAULT 'Borrador'
+);
+
+CREATE TABLE bible_versions (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  abbreviation TEXT NOT NULL,
+  language TEXT NOT NULL DEFAULT 'es',
+  copyright_status TEXT,
+  copyright_notice TEXT,
+  license_notes TEXT,
+  permission_scope TEXT,
+  source_notes TEXT,
+  status TEXT NOT NULL DEFAULT 'Borrador'
+);
+
+CREATE TABLE bible_chapters (
+  id TEXT PRIMARY KEY,
+  book_id TEXT NOT NULL,
+  chapter_number INTEGER NOT NULL,
+  UNIQUE (book_id, chapter_number),
+  FOREIGN KEY (book_id) REFERENCES books(id)
+);
+
+CREATE TABLE bible_verses (
+  id TEXT PRIMARY KEY,
+  version_id TEXT NOT NULL,
+  book_id TEXT NOT NULL,
+  chapter_id TEXT NOT NULL,
+  chapter_number INTEGER NOT NULL,
+  verse_number INTEGER NOT NULL,
+  verse_text TEXT,
+  UNIQUE (version_id, book_id, chapter_number, verse_number),
+  FOREIGN KEY (version_id) REFERENCES bible_versions(id),
+  FOREIGN KEY (book_id) REFERENCES books(id),
+  FOREIGN KEY (chapter_id) REFERENCES bible_chapters(id)
+);
+
+CREATE TABLE passages (
+  id TEXT PRIMARY KEY,
+  display_reference TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  book_id TEXT NOT NULL,
+  start_chapter INTEGER NOT NULL,
+  start_verse INTEGER,
+  end_chapter INTEGER NOT NULL,
+  end_verse INTEGER,
+  summary TEXT,
+  status TEXT NOT NULL DEFAULT 'Borrador',
+  FOREIGN KEY (book_id) REFERENCES books(id)
 );
 
 CREATE TABLE lessons (
@@ -179,6 +234,16 @@ CREATE TABLE lesson_books (
   FOREIGN KEY (book_id) REFERENCES books(id)
 );
 
+CREATE TABLE lesson_passages (
+  lesson_id TEXT NOT NULL,
+  passage_id TEXT NOT NULL,
+  relation_type TEXT NOT NULL DEFAULT 'principal',
+  position INTEGER NOT NULL DEFAULT 1,
+  PRIMARY KEY (lesson_id, passage_id),
+  FOREIGN KEY (lesson_id) REFERENCES lessons(id),
+  FOREIGN KEY (passage_id) REFERENCES passages(id)
+);
+
 CREATE TABLE lesson_people (
   lesson_id TEXT NOT NULL,
   person_id TEXT NOT NULL,
@@ -241,4 +306,14 @@ CREATE TABLE event_books (
   PRIMARY KEY (event_id, book_id),
   FOREIGN KEY (event_id) REFERENCES events(id),
   FOREIGN KEY (book_id) REFERENCES books(id)
+);
+
+CREATE TABLE event_passages (
+  event_id TEXT NOT NULL,
+  passage_id TEXT NOT NULL,
+  relation_type TEXT NOT NULL DEFAULT 'principal',
+  position INTEGER NOT NULL DEFAULT 1,
+  PRIMARY KEY (event_id, passage_id),
+  FOREIGN KEY (event_id) REFERENCES events(id),
+  FOREIGN KEY (passage_id) REFERENCES passages(id)
 );

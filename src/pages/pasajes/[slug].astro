@@ -1,0 +1,142 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import {
+  getAllPassages,
+  getEventsByPassageId,
+  getLessonsByPassageId,
+  type Event,
+  type Lesson,
+  type Passage,
+} from "../../lib/queries";
+
+type Props = {
+  passage: Passage;
+  lessons: Lesson[];
+  events: Event[];
+};
+
+export function getStaticPaths() {
+  const passages = getAllPassages();
+
+  return passages
+    .filter((passage) => passage.status !== "Borrador")
+    .map((passage) => ({
+      params: { slug: passage.slug },
+      props: {
+        passage,
+        lessons: getLessonsByPassageId(passage.id),
+        events: getEventsByPassageId(passage.id),
+      },
+    }));
+}
+
+const { passage, lessons, events } = Astro.props;
+---
+
+<BaseLayout
+  title={passage.display_reference}
+  description={passage.summary ?? "Pasaje bíblico de la Enciclopedia Bíblica Visual."}
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> →
+      <a href="/pasajes/">Pasajes</a> →
+      {passage.display_reference}
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">Pasaje bíblico · {passage.book_name}</p>
+
+      <h1>{passage.display_reference}</h1>
+
+      {passage.summary && (
+        <p class="subtitle">
+          {passage.summary}
+        </p>
+      )}
+
+      <div class="actions">
+        <a href={`/libros/${passage.book_slug}/`} class="button secondary">
+          Ver libro bíblico
+        </a>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Libro</h2>
+        <p>{passage.book_name}</p>
+      </article>
+
+      <article class="card">
+        <h2>Inicio</h2>
+        <p>
+          Capítulo {passage.start_chapter}
+          {passage.start_verse ? `:${passage.start_verse}` : ""}
+        </p>
+      </article>
+
+      <article class="card">
+        <h2>Fin</h2>
+        <p>
+          Capítulo {passage.end_chapter}
+          {passage.end_verse ? `:${passage.end_verse}` : ""}
+        </p>
+      </article>
+    </section>
+
+    <section class="section">
+      <h2>Resumen del pasaje</h2>
+
+      <div class="content">
+        <p>{passage.summary ?? "Resumen pendiente."}</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Texto bíblico</h2>
+
+      <div class="content">
+        <p>
+          Texto RVR1960 pendiente de importación conforme al permiso/licencia correspondiente.
+        </p>
+      </div>
+    </section>
+
+    {lessons.length > 0 && (
+      <section class="section">
+        <h2>Lecciones relacionadas</h2>
+
+        <ul class="pill-list">
+          {lessons.map((lesson) => (
+            <li>
+              <a href={`/lecciones/${lesson.slug}/`}>{lesson.title}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {events.length > 0 && (
+      <section class="section">
+        <h2>Eventos relacionados</h2>
+
+        <div class="entity-list">
+          {events.map((event) => (
+            <a href={`/eventos/${event.slug}/`} class="entity-card">
+              <span class="meta">{event.biblical_period ?? "Evento"}</span>
+              <h2>{event.title}</h2>
+              <p>{event.summary ?? "Resumen pendiente."}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section class="section">
+      <a href="/pasajes/" class="button secondary">
+        Volver a pasajes
+      </a>
+    </section>
+  </main>
+</BaseLayout>
