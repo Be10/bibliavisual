@@ -1,0 +1,141 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import {
+  getAllBooks,
+  getBibleChaptersByBookId,
+  getBibleVersesByChapter,
+  getBibleVersionById,
+  type BibleChapter,
+  type BibleVerse,
+  type Book,
+} from "../../../lib/queries";
+
+type Props = {
+  book: Book;
+  chapter: BibleChapter;
+  chapters: BibleChapter[];
+  verses: BibleVerse[];
+};
+
+export function getStaticPaths() {
+  const books = getAllBooks().filter((book) => book.status !== "Borrador");
+
+  return books.flatMap((book) => {
+    const chapters = getBibleChaptersByBookId(book.id);
+
+    return chapters.map((chapter) => ({
+      params: {
+        bookSlug: book.slug,
+        chapter: String(chapter.chapter_number),
+      },
+      props: {
+        book,
+        chapter,
+        chapters,
+        verses: getBibleVersesByChapter(book.id, chapter.chapter_number),
+      },
+    }));
+  });
+}
+
+const { book, chapter, chapters, verses } = Astro.props;
+
+const version = getBibleVersionById("rvr1960");
+
+const currentChapterNumber = chapter.chapter_number;
+
+const previousChapter = chapters.find(
+  (item) => item.chapter_number === currentChapterNumber - 1
+);
+
+const nextChapter = chapters.find(
+  (item) => item.chapter_number === currentChapterNumber + 1
+);
+---
+
+<BaseLayout
+  title={`${book.name} ${currentChapterNumber}`}
+  description={`Lee ${book.name} capítulo ${currentChapterNumber}.`}
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> →
+      <a href="/biblia/">Biblia</a> →
+      <a href={`/biblia/${book.slug}/`}>{book.name}</a> →
+      Capítulo {currentChapterNumber}
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">{version?.abbreviation ?? "RVR1960"}</p>
+
+      <h1>{book.name} {currentChapterNumber}</h1>
+
+      <p class="subtitle">
+        Lectura bíblica por capítulo. Los versículos aparecerán aquí cuando el texto
+        RVR1960 haya sido importado a la base de datos.
+      </p>
+
+      <div class="actions">
+        <a href={`/biblia/${book.slug}/`} class="button secondary">
+          Ver capítulos de {book.name}
+        </a>
+
+        <a href={`/libros/${book.slug}/`} class="button secondary">
+          Ver ficha del libro
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>{book.name} {currentChapterNumber}</h2>
+
+      {verses.length > 0 ? (
+        <div class="bible-reader">
+          {verses.map((verse) => (
+            <article class="verse" id={`v${verse.verse_number}`}>
+              <span class="verse-number">{verse.verse_number}</span>
+              <p class="verse-text">{verse.verse_text}</p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div class="content">
+          <p>
+            Todavía no hay versículos importados para este capítulo. Cuando ejecutes
+            el importador con el CSV autorizado de RVR1960, el texto aparecerá aquí.
+          </p>
+        </div>
+      )}
+
+      <nav class="chapter-nav">
+        {previousChapter ? (
+          <a
+            href={`/biblia/${book.slug}/${previousChapter.chapter_number}/`}
+            class="button secondary"
+          >
+            ← Capítulo {previousChapter.chapter_number}
+          </a>
+        ) : (
+          <span></span>
+        )}
+
+        {nextChapter ? (
+          <a
+            href={`/biblia/${book.slug}/${nextChapter.chapter_number}/`}
+            class="button secondary"
+          >
+            Capítulo {nextChapter.chapter_number} →
+          </a>
+        ) : (
+          <span></span>
+        )}
+      </nav>
+    </section>
+
+    {version?.copyright_notice && (
+      <section class="copyright-box">
+        {version.copyright_notice}
+      </section>
+    )}
+  </main>
+</BaseLayout>

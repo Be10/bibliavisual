@@ -52,6 +52,12 @@ const { book, lessons, events } = Astro.props;
           {book.summary}
         </p>
       )}
+
+      <div class="actions">
+        <a href={`/biblia/${book.slug}/`} class="button">
+          Leer en la Biblia
+        </a>
+      </div>
     </section>
 
     <section class="grid">

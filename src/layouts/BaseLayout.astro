@@ -27,6 +27,7 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
 
       <nav class="nav">
         <a href="/rutas/panorama-visual-de-la-biblia/">Ruta principal</a>
+        <a href="/biblia/">Biblia</a>
         <a href="/libros/">Libros</a>
         <a href="/pasajes/">Pasajes</a>
         <a href="/linea-de-tiempo/">Línea de tiempo</a>
@@ -391,6 +392,79 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
   .map-popup a {
     font-weight: 800;
     color: #5d3212;
+  }
+
+    .chapter-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .chapter-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 46px;
+    height: 46px;
+    padding: 0 12px;
+    border-radius: 14px;
+    background: white;
+    border: 1px solid #eadcc4;
+    color: #5d3212;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .chapter-link:hover {
+    border-color: #c8a982;
+    background: #fff7e8;
+  }
+
+  .bible-reader {
+    display: grid;
+    gap: 14px;
+    margin-top: 24px;
+  }
+
+  .verse {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid #eadcc4;
+  }
+
+  .verse-number {
+    color: #8a5a2b;
+    font-weight: 900;
+    font-size: 0.9rem;
+  }
+
+  .verse-text {
+    margin: 0;
+    line-height: 1.8;
+    color: #2d2418;
+    font-size: 1.08rem;
+  }
+
+  .chapter-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 28px;
+  }
+
+  .copyright-box {
+    margin-top: 28px;
+    padding: 18px;
+    border-radius: 18px;
+    background: #fff7e8;
+    border: 1px solid #eadcc4;
+    color: #6a5c4d;
+    font-size: 0.92rem;
+    line-height: 1.6;
   }
 
   @media (max-width: 760px) {

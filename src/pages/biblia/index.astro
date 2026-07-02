@@ -1,0 +1,72 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllBooks, getBibleVersionById } from "../../lib/queries";
+
+const version = getBibleVersionById("rvr1960");
+
+const books = getAllBooks().filter((book) => book.status !== "Borrador");
+
+const oldTestamentBooks = books.filter(
+  (book) => book.testament === "Antiguo Testamento"
+);
+
+const newTestamentBooks = books.filter(
+  (book) => book.testament === "Nuevo Testamento"
+);
+---
+
+<BaseLayout
+  title="Biblia"
+  description="Lectura bíblica por libros, capítulos y versículos."
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> → Biblia
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">{version?.abbreviation ?? "RVR1960"}</p>
+
+      <h1>Biblia</h1>
+
+      <p class="subtitle">
+        Navega por los libros y capítulos de la Biblia. El texto bíblico se mostrará
+        desde la base de datos cuando la RVR1960 haya sido importada.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Antiguo Testamento</h2>
+
+      <div class="entity-list">
+        {oldTestamentBooks.map((book) => (
+          <a href={`/biblia/${book.slug}/`} class="entity-card">
+            <span class="meta">{book.category ?? book.testament}</span>
+            <h2>{book.name}</h2>
+            <p>{book.summary ?? "Resumen pendiente."}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Nuevo Testamento</h2>
+
+      <div class="entity-list">
+        {newTestamentBooks.map((book) => (
+          <a href={`/biblia/${book.slug}/`} class="entity-card">
+            <span class="meta">{book.category ?? book.testament}</span>
+            <h2>{book.name}</h2>
+            <p>{book.summary ?? "Resumen pendiente."}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    {version?.copyright_notice && (
+      <section class="copyright-box">
+        {version.copyright_notice}
+      </section>
+    )}
+  </main>
+</BaseLayout>

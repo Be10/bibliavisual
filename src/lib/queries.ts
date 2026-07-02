@@ -687,7 +687,20 @@ export function getBibleVersesByChapter(
     .all(versionId, bookId, chapterNumber) as BibleVerse[];
 }
 
-export function getBibleVersionById(versionId: string) {
+export type BibleVersion = {
+  id: string;
+  name: string;
+  abbreviation: string;
+  language: string;
+  copyright_status: string | null;
+  copyright_notice: string | null;
+  license_notes: string | null;
+  permission_scope: string | null;
+  source_notes: string | null;
+  status: string;
+};
+
+export function getBibleVersionById(versionId: string): BibleVersion | undefined {
   return db
     .prepare(
       `
@@ -696,5 +709,5 @@ export function getBibleVersionById(versionId: string) {
       WHERE id = ?
       `
     )
-    .get(versionId);
+    .get(versionId) as BibleVersion | undefined;
 }

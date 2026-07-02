@@ -1,0 +1,109 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import {
+  getAllBooks,
+  getBibleChaptersByBookId,
+  getBibleVersionById,
+  type BibleChapter,
+  type Book,
+} from "../../../lib/queries";
+
+type Props = {
+  book: Book;
+  chapters: BibleChapter[];
+};
+
+export function getStaticPaths() {
+  const books = getAllBooks().filter((book) => book.status !== "Borrador");
+
+  return books.map((book) => ({
+    params: { bookSlug: book.slug },
+    props: {
+      book,
+      chapters: getBibleChaptersByBookId(book.id),
+    },
+  }));
+}
+
+const { book, chapters } = Astro.props;
+
+const version = getBibleVersionById("rvr1960");
+---
+
+<BaseLayout
+  title={`Biblia · ${book.name}`}
+  description={book.summary ?? `Lee el libro de ${book.name}.`}
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> →
+      <a href="/biblia/">Biblia</a> →
+      {book.name}
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">{book.testament} · {version?.abbreviation ?? "RVR1960"}</p>
+
+      <h1>{book.name}</h1>
+
+      {book.summary && (
+        <p class="subtitle">
+          {book.summary}
+        </p>
+      )}
+
+      <div class="actions">
+        <a href={`/libros/${book.slug}/`} class="button secondary">
+          Ver ficha del libro
+        </a>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Categoría</h2>
+        <p>{book.category ?? "Pendiente"}</p>
+      </article>
+
+      <article class="card">
+        <h2>Género</h2>
+        <p>{book.genre ?? "Pendiente"}</p>
+      </article>
+
+      <article class="card">
+        <h2>Capítulos disponibles</h2>
+        <p>{chapters.length}</p>
+      </article>
+    </section>
+
+    <section class="section">
+      <h2>Capítulos</h2>
+
+      {chapters.length > 0 ? (
+        <div class="chapter-grid">
+          {chapters.map((chapter) => (
+            <a
+              href={`/biblia/${book.slug}/${chapter.chapter_number}/`}
+              class="chapter-link"
+            >
+              {chapter.chapter_number}
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="content">
+          <p>
+            Todavía no hay capítulos registrados para este libro. Cuando importes
+            la RVR1960 completa, aparecerán aquí.
+          </p>
+        </div>
+      )}
+    </section>
+
+    {version?.copyright_notice && (
+      <section class="copyright-box">
+        {version.copyright_notice}
+      </section>
+    )}
+  </main>
+</BaseLayout>
