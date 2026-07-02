@@ -631,3 +631,70 @@ export function getEventsByPassageId(passageId: string): Event[] {
     )
     .all(passageId) as Event[];
 }
+
+export type BibleVerse = {
+  id: string;
+  version_id: string;
+  book_id: string;
+  chapter_id: string;
+  chapter_number: number;
+  verse_number: number;
+  verse_text: string | null;
+};
+
+export type BibleChapter = {
+  book_id: string;
+  book_name: string;
+  book_slug: string;
+  chapter_number: number;
+};
+
+export function getBibleChaptersByBookId(bookId: string): BibleChapter[] {
+  return db
+    .prepare(
+      `
+      SELECT
+        bible_chapters.book_id,
+        books.name AS book_name,
+        books.slug AS book_slug,
+        bible_chapters.chapter_number
+      FROM bible_chapters
+      JOIN books ON books.id = bible_chapters.book_id
+      WHERE bible_chapters.book_id = ?
+      ORDER BY bible_chapters.chapter_number ASC
+      `
+    )
+    .all(bookId) as BibleChapter[];
+}
+
+export function getBibleVersesByChapter(
+  bookId: string,
+  chapterNumber: number,
+  versionId = "rvr1960"
+): BibleVerse[] {
+  return db
+    .prepare(
+      `
+      SELECT *
+      FROM bible_verses
+      WHERE
+        version_id = ?
+        AND book_id = ?
+        AND chapter_number = ?
+      ORDER BY verse_number ASC
+      `
+    )
+    .all(versionId, bookId, chapterNumber) as BibleVerse[];
+}
+
+export function getBibleVersionById(versionId: string) {
+  return db
+    .prepare(
+      `
+      SELECT *
+      FROM bible_versions
+      WHERE id = ?
+      `
+    )
+    .get(versionId);
+}

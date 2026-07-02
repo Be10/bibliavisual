@@ -22,3 +22,7 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Archivos fuente de importacion biblica con texto licenciado
+data/import/rvr1960.csv
+data/import/*.private.csv

@@ -10,7 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "db:reset": "node scripts/reset-db.mjs"
+    "db:reset": "node scripts/reset-db.mjs",
+    "bible:import:rvr1960": "node scripts/import-bible-rvr1960.mjs"
   },
   "dependencies": {
     "astro": "^7.0.3",
