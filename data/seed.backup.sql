@@ -311,6 +311,24 @@ INSERT INTO lessons (id, route_id, lesson_number, title, slug, status) VALUES
 ('lec-jesus-mesias-prometido', 'rut-panorama-visual', 19, 'Jesús, el Mesías prometido', 'jesus-el-mesias-prometido', 'Borrador'),
 ('lec-cruz-resurreccion-iglesia-nueva-creacion', 'rut-panorama-visual', 20, 'Cruz, resurrección, iglesia y nueva creación', 'cruz-resurreccion-iglesia-y-nueva-creacion', 'Borrador');
 
+INSERT INTO lesson_bible_refs (lesson_id, reference, note, position) VALUES
+('lec-biblia-una-sola-historia', 'Lucas 24:27', 'Jesús explicó cómo las Escrituras apuntaban hacia Él.', 1),
+('lec-biblia-una-sola-historia', 'Lucas 24:44', 'Jesús habló de lo escrito acerca de Él en la Ley, los Profetas y los Salmos.', 2),
+('lec-biblia-una-sola-historia', 'Juan 5:39', 'Las Escrituras dan testimonio de Jesús.', 3),
+('lec-biblia-una-sola-historia', '2 Timoteo 3:16-17', 'La Escritura es útil para enseñar, corregir e instruir.', 4);
+
+INSERT INTO lesson_points (lesson_id, point_text, position) VALUES
+('lec-biblia-una-sola-historia', 'La Biblia tiene muchos libros, pero una historia central.', 1),
+('lec-biblia-una-sola-historia', 'Esa historia comienza con Dios como Creador.', 2),
+('lec-biblia-una-sola-historia', 'El pecado rompe la relación entre Dios y la humanidad.', 3),
+('lec-biblia-una-sola-historia', 'Dios promete redención y prepara el camino hacia Jesús.', 4),
+('lec-biblia-una-sola-historia', 'Jesús es el centro y cumplimiento de la historia bíblica.', 5);
+
+INSERT INTO lesson_questions (lesson_id, question_text, position) VALUES
+('lec-biblia-una-sola-historia', '¿Quién es el protagonista principal de la Biblia?', 1),
+('lec-biblia-una-sola-historia', '¿Por qué no debemos estudiar la Biblia como historias desconectadas?', 2),
+('lec-biblia-una-sola-historia', '¿Por qué Jesús es el centro de la historia bíblica?', 3);
+
 INSERT INTO topics (id, title, slug, definition, status) VALUES
 ('tem-redencion', 'Redención', 'redencion', 'Dios rescata y libera a su pueblo del pecado, la esclavitud y la muerte.', 'Publicado básico'),
 ('tem-mesias', 'Mesías', 'mesias', 'El Ungido prometido por Dios, cumplido en Jesús.', 'Publicado básico'),
@@ -429,6 +447,13 @@ INSERT INTO glossary_terms (id, term, slug, definition, status) VALUES
 INSERT INTO visual_resources (id, title, slug, resource_type, description, alt_text, url, status) VALUES
 ('vis-biblia-en-una-linea', 'La Biblia en una línea', 'la-biblia-en-una-linea', 'Infografía', 'Secuencia visual de la historia bíblica: creación, caída, promesa, Israel, Jesús, iglesia y nueva creación.', 'Infografía con las grandes etapas de la historia bíblica.', NULL, 'Idea');
 
+INSERT INTO lesson_topics (lesson_id, topic_id) VALUES
+('lec-biblia-una-sola-historia', 'tem-redencion'),
+('lec-biblia-una-sola-historia', 'tem-mesias'),
+('lec-biblia-una-sola-historia', 'tem-evangelio'),
+('lec-biblia-una-sola-historia', 'tem-creacion'),
+('lec-biblia-una-sola-historia', 'tem-nueva-creacion');
+
 INSERT INTO event_topics (event_id, topic_id) VALUES
 ('eve-historia-biblica-general', 'tem-redencion'),
 ('eve-historia-biblica-general', 'tem-mesias'),
@@ -463,6 +488,32 @@ INSERT INTO event_passages (event_id, passage_id, relation_type, position) VALUE
 ('eve-venida-de-jesus', 'pas-lucas-2-1-20', 'principal', 2),
 ('eve-venida-de-jesus', 'pas-juan-1-1-18', 'principal', 3);
 
+INSERT INTO lesson_events (lesson_id, event_id) VALUES
+('lec-biblia-una-sola-historia', 'eve-historia-biblica-general'),
+('lec-biblia-una-sola-historia', 'eve-creacion'),
+('lec-biblia-una-sola-historia', 'eve-caida'),
+('lec-biblia-una-sola-historia', 'eve-promesa-redencion'),
+('lec-biblia-una-sola-historia', 'eve-venida-de-jesus');
+
+INSERT INTO lesson_books (lesson_id, book_id) VALUES
+('lec-biblia-una-sola-historia', 'book-genesis'),
+('lec-biblia-una-sola-historia', 'book-lucas'),
+('lec-biblia-una-sola-historia', 'book-juan'),
+('lec-biblia-una-sola-historia', 'book-2-timoteo'),
+('lec-biblia-una-sola-historia', 'book-apocalipsis');
+
+INSERT INTO lesson_passages (lesson_id, passage_id, relation_type, position) VALUES
+('lec-biblia-una-sola-historia', 'pas-lucas-24-27', 'principal', 1),
+('lec-biblia-una-sola-historia', 'pas-lucas-24-44', 'principal', 2),
+('lec-biblia-una-sola-historia', 'pas-juan-5-39', 'principal', 3),
+('lec-biblia-una-sola-historia', 'pas-2-timoteo-3-16-17', 'principal', 4);
+
+INSERT INTO lesson_people (lesson_id, person_id) VALUES
+('lec-biblia-una-sola-historia', 'per-jesus'),
+('lec-biblia-una-sola-historia', 'per-moises'),
+('lec-biblia-una-sola-historia', 'per-profetas'),
+('lec-biblia-una-sola-historia', 'per-apostoles');
+
 INSERT INTO event_people (event_id, person_id) VALUES
 ('eve-historia-biblica-general', 'per-jesus'),
 ('eve-historia-biblica-general', 'per-moises'),
@@ -470,6 +521,19 @@ INSERT INTO event_people (event_id, person_id) VALUES
 ('eve-historia-biblica-general', 'per-apostoles'),
 ('eve-venida-de-jesus', 'per-jesus');
 
+INSERT INTO lesson_places (lesson_id, place_id) VALUES
+('lec-biblia-una-sola-historia', 'lug-jerusalen'),
+('lec-biblia-una-sola-historia', 'lug-camino-emaus');
+
 INSERT INTO event_places (event_id, place_id) VALUES
 ('eve-historia-biblica-general', 'lug-jerusalen'),
 ('eve-venida-de-jesus', 'lug-jerusalen');
+
+INSERT INTO lesson_glossary (lesson_id, glossary_id) VALUES
+('lec-biblia-una-sola-historia', 'glo-biblia'),
+('lec-biblia-una-sola-historia', 'glo-redencion'),
+('lec-biblia-una-sola-historia', 'glo-mesias'),
+('lec-biblia-una-sola-historia', 'glo-evangelio');
+
+INSERT INTO lesson_visual_resources (lesson_id, visual_resource_id) VALUES
+('lec-biblia-una-sola-historia', 'vis-biblia-en-una-linea');
