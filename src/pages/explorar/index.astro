@@ -1,0 +1,204 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import {
+  getAllBooks,
+  getAllEvents,
+  getAllGlossaryTerms,
+  getAllLessons,
+  getAllPassages,
+  getAllPeople,
+  getAllPlaces,
+  getAllRoutes,
+  getAllTopics,
+} from "../../lib/queries";
+
+const routesCount = getAllRoutes().filter((item) => item.status !== "Borrador").length;
+const lessonsCount = getAllLessons().filter((item) => item.status !== "Borrador").length;
+const booksCount = getAllBooks().filter((item) => item.status !== "Borrador").length;
+const passagesCount = getAllPassages().filter((item) => item.status !== "Borrador").length;
+const eventsCount = getAllEvents().filter((item) => item.status !== "Borrador").length;
+const topicsCount = getAllTopics().filter((item) => item.status !== "Borrador").length;
+const peopleCount = getAllPeople().filter((item) => item.status !== "Borrador").length;
+const placesCount = getAllPlaces().filter((item) => item.status !== "Borrador").length;
+const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Borrador").length;
+---
+
+<BaseLayout
+  title="Explorar"
+  description="Explora la Enciclopedia Bíblica Visual por rutas, Biblia, libros, pasajes, mapas, eventos, temas, personajes, lugares y glosario."
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> → Explorar
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">Centro de navegación</p>
+
+      <h1>Explorar la enciclopedia</h1>
+
+      <p class="subtitle">
+        Navega por rutas guiadas, libros bíblicos, pasajes, mapas, línea de tiempo
+        y entidades conectadas. Esta página organiza todo el contenido principal.
+      </p>
+
+      <div class="actions">
+        <a href="/buscar/" class="button">
+          Buscar contenido
+        </a>
+
+        <a href="/rutas/panorama-visual-de-la-biblia/" class="button secondary">
+          Empezar ruta principal
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="explore-heading">
+        <div>
+          <h2>Aprendizaje guiado</h2>
+          <p>Para estudiar con orden, paso a paso.</p>
+        </div>
+      </div>
+
+      <div class="explore-grid">
+        <a href="/rutas/panorama-visual-de-la-biblia/" class="explore-card">
+          <span class="explore-count">{routesCount} ruta</span>
+          <h3>Ruta principal</h3>
+          <p>
+            Sigue el panorama visual de la Biblia desde creación hasta nueva creación.
+          </p>
+        </a>
+
+        <a href="/lecciones/la-biblia-como-una-sola-historia/" class="explore-card">
+          <span class="explore-count">{lessonsCount} lecciones</span>
+          <h3>Lecciones</h3>
+          <p>
+            Estudia unidades cortas, conectadas con pasajes, temas, eventos y recursos.
+          </p>
+        </a>
+
+        <a href="/buscar/" class="explore-card">
+          <span class="explore-count">Buscador</span>
+          <h3>Buscar contenido</h3>
+          <p>
+            Encuentra rápidamente libros, temas, personajes, lugares, eventos y pasajes.
+          </p>
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="explore-heading">
+        <div>
+          <h2>Referencia bíblica</h2>
+          <p>Para navegar por la Biblia, sus libros y pasajes.</p>
+        </div>
+      </div>
+
+      <div class="explore-grid">
+        <a href="/biblia/" class="explore-card">
+          <span class="explore-count">RVR1960</span>
+          <h3>Biblia</h3>
+          <p>
+            Navega por libros y capítulos. El texto aparecerá al importar la RVR1960 autorizada.
+          </p>
+        </a>
+
+        <a href="/libros/" class="explore-card">
+          <span class="explore-count">{booksCount} libros</span>
+          <h3>Libros bíblicos</h3>
+          <p>
+            Explora los 66 libros con resumen, género, categoría y conexiones.
+          </p>
+        </a>
+
+        <a href="/pasajes/" class="explore-card">
+          <span class="explore-count">{passagesCount} pasajes</span>
+          <h3>Pasajes bíblicos</h3>
+          <p>
+            Consulta pasajes conectados con lecciones, eventos y libros bíblicos.
+          </p>
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="explore-heading">
+        <div>
+          <h2>Visualización</h2>
+          <p>Para ver la historia bíblica de forma espacial y cronológica.</p>
+        </div>
+      </div>
+
+      <div class="explore-grid">
+        <a href="/linea-de-tiempo/" class="explore-card">
+          <span class="explore-count">Cronología</span>
+          <h3>Línea de tiempo</h3>
+          <p>
+            Visualiza eventos ordenados dentro del panorama de la historia bíblica.
+          </p>
+        </a>
+
+        <a href="/mapa/" class="explore-card">
+          <span class="explore-count">Mapa</span>
+          <h3>Mapa bíblico</h3>
+          <p>
+            Explora lugares bíblicos con pines, eventos relacionados y enlaces.
+          </p>
+        </a>
+
+        <a href="/eventos/" class="explore-card">
+          <span class="explore-count">{eventsCount} eventos</span>
+          <h3>Eventos bíblicos</h3>
+          <p>
+            Conecta sucesos bíblicos con libros, pasajes, lugares, personas y temas.
+          </p>
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="explore-heading">
+        <div>
+          <h2>Entidades bíblicas</h2>
+          <p>Para explorar la enciclopedia como una red conectada.</p>
+        </div>
+      </div>
+
+      <div class="explore-grid">
+        <a href="/temas/" class="explore-card">
+          <span class="explore-count">{topicsCount} temas</span>
+          <h3>Temas</h3>
+          <p>
+            Conceptos bíblicos como redención, Mesías, evangelio y nueva creación.
+          </p>
+        </a>
+
+        <a href="/personajes/" class="explore-card">
+          <span class="explore-count">{peopleCount} personajes</span>
+          <h3>Personajes</h3>
+          <p>
+            Personas relevantes dentro de la historia bíblica y sus conexiones.
+          </p>
+        </a>
+
+        <a href="/lugares/" class="explore-card">
+          <span class="explore-count">{placesCount} lugares</span>
+          <h3>Lugares</h3>
+          <p>
+            Ciudades, rutas y regiones vinculadas con eventos y mapas.
+          </p>
+        </a>
+
+        <a href="/glosario/" class="explore-card">
+          <span class="explore-count">{glossaryCount} términos</span>
+          <h3>Glosario</h3>
+          <p>
+            Palabras importantes explicadas con lenguaje claro y accesible.
+          </p>
+        </a>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
