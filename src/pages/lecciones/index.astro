@@ -1,0 +1,85 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getAllLessons } from "../../lib/queries";
+
+const allLessons = getAllLessons();
+
+const publishedLessons = allLessons.filter(
+  (lesson) => lesson.status !== "Borrador"
+);
+
+const draftLessonsCount = allLessons.filter(
+  (lesson) => lesson.status === "Borrador"
+).length;
+---
+
+<BaseLayout
+  title="Lecciones"
+  description="Explora las lecciones publicadas de la Enciclopedia Bíblica Visual."
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> → Lecciones
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">Aprendizaje guiado</p>
+
+      <h1>Lecciones</h1>
+
+      <p class="subtitle">
+        Estudia unidades breves y conectadas con pasajes, libros, eventos, temas,
+        personajes, lugares y recursos visuales.
+      </p>
+
+      <div class="actions">
+        <a href="/rutas/panorama-visual-de-la-biblia/" class="button">
+          Ver ruta principal
+        </a>
+
+        <a href="/explorar/" class="button secondary">
+          Explorar enciclopedia
+        </a>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Lecciones publicadas</h2>
+
+      {publishedLessons.length > 0 ? (
+        <div class="entity-list">
+          {publishedLessons.map((lesson) => (
+            <a href={`/lecciones/${lesson.slug}/`} class="entity-card">
+              <span class="meta">Lección {lesson.lesson_number}</span>
+
+              <h2>{lesson.title}</h2>
+
+              <p>
+                {lesson.main_idea ?? lesson.summary ?? "Resumen pendiente."}
+              </p>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="content">
+          <p>
+            Todavía no hay lecciones publicadas.
+          </p>
+        </div>
+      )}
+    </section>
+
+    {draftLessonsCount > 0 && (
+      <section class="section">
+        <h2>En preparación</h2>
+
+        <div class="notice-box">
+          <p>
+            Hay {draftLessonsCount} lecciones en borrador. Estas aparecerán aquí
+            cuando cambien a estado publicado.
+          </p>
+        </div>
+      </section>
+    )}
+  </main>
+</BaseLayout>
