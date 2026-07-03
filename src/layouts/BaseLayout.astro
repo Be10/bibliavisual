@@ -745,6 +745,51 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     white-space: nowrap;
   }
 
+  .lesson-nav {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .lesson-nav-card {
+    display: block;
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+    border: 1px solid #eadcc4;
+    text-decoration: none;
+  }
+
+  .lesson-nav-card:hover {
+    border-color: #c8a982;
+    background: #fffaf0;
+  }
+
+  .lesson-nav-card span {
+    display: block;
+    margin-bottom: 8px;
+    color: #8a5a2b;
+    font-size: 0.82rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .lesson-nav-card strong {
+    display: block;
+    color: #2d2418;
+    font-size: 1.15rem;
+    line-height: 1.4;
+  }
+
+  .lesson-nav-card.next {
+    text-align: right;
+  }
+
+  .lesson-nav-placeholder {
+    min-height: 1px;
+  }
+
   @media (max-width: 760px) {
     .site-header {
       align-items: flex-start;
@@ -785,6 +830,18 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
 
     .explore-grid {
       grid-template-columns: 1fr;
+    }
+
+    .lesson-nav {
+      grid-template-columns: 1fr;
+    }
+
+    .lesson-nav-card.next {
+      text-align: left;
+    }
+
+    .lesson-nav-placeholder {
+      display: none;
     }
   }
 </style>

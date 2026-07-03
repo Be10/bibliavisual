@@ -24,6 +24,8 @@ import {
 
 type Props = {
   lesson: Lesson;
+  previousLesson: Lesson | null;
+  nextLesson: Lesson | null;
   bibleRefs: LessonBibleRef[];
   points: LessonPoint[];
   questions: LessonQuestion[];
@@ -37,30 +39,34 @@ type Props = {
 };
 
 export function getStaticPaths() {
-  const lessons = getAllLessons();
-
-  return lessons
+  const publishedLessons = getAllLessons()
     .filter((lesson) => lesson.status !== "Borrador")
-    .map((lesson) => ({
-      params: { slug: lesson.slug },
-      props: {
-        lesson,
-        bibleRefs: getBibleRefsByLessonId(lesson.id),
-        points: getPointsByLessonId(lesson.id),
-        questions: getQuestionsByLessonId(lesson.id),
-        topics: getTopicsByLessonId(lesson.id),
-        people: getPeopleByLessonId(lesson.id),
-        places: getPlacesByLessonId(lesson.id),
-        glossary: getGlossaryByLessonId(lesson.id),
-        events: getEventsByLessonId(lesson.id),
-        books: getBooksByLessonId(lesson.id),
-        passages: getPassagesByLessonId(lesson.id),
-      },
-    }));
+    .sort((a, b) => a.lesson_number - b.lesson_number);
+
+  return publishedLessons.map((lesson, index) => ({
+    params: { slug: lesson.slug },
+    props: {
+      lesson,
+      previousLesson: publishedLessons[index - 1] ?? null,
+      nextLesson: publishedLessons[index + 1] ?? null,
+      bibleRefs: getBibleRefsByLessonId(lesson.id),
+      points: getPointsByLessonId(lesson.id),
+      questions: getQuestionsByLessonId(lesson.id),
+      topics: getTopicsByLessonId(lesson.id),
+      people: getPeopleByLessonId(lesson.id),
+      places: getPlacesByLessonId(lesson.id),
+      glossary: getGlossaryByLessonId(lesson.id),
+      events: getEventsByLessonId(lesson.id),
+      books: getBooksByLessonId(lesson.id),
+      passages: getPassagesByLessonId(lesson.id),
+    },
+  }));
 }
 
 const {
   lesson,
+  previousLesson,
+  nextLesson,
   bibleRefs,
   points,
   questions,
@@ -174,30 +180,30 @@ const {
     <section class="section">
       <h2>La Biblia en una línea</h2>
 
-      {events.length > 0 && (
-        <section class="section">
-          <h2>Eventos relacionados</h2>
-
-          <ul class="pill-list">
-            {events.map((event) => (
-              <li>
-                <a href={`/eventos/${event.slug}/`}>{event.title}</a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       <ul class="pill-list">
-        <li><span>Creación</span></li>
-        <li><span>Caída</span></li>
-        <li><span>Promesa</span></li>
-        <li><span>Israel</span></li>
-        <li><span>Jesús</span></li>
-        <li><span>Iglesia</span></li>
-        <li><span>Nueva creación</span></li>
+        <li>Creación</li>
+        <li>Caída</li>
+        <li>Promesa</li>
+        <li>Israel</li>
+        <li>Jesús</li>
+        <li>Iglesia</li>
+        <li>Nueva creación</li>
       </ul>
     </section>
+
+  {events.length > 0 && (
+    <section class="section">
+      <h2>Eventos relacionados</h2>
+
+      <ul class="pill-list">
+        {events.map((event) => (
+          <li>
+            <a href={`/eventos/${event.slug}/`}>{event.title}</a>
+          </li>
+        ))}
+      </ul>
+    </section>
+)}
 
     <section class="grid">
       {people.length > 0 && (
@@ -281,5 +287,35 @@ const {
         Volver a la ruta
       </a>
     </section>
+
+    {(previousLesson || nextLesson) && (
+      <section class="section">
+        <h2>Continuar ruta</h2>
+
+        <nav class="lesson-nav" aria-label="Navegación entre lecciones">
+          {previousLesson ? (
+            <a href={`/lecciones/${previousLesson.slug}/`} class="lesson-nav-card">
+              <span>← Lección anterior</span>
+              <strong>
+                Lección {previousLesson.lesson_number}: {previousLesson.title}
+              </strong>
+            </a>
+          ) : (
+            <div class="lesson-nav-placeholder"></div>
+          )}
+
+          {nextLesson ? (
+            <a href={`/lecciones/${nextLesson.slug}/`} class="lesson-nav-card next">
+              <span>Lección siguiente →</span>
+              <strong>
+                Lección {nextLesson.lesson_number}: {nextLesson.title}
+              </strong>
+            </a>
+          ) : (
+            <div class="lesson-nav-placeholder"></div>
+          )}
+        </nav>
+      </section>
+    )}
   </main>
 </BaseLayout>

@@ -289,25 +289,8 @@ INSERT INTO passages (
   'Publicado básico'
 );
 
-INSERT INTO lessons (
-  id, route_id, lesson_number, title, slug, eyebrow, main_idea, summary, explanation, remember, application, estimated_time, status
-) VALUES (
-  'lec-biblia-una-sola-historia',
-  'rut-panorama-visual',
-  1,
-  'La Biblia como una sola historia',
-  'la-biblia-como-una-sola-historia',
-  'Lección 1 de 20 · 7–10 minutos',
-  'La Biblia cuenta una sola historia unida por el plan de Dios: creación, caída, promesa, redención y nueva creación.',
-  'La Biblia no es una colección de historias desconectadas. Es una gran historia acerca de Dios, la humanidad, el pecado, la redención y el cumplimiento en Jesús.',
-  'La Biblia está formada por muchos libros escritos en distintos momentos, por diferentes autores humanos y en diversos contextos. Sin embargo, no debe estudiarse como si fuera una colección de historias aisladas. Desde Génesis hasta Apocalipsis hay un hilo principal: Dios está revelando su carácter, su voluntad y su plan para redimir a la humanidad. En el Nuevo Testamento, esa esperanza se cumple en Jesús. Él es el Mesías prometido, el Salvador, el Rey y el centro de toda la historia bíblica.',
-  'Toda la Biblia apunta al plan de Dios cumplido en Jesús.',
-  'Cuando entendemos que la Biblia tiene una sola historia, cada parte empieza a tener más sentido.',
-  '7–10 minutos',
-  'Publicado básico'
-);
-
 INSERT INTO lessons (id, route_id, lesson_number, title, slug, status) VALUES
+('lec-biblia-una-sola-historia', 'rut-panorama-visual', 1, 'La Biblia como una sola historia', 'la-biblia-como-una-sola-historia', 'Borrador'),
 ('lec-dios-crea-todas-las-cosas', 'rut-panorama-visual', 2, 'Dios crea todas las cosas', 'dios-crea-todas-las-cosas', 'Borrador'),
 ('lec-caida-y-pecado', 'rut-panorama-visual', 3, 'La caída y el pecado', 'la-caida-y-el-pecado', 'Borrador'),
 ('lec-primera-promesa-redencion', 'rut-panorama-visual', 4, 'La primera promesa de redención', 'la-primera-promesa-de-redencion', 'Borrador'),
