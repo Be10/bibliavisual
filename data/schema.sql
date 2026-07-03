@@ -121,27 +121,30 @@ CREATE TABLE lessons (
 );
 
 CREATE TABLE lesson_bible_refs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id TEXT PRIMARY KEY,
   lesson_id TEXT NOT NULL,
   reference TEXT NOT NULL,
   note TEXT,
   position INTEGER NOT NULL DEFAULT 1,
+  sort_order INTEGER NOT NULL DEFAULT 1,
   FOREIGN KEY (lesson_id) REFERENCES lessons(id)
 );
 
 CREATE TABLE lesson_points (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id TEXT PRIMARY KEY,
   lesson_id TEXT NOT NULL,
   point_text TEXT NOT NULL,
   position INTEGER NOT NULL DEFAULT 1,
+  sort_order INTEGER NOT NULL DEFAULT 1,
   FOREIGN KEY (lesson_id) REFERENCES lessons(id)
 );
 
 CREATE TABLE lesson_questions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id TEXT PRIMARY KEY,
   lesson_id TEXT NOT NULL,
   question_text TEXT NOT NULL,
   position INTEGER NOT NULL DEFAULT 1,
+  sort_order INTEGER NOT NULL DEFAULT 1,
   FOREIGN KEY (lesson_id) REFERENCES lessons(id)
 );
 

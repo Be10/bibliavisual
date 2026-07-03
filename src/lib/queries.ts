@@ -19,6 +19,7 @@ export type Lesson = {
   slug: string;
   eyebrow: string | null;
   main_idea: string | null;
+  objective: string | null;
   summary: string | null;
   explanation: string | null;
   remember: string | null;
@@ -28,17 +29,23 @@ export type Lesson = {
 };
 
 export type LessonBibleRef = {
+  id: string;
+  lesson_id: string;
   reference: string;
   note: string | null;
   position: number;
 };
 
 export type LessonPoint = {
+  id: string;
+  lesson_id: string;
   point_text: string;
   position: number;
 };
 
 export type LessonQuestion = {
+  id: string;
+  lesson_id: string;
   question_text: string;
   position: number;
 };
@@ -79,7 +86,7 @@ export function getBibleRefsByLessonId(lessonId: string): LessonBibleRef[] {
   return db
     .prepare(
       `
-      SELECT reference, note, position
+      SELECT *
       FROM lesson_bible_refs
       WHERE lesson_id = ?
       ORDER BY position ASC
@@ -92,7 +99,7 @@ export function getPointsByLessonId(lessonId: string): LessonPoint[] {
   return db
     .prepare(
       `
-      SELECT point_text, position
+      SELECT *
       FROM lesson_points
       WHERE lesson_id = ?
       ORDER BY position ASC
@@ -105,7 +112,7 @@ export function getQuestionsByLessonId(lessonId: string): LessonQuestion[] {
   return db
     .prepare(
       `
-      SELECT question_text, position
+      SELECT *
       FROM lesson_questions
       WHERE lesson_id = ?
       ORDER BY position ASC

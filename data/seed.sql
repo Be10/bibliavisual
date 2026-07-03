@@ -114,6 +114,20 @@ INSERT INTO bible_versions (
   'Publicado básico'
 );
 
+INSERT INTO bible_chapters (id, book_id, chapter_number) VALUES
+('chap-genesis-1', 'book-genesis', 1),
+('chap-genesis-2', 'book-genesis', 2),
+('chap-genesis-3', 'book-genesis', 3),
+('chap-mateo-1', 'book-mateo', 1),
+('chap-lucas-2', 'book-lucas', 2),
+('chap-lucas-24', 'book-lucas', 24),
+('chap-juan-1', 'book-juan', 1),
+('chap-juan-5', 'book-juan', 5),
+('chap-2-timoteo-3', 'book-2-timoteo', 3),
+('chap-salmos-19', 'book-salmos', 19),
+('chap-apocalipsis-21', 'book-apocalipsis', 21),
+('chap-apocalipsis-22', 'book-apocalipsis', 22);
+
 INSERT INTO passages (
   id, display_reference, slug, book_id, start_chapter, start_verse,
   end_chapter, end_verse, summary, status
@@ -248,6 +262,30 @@ INSERT INTO passages (
   22,
   NULL,
   'Esperanza final de la nueva creación.',
+  'Publicado básico'
+),
+(
+  'pas-salmo-19-1',
+  'Salmo 19:1',
+  'salmo-19-1',
+  'book-salmos',
+  19,
+  1,
+  19,
+  1,
+  'Los cielos cuentan la gloria de Dios.',
+  'Publicado básico'
+),
+(
+  'pas-juan-1-3',
+  'Juan 1:3',
+  'juan-1-3',
+  'book-juan',
+  1,
+  3,
+  1,
+  3,
+  'Todas las cosas fueron hechas por medio de Cristo.',
   'Publicado básico'
 );
 

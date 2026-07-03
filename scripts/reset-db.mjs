@@ -12,13 +12,30 @@ if (fs.existsSync(dbPath)) {
   fs.unlinkSync(dbPath);
 }
 
-const db = new Database(dbPath);
-
 const schema = fs.readFileSync(schemaPath, "utf8");
 const seed = fs.readFileSync(seedPath, "utf8");
 
+const contentDir = path.join(process.cwd(), "data", "content");
+
+const db = new Database(dbPath);
+
 db.exec(schema);
 db.exec(seed);
+
+if (fs.existsSync(contentDir)) {
+  const contentFiles = fs
+    .readdirSync(contentDir)
+    .filter((file) => file.endsWith(".sql"))
+    .sort();
+
+  for (const file of contentFiles) {
+    const filePath = path.join(contentDir, file);
+    const sql = fs.readFileSync(filePath, "utf8");
+
+    console.log(`Ejecutando contenido: ${file}`);
+    db.exec(sql);
+  }
+}
 
 const routeCount = db.prepare("SELECT COUNT(*) AS count FROM routes").get();
 const lessonCount = db.prepare("SELECT COUNT(*) AS count FROM lessons").get();
