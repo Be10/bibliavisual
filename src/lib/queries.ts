@@ -711,3 +711,63 @@ export function getBibleVersionById(versionId: string): BibleVersion | undefined
     )
     .get(versionId) as BibleVersion | undefined;
 }
+
+export function getBibleVersesByPassageId(
+  passageId: string,
+  versionId = "rvr1960"
+): BibleVerse[] {
+  return db
+    .prepare(
+      `
+      SELECT bible_verses.*
+      FROM passages
+      JOIN bible_verses
+        ON bible_verses.book_id = passages.book_id
+      WHERE
+        passages.id = ?
+        AND bible_verses.version_id = ?
+        AND (
+          (
+            passages.start_chapter = passages.end_chapter
+            AND bible_verses.chapter_number = passages.start_chapter
+            AND (
+              passages.start_verse IS NULL
+              OR bible_verses.verse_number >= passages.start_verse
+            )
+            AND (
+              passages.end_verse IS NULL
+              OR bible_verses.verse_number <= passages.end_verse
+            )
+          )
+          OR
+          (
+            passages.start_chapter <> passages.end_chapter
+            AND (
+              (
+                bible_verses.chapter_number > passages.start_chapter
+                AND bible_verses.chapter_number < passages.end_chapter
+              )
+              OR
+              (
+                bible_verses.chapter_number = passages.start_chapter
+                AND (
+                  passages.start_verse IS NULL
+                  OR bible_verses.verse_number >= passages.start_verse
+                )
+              )
+              OR
+              (
+                bible_verses.chapter_number = passages.end_chapter
+                AND (
+                  passages.end_verse IS NULL
+                  OR bible_verses.verse_number <= passages.end_verse
+                )
+              )
+            )
+          )
+        )
+      ORDER BY bible_verses.chapter_number ASC, bible_verses.verse_number ASC
+      `
+    )
+    .all(passageId, versionId) as BibleVerse[];
+}

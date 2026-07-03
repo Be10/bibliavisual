@@ -58,6 +58,15 @@ function slugToIdPart(slug) {
     .toLowerCase();
 }
 
+function normalizeVerseText(text) {
+  return text
+    .replace(/\/n/g, "\n")
+    .replace(/\\n/g, "\n")
+    .replace(/\s+\n/g, "\n")
+    .replace(/\n\s+/g, "\n")
+    .trim();
+}
+
 const rawCsv = fs.readFileSync(csvPath, "utf8").replace(/^\uFEFF/, "");
 const lines = rawCsv
   .split(/\r?\n/)
@@ -202,7 +211,7 @@ for (let i = 1; i < lines.length; i += 1) {
     book_slug: bookSlug.trim(),
     chapter,
     verse,
-    text: text.trim(),
+    text: normalizeVerseText(text),
   });
 }
 

@@ -446,6 +446,7 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     line-height: 1.8;
     color: #2d2418;
     font-size: 1.08rem;
+    white-space: pre-line;
   }
 
   .chapter-nav {
@@ -465,6 +466,32 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     color: #6a5c4d;
     font-size: 0.92rem;
     line-height: 1.6;
+  }
+
+    .passage-reader {
+    display: grid;
+    gap: 28px;
+    margin-top: 24px;
+  }
+
+  .passage-chapter {
+    display: grid;
+    gap: 10px;
+  }
+
+  .passage-chapter h3 {
+    margin: 0 0 6px;
+    color: #5d3212;
+    font-size: 1.2rem;
+  }
+
+  .verse-ref-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .verse-ref-link:hover {
+    text-decoration: underline;
   }
 
   @media (max-width: 760px) {

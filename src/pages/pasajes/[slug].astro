@@ -2,8 +2,11 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllPassages,
+  getBibleVersionById,
+  getBibleVersesByPassageId,
   getEventsByPassageId,
   getLessonsByPassageId,
+  type BibleVerse,
   type Event,
   type Lesson,
   type Passage,
@@ -13,6 +16,7 @@ type Props = {
   passage: Passage;
   lessons: Lesson[];
   events: Event[];
+  verses: BibleVerse[];
 };
 
 export function getStaticPaths() {
@@ -26,11 +30,31 @@ export function getStaticPaths() {
         passage,
         lessons: getLessonsByPassageId(passage.id),
         events: getEventsByPassageId(passage.id),
+        verses: getBibleVersesByPassageId(passage.id),
       },
     }));
 }
 
-const { passage, lessons, events } = Astro.props;
+const { passage, lessons, events, verses } = Astro.props;
+
+const version = getBibleVersionById("rvr1960");
+
+const versesByChapter = verses.reduce<Record<number, BibleVerse[]>>(
+  (groups, verse) => {
+    if (!groups[verse.chapter_number]) {
+      groups[verse.chapter_number] = [];
+    }
+
+    groups[verse.chapter_number].push(verse);
+
+    return groups;
+  },
+  {}
+);
+
+const chapterNumbers = Object.keys(versesByChapter)
+  .map(Number)
+  .sort((a, b) => a - b);
 ---
 
 <BaseLayout
@@ -45,7 +69,9 @@ const { passage, lessons, events } = Astro.props;
     </div>
 
     <section class="hero">
-      <p class="eyebrow">Pasaje bíblico · {passage.book_name}</p>
+      <p class="eyebrow">
+        Pasaje bíblico · {passage.book_name} · {version?.abbreviation ?? "RVR1960"}
+      </p>
 
       <h1>{passage.display_reference}</h1>
 
@@ -57,7 +83,11 @@ const { passage, lessons, events } = Astro.props;
 
       <div class="actions">
         <a href={`/libros/${passage.book_slug}/`} class="button secondary">
-          Ver libro bíblico
+          Ver ficha del libro
+        </a>
+
+        <a href={`/biblia/${passage.book_slug}/${passage.start_chapter}/`} class="button secondary">
+          Leer capítulo
         </a>
       </div>
     </section>
@@ -86,20 +116,50 @@ const { passage, lessons, events } = Astro.props;
     </section>
 
     <section class="section">
+      <h2>Texto bíblico</h2>
+
+      {verses.length > 0 ? (
+        <div class="passage-reader">
+          {chapterNumbers.map((chapterNumber) => (
+            <section class="passage-chapter">
+              {chapterNumbers.length > 1 && (
+                <h3>{passage.book_name} {chapterNumber}</h3>
+              )}
+
+              <div class="bible-reader">
+                {versesByChapter[chapterNumber].map((verse) => (
+                  <article class="verse" id={`v${verse.verse_number}`}>
+                    <span class="verse-number">
+                      <a
+                        href={`/biblia/${passage.book_slug}/${verse.chapter_number}/#v${verse.verse_number}`}
+                        class="verse-ref-link"
+                      >
+                        {verse.verse_number}
+                      </a>
+                    </span>
+
+                    <p class="verse-text">{verse.verse_text}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      ) : (
+        <div class="content">
+          <p>
+            Todavía no hay texto bíblico importado para este pasaje. Cuando ejecutes
+            el importador con el CSV autorizado de RVR1960, el texto aparecerá aquí.
+          </p>
+        </div>
+      )}
+    </section>
+
+    <section class="section">
       <h2>Resumen del pasaje</h2>
 
       <div class="content">
         <p>{passage.summary ?? "Resumen pendiente."}</p>
-      </div>
-    </section>
-
-    <section class="section">
-      <h2>Texto bíblico</h2>
-
-      <div class="content">
-        <p>
-          Texto RVR1960 pendiente de importación conforme al permiso/licencia correspondiente.
-        </p>
       </div>
     </section>
 
@@ -130,6 +190,12 @@ const { passage, lessons, events } = Astro.props;
             </a>
           ))}
         </div>
+      </section>
+    )}
+
+    {version?.copyright_notice && (
+      <section class="copyright-box">
+        {version.copyright_notice}
       </section>
     )}
 
