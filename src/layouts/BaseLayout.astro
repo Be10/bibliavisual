@@ -39,10 +39,26 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
         <a href="/lugares/">Lugares</a>
         <a href="/eventos/">Eventos</a>
         <a href="/glosario/">Glosario</a>
+        <a href="/acerca/">Acerca</a>
       </nav>
     </header>
 
     <slot />
+
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <p>
+          Enciclopedia Bíblica Visual · Recurso educativo en desarrollo.
+        </p>
+
+        <nav class="footer-links">
+          <a href="/acerca/">Acerca</a>
+          <a href="/legal/">Avisos legales</a>
+          <a href="/explorar/">Explorar</a>
+          <a href="/buscar/">Buscar</a>
+        </nav>
+      </div>
+    </footer>
   </body>
 </html>
 
@@ -653,6 +669,69 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.06em;
+  }
+
+  .info-list {
+    display: grid;
+    gap: 14px;
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .info-list li {
+    padding: 18px;
+    border-radius: 18px;
+    background: #fff7e8;
+    border: 1px solid #eadcc4;
+    line-height: 1.6;
+    color: #6a5c4d;
+  }
+
+  .notice-box {
+    padding: 22px;
+    border-radius: 22px;
+    background: #fff7e8;
+    border: 1px solid #eadcc4;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .notice-box strong {
+    color: #2d2418;
+  }
+
+  .site-footer {
+    max-width: 1120px;
+    margin: 48px auto 0;
+    padding: 28px 20px 40px;
+    color: #6a5c4d;
+    font-size: 0.95rem;
+  }
+
+  .site-footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 18px;
+    border-top: 1px solid #eadcc4;
+    padding-top: 24px;
+  }
+
+  .site-footer a {
+    color: #5d3212;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .site-footer a:hover {
+    text-decoration: underline;
+  }
+
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
   }
 
   @media (max-width: 760px) {

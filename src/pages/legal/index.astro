@@ -1,0 +1,140 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getBibleVersionById } from "../../lib/queries";
+
+const version = getBibleVersionById("rvr1960");
+---
+
+<BaseLayout
+  title="Avisos legales"
+  description="Avisos legales, uso de contenido bíblico y condiciones generales del proyecto."
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> → Avisos legales
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">Avisos legales</p>
+
+      <h1>Avisos legales y uso de contenido</h1>
+
+      <p class="subtitle">
+        Esta página registra información importante sobre el uso del contenido,
+        el texto bíblico, recursos visuales y el estado editorial del proyecto.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Texto bíblico RVR1960</h2>
+
+      <div class="notice-box">
+        <p>
+          Este proyecto está preparado para usar la versión bíblica
+          <strong> {version?.name ?? "Reina-Valera 1960"} </strong>
+          como texto principal.
+        </p>
+
+        {version?.copyright_notice ? (
+          <p>{version.copyright_notice}</p>
+        ) : (
+          <p>
+            El aviso de copyright de la versión bíblica debe registrarse en la base
+            de datos antes de publicar el texto completo.
+          </p>
+        )}
+
+        <p>
+          El texto bíblico completo debe publicarse únicamente conforme al permiso,
+          licencia o autorización correspondiente. Si el alcance del permiso cambia,
+          esta página debe actualizarse para reflejar las condiciones vigentes.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Alcance del permiso</h2>
+
+      <ul class="info-list">
+        <li>
+          <strong>Uso web:</strong> confirmar que el permiso cubre publicación en sitio web.
+        </li>
+
+        <li>
+          <strong>Texto completo:</strong> confirmar que el permiso permite mostrar
+          la Biblia completa, no solo citas breves.
+        </li>
+
+        <li>
+          <strong>Repositorio:</strong> confirmar si el texto puede almacenarse en
+          archivos, base de datos SQLite o repositorio remoto.
+        </li>
+
+        <li>
+          <strong>Distribución pública:</strong> confirmar si el archivo generado,
+          la base de datos o el sitio estático pueden estar disponibles públicamente.
+        </li>
+
+        <li>
+          <strong>Atribución:</strong> conservar el aviso de copyright y cualquier
+          leyenda requerida por el titular de derechos.
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Contenido editorial</h2>
+
+      <div class="content">
+        <p>
+          Los resúmenes, lecciones, definiciones, fichas de personajes, eventos,
+          temas, lugares y materiales visuales son contenido editorial del proyecto,
+          salvo que se indique expresamente otra fuente.
+        </p>
+
+        <p>
+          El contenido busca ser educativo y accesible. No sustituye la lectura
+          directa de la Biblia, la enseñanza pastoral ni el estudio responsable
+          de las Escrituras.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Mapas y datos geográficos</h2>
+
+      <div class="content">
+        <p>
+          Los mapas pueden usar proveedores externos de teselas cartográficas.
+          Las ubicaciones bíblicas pueden tener diferentes grados de certeza:
+          alta, aproximada, debatida o simbólica. Cuando exista incertidumbre,
+          se procurará indicarla en la ficha del lugar correspondiente.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Recursos visuales</h2>
+
+      <div class="content">
+        <p>
+          Las imágenes, mapas, diagramas, ilustraciones e infografías deberán tener
+          una fuente clara, licencia válida o autoría propia antes de publicarse.
+          No deben subirse recursos visuales sin permiso suficiente para su uso web.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Estado del proyecto</h2>
+
+      <div class="notice-box">
+        <p>
+          <strong>Documento editable.</strong> Esta página debe revisarse antes de
+          publicar el sitio oficialmente, especialmente si se importa texto bíblico
+          completo, imágenes licenciadas o recursos de terceros.
+        </p>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
