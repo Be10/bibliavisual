@@ -1,0 +1,250 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import {
+  getAllBooks,
+  getAllEvents,
+  getAllGlossaryTerms,
+  getAllLessons,
+  getAllPassages,
+  getAllPeople,
+  getAllPlaces,
+  getAllRoutes,
+  getAllTopics,
+} from "../../lib/queries";
+
+type SearchItem = {
+  title: string;
+  type: string;
+  url: string;
+  summary: string;
+};
+
+const books: SearchItem[] = getAllBooks()
+  .filter((book) => book.status !== "Borrador")
+  .map((book) => ({
+    title: book.name,
+    type: "Libro",
+    url: `/libros/${book.slug}/`,
+    summary: book.summary ?? book.category ?? "Libro bíblico.",
+  }));
+
+const passages: SearchItem[] = getAllPassages()
+  .filter((passage) => passage.status !== "Borrador")
+  .map((passage) => ({
+    title: passage.display_reference,
+    type: "Pasaje",
+    url: `/pasajes/${passage.slug}/`,
+    summary: passage.summary ?? `Pasaje en ${passage.book_name}.`,
+  }));
+
+const lessons: SearchItem[] = getAllLessons()
+  .filter((lesson) => lesson.status !== "Borrador")
+  .map((lesson) => ({
+    title: lesson.title,
+    type: "Lección",
+    url: `/lecciones/${lesson.slug}/`,
+    summary: lesson.main_idea ?? lesson.summary ?? "Lección bíblica.",
+  }));
+
+const events: SearchItem[] = getAllEvents()
+  .filter((event) => event.status !== "Borrador")
+  .map((event) => ({
+    title: event.title,
+    type: "Evento",
+    url: `/eventos/${event.slug}/`,
+    summary: event.summary ?? event.biblical_period ?? "Evento bíblico.",
+  }));
+
+const topics: SearchItem[] = getAllTopics()
+  .filter((topic) => topic.status !== "Borrador")
+  .map((topic) => ({
+    title: topic.title,
+    type: "Tema",
+    url: `/temas/${topic.slug}/`,
+    summary: topic.definition ?? "Tema bíblico.",
+  }));
+
+const people: SearchItem[] = getAllPeople()
+  .filter((person) => person.status !== "Borrador")
+  .map((person) => ({
+    title: person.name,
+    type: "Personaje",
+    url: `/personajes/${person.slug}/`,
+    summary: person.summary ?? "Personaje bíblico.",
+  }));
+
+const places: SearchItem[] = getAllPlaces()
+  .filter((place) => place.status !== "Borrador")
+  .map((place) => ({
+    title: place.name,
+    type: "Lugar",
+    url: `/lugares/${place.slug}/`,
+    summary: place.summary ?? place.place_type ?? "Lugar bíblico.",
+  }));
+
+const glossary: SearchItem[] = getAllGlossaryTerms()
+  .filter((term) => term.status !== "Borrador")
+  .map((term) => ({
+    title: term.term,
+    type: "Glosario",
+    url: `/glosario/${term.slug}/`,
+    summary: term.definition ?? "Término del glosario.",
+  }));
+
+const routes: SearchItem[] = getAllRoutes()
+  .filter((route) => route.status !== "Borrador")
+  .map((route) => ({
+    title: route.title,
+    type: "Ruta",
+    url: `/rutas/${route.slug}/`,
+    summary: route.description ?? "Ruta guiada.",
+  }));
+
+const searchItems = [
+  ...routes,
+  ...lessons,
+  ...books,
+  ...passages,
+  ...events,
+  ...topics,
+  ...people,
+  ...places,
+  ...glossary,
+];
+---
+
+<BaseLayout
+  title="Buscar"
+  description="Busca libros, pasajes, lecciones, eventos, temas, personajes, lugares y términos del glosario."
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a> → Buscar
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">Buscador local</p>
+
+      <h1>Buscar en la enciclopedia</h1>
+
+      <p class="subtitle">
+        Encuentra libros, pasajes, lecciones, eventos, temas, personajes, lugares
+        y términos del glosario.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Buscar contenido</h2>
+
+      <div class="search-panel">
+        <input
+          id="search-input"
+          class="search-input"
+          type="search"
+          placeholder="Busca: Jesús, Génesis, redención, Jerusalén, Lucas 24..."
+          autocomplete="off"
+        />
+
+        <p class="search-help">
+          El buscador ignora mayúsculas y tildes. Por ejemplo, puedes escribir
+          “mesias” y encontrará “Mesías”.
+        </p>
+      </div>
+
+      <div id="search-empty" class="search-empty">
+        Escribe una palabra para comenzar la búsqueda.
+      </div>
+
+      <div id="search-results" class="search-results"></div>
+    </section>
+
+    <script type="application/json" id="search-data" set:html={JSON.stringify(searchItems)} />
+  </main>
+</BaseLayout>
+
+<script>
+  const dataElement = document.getElementById("search-data");
+  const input = document.getElementById("search-input");
+  const resultsElement = document.getElementById("search-results");
+  const emptyElement = document.getElementById("search-empty");
+
+  const items = dataElement?.textContent
+    ? JSON.parse(dataElement.textContent)
+    : [];
+
+  function normalizeText(value) {
+    return String(value ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function getScore(item, query) {
+    const title = normalizeText(item.title);
+    const type = normalizeText(item.type);
+    const summary = normalizeText(item.summary);
+
+    if (title === query) return 100;
+    if (title.startsWith(query)) return 80;
+    if (title.includes(query)) return 60;
+    if (type.includes(query)) return 40;
+    if (summary.includes(query)) return 20;
+
+    return 0;
+  }
+
+  function renderResults(query) {
+    const normalizedQuery = normalizeText(query);
+
+    if (!normalizedQuery) {
+      resultsElement.innerHTML = "";
+      emptyElement.textContent = "Escribe una palabra para comenzar la búsqueda.";
+      emptyElement.style.display = "block";
+      return;
+    }
+
+    const results = items
+      .map((item) => ({
+        ...item,
+        score: getScore(item, normalizedQuery),
+      }))
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+      .slice(0, 30);
+
+    if (results.length === 0) {
+      resultsElement.innerHTML = "";
+      emptyElement.textContent = "No se encontraron resultados para esa búsqueda.";
+      emptyElement.style.display = "block";
+      return;
+    }
+
+    emptyElement.style.display = "none";
+
+    resultsElement.innerHTML = results
+      .map(
+        (item) => `
+          <a href="${escapeHtml(item.url)}" class="search-result">
+            <span class="search-result-type">${escapeHtml(item.type)}</span>
+            <h2>${escapeHtml(item.title)}</h2>
+            <p>${escapeHtml(item.summary)}</p>
+          </a>
+        `
+      )
+      .join("");
+  }
+
+  input?.addEventListener("input", (event) => {
+    renderResults(event.target.value);
+  });
+</script>
