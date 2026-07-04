@@ -163,6 +163,22 @@ export function getPlacesByLessonId(lessonId: string): RelatedItem[] {
     .all(lessonId) as RelatedItem[];
 }
 
+export function getLessonsByPlaceId(placeId: string): Lesson[] {
+  return db
+    .prepare(
+      `
+      SELECT lessons.*
+      FROM lesson_places
+      JOIN lessons ON lessons.id = lesson_places.lesson_id
+      WHERE
+        lesson_places.place_id = ?
+        AND lessons.status != 'Borrador'
+      ORDER BY lessons.lesson_number ASC
+      `
+    )
+    .all(placeId) as Lesson[];
+}
+
 export function getGlossaryByLessonId(lessonId: string): RelatedItem[] {
   return db
     .prepare(

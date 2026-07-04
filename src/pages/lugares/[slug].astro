@@ -4,13 +4,16 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllPlaces,
   getEventsByPlaceId,
+  getLessonsByPlaceId,
   type Event,
+  type Lesson,
   type Place,
 } from "../../lib/queries";
 
 type Props = {
   place: Place;
   events: Event[];
+  lessons: Lesson[];
 };
 
 export function getStaticPaths() {
@@ -23,11 +26,17 @@ export function getStaticPaths() {
       props: {
         place,
         events: getEventsByPlaceId(place.id),
+        lessons: getLessonsByPlaceId(place.id),
       },
     }));
 }
 
-const { place, events } = Astro.props;
+const { place, events, lessons } = Astro.props;
+
+const hasCoordinates = place.latitude !== null && place.longitude !== null;
+const coordinatesLabel = hasCoordinates
+  ? `${place.latitude}, ${place.longitude}`
+  : "Pendiente";
 ---
 
 <BaseLayout
@@ -36,10 +45,12 @@ const { place, events } = Astro.props;
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href={sitePath("/")}>Inicio</a> → Lugares → {place.name}
+      <a href={sitePath("/")}>Inicio</a> →
+      <a href={sitePath("/lugares/")}>Lugares</a> →
+      {place.name}
     </div>
 
-    <section class="hero">
+    <section class="hero place-hero">
       <p class="eyebrow">{place.place_type ?? "Lugar bíblico"}</p>
 
       <h1>{place.name}</h1>
@@ -50,63 +61,147 @@ const { place, events } = Astro.props;
         </p>
       )}
 
-      {place.latitude && place.longitude && (
-        <div class="actions">
+      <div class="actions">
+        {hasCoordinates ? (
           <a href={sitePath(`/mapa/?lugar=${place.slug}`)} class="button">
-            Ver en el mapa bíblico
+            Ver en el mapa
           </a>
+        ) : (
+          <a href={sitePath("/mapa/")} class="button secondary">
+            Ver mapa general
+          </a>
+        )}
+
+        <a href={sitePath("/lugares/")} class="button secondary">
+          Todos los lugares
+        </a>
+      </div>
+    </section>
+
+    <section class="place-meta-grid" aria-label="Datos rápidos del lugar">
+      <article class="place-meta-card">
+        <span>Tipo</span>
+        <strong>{place.place_type ?? "Lugar bíblico"}</strong>
+      </article>
+
+      <article class="place-meta-card">
+        <span>Certeza geográfica</span>
+        <strong>{place.geographical_certainty ?? "Pendiente"}</strong>
+      </article>
+
+      <article class="place-meta-card">
+        <span>Coordenadas</span>
+        <strong>{coordinatesLabel}</strong>
+      </article>
+
+      <article class="place-meta-card">
+        <span>Estado</span>
+        <strong>{place.status}</strong>
+      </article>
+    </section>
+
+    <section class="section place-map-panel">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Ubicación</p>
+          <h2>Mapa del lugar</h2>
+        </div>
+
+        {hasCoordinates && (
+          <a href={sitePath(`/mapa/?lugar=${place.slug}`)} class="button secondary">
+            Abrir mapa enfocado
+          </a>
+        )}
+      </div>
+
+      {hasCoordinates ? (
+        <div class="place-map-preview">
+          <p>
+            Este lugar tiene coordenadas registradas. Puedes abrirlo en el mapa
+            bíblico para verlo centrado y sin saturación de otros marcadores.
+          </p>
+
+          <a href={sitePath(`/mapa/?lugar=${place.slug}`)} class="place-map-link">
+            Ver {place.name} en el mapa →
+          </a>
+        </div>
+      ) : (
+        <div class="place-empty-map">
+          <strong>Coordenadas pendientes</strong>
+          <p>
+            Este lugar todavía no tiene coordenadas definidas. Puede tratarse de
+            una ubicación incierta, simbólica o pendiente de investigación editorial.
+          </p>
         </div>
       )}
     </section>
 
     {events.length > 0 && (
-      <section class="section">
-        <h2>Eventos relacionados</h2>
+      <section class="section place-events-section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Historia bíblica</p>
+            <h2>Eventos relacionados</h2>
+          </div>
 
-        <ul class="pill-list">
+          <span class="section-count">
+            {events.length} eventos
+          </span>
+        </div>
+
+        <div class="place-events-grid">
           {events.map((event) => (
-            <li>
-              <a href={sitePath(`/eventos/${event.slug}/`)}>{event.title}</a>
-            </li>
+            <a href={sitePath(`/eventos/${event.slug}/`)} class="place-event-card">
+              <span>{event.approximate_date ?? event.biblical_period ?? "Evento bíblico"}</span>
+              <strong>{event.title}</strong>
+
+              {event.summary && (
+                <small>{event.summary}</small>
+              )}
+            </a>
           ))}
-        </ul>
+        </div>
+      </section>
+    )}
+
+    {lessons.length > 0 && (
+      <section class="section place-lessons-section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Recorrido guiado</p>
+            <h2>Lecciones relacionadas</h2>
+          </div>
+
+          <span class="section-count">
+            {lessons.length} lecciones
+          </span>
+        </div>
+
+        <div class="place-lessons-grid">
+          {lessons.map((lesson) => (
+            <a href={sitePath(`/lecciones/${lesson.slug}/`)} class="place-lesson-card">
+              <span>Lección {lesson.lesson_number}</span>
+              <strong>{lesson.title}</strong>
+
+              {lesson.main_idea && (
+                <small>{lesson.main_idea}</small>
+              )}
+            </a>
+          ))}
+        </div>
       </section>
     )}
 
     <section class="section">
-      <h2>Importancia bíblica</h2>
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Síntesis</p>
+          <h2>Importancia bíblica</h2>
+        </div>
+      </div>
 
       <div class="content">
         <p>{place.summary ?? "Descripción pendiente."}</p>
-      </div>
-    </section>
-
-    <section class="grid">
-      <article class="card">
-        <h2>Tipo</h2>
-        <p>{place.place_type ?? "Lugar bíblico"}</p>
-      </article>
-
-      <article class="card">
-        <h2>Certeza geográfica</h2>
-        <p>{place.geographical_certainty ?? "Pendiente"}</p>
-      </article>
-
-      <article class="card">
-        <h2>Coordenadas</h2>
-        <p>
-          {place.latitude && place.longitude
-            ? `${place.latitude}, ${place.longitude}`
-            : "Pendiente"}
-        </p>
-      </article>
-    </section>
-
-    <section class="section">
-      <h2>Estado del contenido</h2>
-
-      <div class="content">
-        <p>{place.status}</p>
       </div>
     </section>
   </main>

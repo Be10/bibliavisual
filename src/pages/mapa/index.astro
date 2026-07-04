@@ -86,20 +86,162 @@ const places = getMapPlaces().map((place) => ({
     return `${cleanBase}${cleanPath}`;
   }
 
-const placesElement = document.getElementById("map-places");
-const places = placesElement?.textContent
-  ? (JSON.parse(placesElement.textContent) as MapPlace[])
-  : [];
+  function escapeHtml(value: string | null | undefined): string {
+    return String(value ?? "").replace(/[&<>"']/g, (character) => {
+      const entities: Record<string, string> = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;",
+      };
 
-const selectedPlaceSlug = new URLSearchParams(window.location.search).get("lugar");
+      return entities[character] ?? character;
+    });
+  }
 
-const visiblePlaces = selectedPlaceSlug
-  ? places.filter((place) => place.slug === selectedPlaceSlug)
-  : places;
+  const placesElement = document.getElementById("map-places");
+  const places = placesElement?.textContent
+    ? (JSON.parse(placesElement.textContent) as MapPlace[])
+    : [];
 
-const map = L.map("biblical-map", {
-  scrollWheelZoom: false,
-}).setView([31.778, 35.2354], 7);
+  const selectedPlaceSlug = new URLSearchParams(window.location.search).get("lugar");
+
+  const visiblePlaces = selectedPlaceSlug
+    ? places.filter((place) => place.slug === selectedPlaceSlug)
+    : places;
+
+  const map = L.map("biblical-map", {
+    scrollWheelZoom: false,
+  }).setView([31.778, 35.2354], 7);
+
+  function moveMapByScreenPixels(x: number, y: number) {
+    if (x === 0 && y === 0) {
+      return;
+    }
+
+    const zoom = map.getZoom();
+    const centerPoint = map.project(map.getCenter(), zoom);
+    const adjustedCenter = map.unproject(centerPoint.subtract([x, y]), zoom);
+
+    map.setView(adjustedCenter, zoom, {
+      animate: false,
+    });
+  }
+
+  function keepPopupInsideMap(marker: L.Marker) {
+    const popup = marker.getPopup();
+    const popupElement = popup?.getElement();
+
+    if (!popup || !popupElement) {
+      return;
+    }
+
+    map.invalidateSize(false);
+    popup.update();
+
+    const mapRect = map.getContainer().getBoundingClientRect();
+    const popupRect = popupElement.getBoundingClientRect();
+    const mapWidth = map.getContainer().clientWidth;
+
+    const isMobileMap = mapWidth <= 760;
+    const sidePadding = mapWidth <= 760 ? 18 : 28;
+    const topPadding = mapWidth <= 760 ? 150 : 190;
+    const bottomPadding = mapWidth <= 760 ? 12 : 12;
+
+    let shiftX = 0;
+    let shiftY = 0;
+
+    if (popupRect.left < mapRect.left + sidePadding) {
+      shiftX = mapRect.left + sidePadding - popupRect.left;
+    }
+
+    if (popupRect.right > mapRect.right - sidePadding) {
+      shiftX = mapRect.right - sidePadding - popupRect.right;
+    }
+
+    if (popupRect.top < mapRect.top + topPadding) {
+      shiftY = mapRect.top + topPadding - popupRect.top;
+    }
+
+    if (popupRect.bottom > mapRect.bottom - bottomPadding) {
+      shiftY = mapRect.bottom - bottomPadding - popupRect.bottom;
+    }
+
+    if (shiftX !== 0 || shiftY !== 0) {
+      moveMapByScreenPixels(shiftX, shiftY);
+
+      window.requestAnimationFrame(() => {
+        popup.update();
+      });
+    }
+  }
+
+  function centerMarkerWithPopupSpace(latLng: L.LatLngExpression, zoom: number) {
+  map.invalidateSize(false);
+
+  const resolvedLatLng = L.latLng(latLng);
+  const mapContainer = map.getContainer();
+  const mapHeight = mapContainer.clientHeight;
+  const mapWidth = mapContainer.clientWidth;
+
+  const isMobileMap = mapWidth <= 760;
+
+  const targetMarkerY = isMobileMap
+  ? mapHeight * 0.92
+  : mapHeight * 0.93;
+
+  const currentCenterY = mapHeight / 2;
+  const verticalShift = targetMarkerY - currentCenterY;
+
+  const projectedPoint = map.project(resolvedLatLng, zoom);
+  const adjustedCenter = map.unproject(
+    projectedPoint.subtract([0, verticalShift]),
+    zoom
+  );
+
+  map.setView(adjustedCenter, zoom, {
+    animate: false,
+  });
+}
+
+  function stabilizeSelectedPopup(marker: L.Marker, latLng: L.LatLngExpression, zoom: number) {
+    const run = () => {
+      map.invalidateSize(false);
+      centerMarkerWithPopupSpace(latLng, zoom);
+    };
+
+    run();
+
+    window.requestAnimationFrame(() => {
+      run();
+
+      window.requestAnimationFrame(() => {
+        run();
+        marker.openPopup();
+
+        window.requestAnimationFrame(() => {
+          keepPopupInsideMap(marker);
+
+          window.requestAnimationFrame(() => {
+            keepPopupInsideMap(marker);
+
+            window.setTimeout(() => {
+              keepPopupInsideMap(marker);
+            }, 120);
+
+            window.setTimeout(() => {
+              keepPopupInsideMap(marker);
+            }, 260);
+
+            window.setTimeout(() => {
+              keepPopupInsideMap(marker);
+            }, 420);
+          });
+        });
+      });
+    });
+  }
 
   const lightLayer = L.tileLayer(
     "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
@@ -130,9 +272,9 @@ const map = L.map("biblical-map", {
   );
 
   const baseLayers = {
-    "Satélite": satelliteLayer,
-    "Terreno": terrainLayer,
-    "Claro": lightLayer,
+    Satélite: satelliteLayer,
+    Terreno: terrainLayer,
+    Claro: lightLayer,
   };
 
   let activeBaseLayer = satelliteLayer;
@@ -229,62 +371,167 @@ const map = L.map("biblical-map", {
   const bounds = L.latLngBounds([]);
   const markersBySlug = new Map<string, L.Marker>();
 
+  const placeIcon = L.divIcon({
+    className: "ebv-map-marker",
+    html: '<span aria-hidden="true"></span>',
+    iconSize: [34, 44],
+    iconAnchor: [17, 42],
+    popupAnchor: [0, -42],
+  });
+
   visiblePlaces.forEach((place) => {
     const latLng: [number, number] = [place.latitude, place.longitude];
 
-    const marker = L.marker(latLng).addTo(map);
+    const marker = L.marker(latLng, {
+      icon: placeIcon,
+    }).addTo(map);
 
     markersBySlug.set(place.slug, marker);
 
     const eventsHtml =
       place.events.length > 0
         ? `
-          <p><strong>Eventos:</strong></p>
-          <ul>
-            ${place.events
-              .map(
-                (event) =>
-                  `<li><a href="${clientSitePath(`/eventos/${event.slug}/`)}">${event.title}</a></li>`
-              )
-              .join("")}
-          </ul>
+          <div class="map-popup-detail-group">
+            <p><strong>Eventos:</strong></p>
+            <ul>
+              ${place.events
+                .map(
+                  (event) =>
+                    `<li><a href="${clientSitePath(`/eventos/${event.slug}/`)}">${escapeHtml(event.title)}</a></li>`
+                )
+                .join("")}
+            </ul>
+          </div>
         `
         : "";
 
-    marker.bindPopup(`
-      <div class="map-popup">
-        <h3>${place.name}</h3>
-        <p>${place.summary ?? ""}</p>
-        <p><strong>Certeza:</strong> ${place.geographical_certainty ?? "Pendiente"}</p>
-        ${eventsHtml}
-        <a href="${clientSitePath(`/lugares/${place.slug}/`)}">Ver lugar</a>
+    marker.bindPopup(
+      `
+      <div class="map-popup" data-popup-place-slug="${escapeHtml(place.slug)}">
+        <div class="map-popup-compact">
+          <span>${escapeHtml(place.place_type ?? "Lugar bíblico")}</span>
+          <h3>${escapeHtml(place.name)}</h3>
+
+          <details class="map-popup-disclosure" data-popup-details-wrapper>
+            <summary class="map-popup-toggle">
+              Ver detalles
+              <em aria-hidden="true">▾</em>
+            </summary>
+
+            <div class="map-popup-details">
+              ${place.summary ? `<p>${escapeHtml(place.summary)}</p>` : ""}
+
+              <p><strong>Certeza:</strong> ${escapeHtml(place.geographical_certainty ?? "Pendiente")}</p>
+              ${eventsHtml}
+
+              <a href="${clientSitePath(`/lugares/${place.slug}/`)}" class="map-popup-place-link">
+                Ver lugar
+              </a>
+            </div>
+          </details>
+        </div>
       </div>
-    `);
+      `,
+      {
+        maxWidth: 280,
+        minWidth: 0,
+        autoPan: false,
+        keepInView: false,
+      }
+    );
+
+    let popupResizeObserver: ResizeObserver | null = null;
+    let popupUpdateFrame = 0;
+
+    marker.on("popupopen", () => {
+      const popup = marker.getPopup();
+      const popupElement = popup?.getElement();
+
+      if (!popup || !popupElement) {
+        return;
+      }
+
+      const popupCard = popupElement.querySelector<HTMLElement>(".map-popup");
+      const disclosure = popupElement.querySelector<HTMLDetailsElement>(
+        "[data-popup-details-wrapper]"
+      );
+      const indicator = popupElement.querySelector<HTMLElement>(
+        ".map-popup-toggle em"
+      );
+
+      if (!popupCard) {
+        return;
+      }
+
+      const schedulePopupUpdate = () => {
+        window.cancelAnimationFrame(popupUpdateFrame);
+
+        popupUpdateFrame = window.requestAnimationFrame(() => {
+          popup.update();
+          keepPopupInsideMap(marker);
+
+          window.requestAnimationFrame(() => {
+            popup.update();
+            keepPopupInsideMap(marker);
+          });
+        });
+      };
+
+      disclosure?.addEventListener("toggle", () => {
+        if (indicator) {
+          indicator.textContent = disclosure.open ? "▴" : "▾";
+        }
+
+        schedulePopupUpdate();
+
+        window.setTimeout(() => {
+          keepPopupInsideMap(marker);
+        }, 120);
+      });
+
+      popupResizeObserver?.disconnect();
+
+      if ("ResizeObserver" in window) {
+        popupResizeObserver = new ResizeObserver(() => {
+          schedulePopupUpdate();
+        });
+
+        popupResizeObserver.observe(popupCard);
+      }
+
+      schedulePopupUpdate();
+    });
+
+    marker.on("popupclose", () => {
+      popupResizeObserver?.disconnect();
+      popupResizeObserver = null;
+      window.cancelAnimationFrame(popupUpdateFrame);
+    });
 
     bounds.extend(latLng);
   });
 
-if (visiblePlaces.length > 0) {
-  map.fitBounds(bounds, {
-    padding: [48, 48],
-    maxZoom: selectedPlaceSlug ? 10 : 8,
-  });
-}
+  if (!selectedPlaceSlug && visiblePlaces.length > 0) {
+    map.fitBounds(bounds, {
+      padding: [48, 48],
+      maxZoom: 8,
+    });
+  }
 
-if (selectedPlaceSlug) {
-  const selectedMarker = markersBySlug.get(selectedPlaceSlug);
-
-  if (selectedMarker) {
+  if (selectedPlaceSlug) {
+    const selectedMarker = markersBySlug.get(selectedPlaceSlug);
     const selectedPlace = visiblePlaces.find((place) => place.slug === selectedPlaceSlug);
 
-    if (selectedPlace) {
-      map.setView(
-        [selectedPlace.latitude, selectedPlace.longitude],
-        selectedPlace.map_zoom ?? 10
-      );
-    }
+    if (selectedMarker && selectedPlace) {
+      const selectedLatLng: [number, number] = [
+        selectedPlace.latitude,
+        selectedPlace.longitude,
+      ];
+      const selectedZoom = selectedPlace.map_zoom ?? 10;
 
-    selectedMarker.openPopup();
+      map.whenReady(() => {
+        stabilizeSelectedPopup(selectedMarker, selectedLatLng, selectedZoom);
+      });
+    }
   }
-}
 </script>
