@@ -1,39 +1,148 @@
 ---
 import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getAllPlaces } from "../../lib/queries";
+import {
+  getAllPlaces,
+  getEventsByPlaceId,
+  getLessonsByPlaceId,
+} from "../../lib/queries";
 
-const places = getAllPlaces().filter((place) => place.status !== "Borrador");
+const places = getAllPlaces()
+  .filter((place) => place.status !== "Borrador")
+  .map((place) => {
+    const events = getEventsByPlaceId(place.id);
+    const lessons = getLessonsByPlaceId(place.id);
+    const hasCoordinates = place.latitude !== null && place.longitude !== null;
+
+    return {
+      ...place,
+      eventsCount: events.length,
+      lessonsCount: lessons.length,
+      hasCoordinates,
+    };
+  });
+
+const placesWithCoordinates = places.filter((place) => place.hasCoordinates).length;
+const placesWithoutCoordinates = places.length - placesWithCoordinates;
+const placeTypesCount = new Set(
+  places.map((place) => place.place_type ?? "Lugar bíblico")
+).size;
 ---
 
 <BaseLayout
   title="Lugares bíblicos"
-  description="Explora lugares bíblicos conectados con eventos, personajes, temas y lecciones."
+  description="Explora lugares bíblicos conectados con eventos, lecciones y el mapa interactivo."
 >
   <main class="page">
     <div class="breadcrumb">
       <a href={sitePath("/")}>Inicio</a> → Lugares
     </div>
 
-    <section class="hero">
-      <p class="eyebrow">Mapa bíblico futuro</p>
+    <section class="hero places-index-hero">
+      <div class="places-index-hero-content">
+        <p class="eyebrow">Atlas bíblico</p>
 
-      <h1>Lugares bíblicos</h1>
+        <h1>Lugares bíblicos</h1>
 
-      <p class="subtitle">
-        Ciudades, regiones, rutas y lugares importantes dentro de la historia bíblica.
-        Más adelante esta sección alimentará el mapa interactivo.
-      </p>
+        <p class="subtitle">
+          Ciudades, regiones y lugares importantes dentro de la historia bíblica,
+          conectados con eventos, lecciones y el mapa interactivo.
+        </p>
+
+        <div class="actions">
+          <a href={sitePath("/mapa/")} class="button">
+            Abrir mapa bíblico
+          </a>
+
+          <a href={sitePath("/explorar/")} class="button secondary">
+            Volver a explorar
+          </a>
+        </div>
+      </div>
+
+      <aside class="places-index-hero-card" aria-label="Resumen de lugares">
+        <span>Lugares registrados</span>
+        <strong>{places.length}</strong>
+        <p>{placesWithCoordinates} con coordenadas para el mapa.</p>
+      </aside>
     </section>
 
-    <section class="entity-list">
-      {places.map((place) => (
-        <a href={sitePath(`/lugares/${place.slug}/`)} class="entity-card">
-          <span class="meta">{place.place_type ?? "Lugar"}</span>
-          <h2>{place.name}</h2>
-          <p>{place.summary ?? "Descripción pendiente."}</p>
-        </a>
-      ))}
+    <section class="places-summary-grid" aria-label="Resumen del atlas bíblico">
+      <article class="places-summary-card">
+        <span>Total</span>
+        <strong>{places.length}</strong>
+        <p>Lugares visibles en la enciclopedia.</p>
+      </article>
+
+      <article class="places-summary-card">
+        <span>En el mapa</span>
+        <strong>{placesWithCoordinates}</strong>
+        <p>Lugares con coordenadas registradas.</p>
+      </article>
+
+      <article class="places-summary-card">
+        <span>Pendientes</span>
+        <strong>{placesWithoutCoordinates}</strong>
+        <p>Lugares todavía sin coordenadas.</p>
+      </article>
+
+      <article class="places-summary-card">
+        <span>Tipos</span>
+        <strong>{placeTypesCount}</strong>
+        <p>Categorías de lugares disponibles.</p>
+      </article>
+    </section>
+
+    <section class="section places-directory-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Directorio</p>
+          <h2>Todos los lugares</h2>
+        </div>
+
+        <span class="section-count">
+          {places.length} {places.length === 1 ? "lugar" : "lugares"}
+        </span>
+      </div>
+
+      <div class="places-directory-grid">
+        {places.map((place) => (
+          <article class="place-directory-card">
+            <div class="place-directory-card-main">
+              <span>{place.place_type ?? "Lugar bíblico"}</span>
+              <h2>{place.name}</h2>
+              <p>{place.summary ?? "Descripción pendiente."}</p>
+            </div>
+
+            <div class="place-directory-meta" aria-label={`Datos rápidos de ${place.name}`}>
+              <span>{place.geographical_certainty ?? "Certeza pendiente"}</span>
+              <span>{place.hasCoordinates ? "Con coordenadas" : "Sin coordenadas"}</span>
+              <span>
+                {place.eventsCount} {place.eventsCount === 1 ? "evento" : "eventos"}
+              </span>
+              <span>
+                {place.lessonsCount} {place.lessonsCount === 1 ? "lección" : "lecciones"}
+              </span>
+            </div>
+
+            <div class="place-directory-actions">
+              <a href={sitePath(`/lugares/${place.slug}/`)} class="place-directory-link primary">
+                Ver lugar
+              </a>
+
+              {place.hasCoordinates ? (
+                <a href={sitePath(`/mapa/?lugar=${place.slug}`)} class="place-directory-link">
+                  Ver en mapa
+                </a>
+              ) : (
+                <span class="place-directory-link disabled">
+                  Mapa pendiente
+                </span>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
     </section>
   </main>
 </BaseLayout>

@@ -413,7 +413,9 @@ export function getEventsByPlaceId(placeId: string): Event[] {
       SELECT events.*
       FROM event_places
       JOIN events ON events.id = event_places.event_id
-      WHERE event_places.place_id = ?
+      WHERE
+        event_places.place_id = ?
+        AND events.status != 'Borrador'
       ORDER BY events.chronological_order ASC, events.title ASC
       `
     )
