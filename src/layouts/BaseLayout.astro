@@ -20,6 +20,14 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
     <title>{pageTitle}</title>
+
+    <script is:inline>
+      const storedTheme = localStorage.getItem("ebv-theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const initialTheme = storedTheme ?? (prefersDark ? "dark" : "light");
+
+      document.documentElement.dataset.theme = initialTheme;
+    </script>
   </head>
 
   <body>
@@ -33,6 +41,16 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
         <a href={sitePath("/biblia/")}>Biblia</a>
         <a href={sitePath("/mapa/")}>Mapa</a>
         <a href={sitePath("/acerca/")}>Acerca</a>
+
+        <button
+          type="button"
+          class="theme-toggle"
+          data-theme-toggle
+          aria-label="Cambiar a modo oscuro"
+          aria-pressed="false"
+        >
+          <span class="theme-toggle-icon" aria-hidden="true">🌙</span>
+        </button>
       </nav>
     </header>
 
@@ -63,6 +81,38 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
         </nav>
       </div>
     </footer>
+    <script is:inline>
+      const themeToggle = document.querySelector("[data-theme-toggle]");
+
+      function syncThemeToggle(theme) {
+        if (!themeToggle) return;
+
+        const isDark = theme === "dark";
+        const icon = themeToggle.querySelector(".theme-toggle-icon");
+
+        themeToggle.setAttribute("aria-pressed", String(isDark));
+        themeToggle.setAttribute(
+          "aria-label",
+          isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"
+        );
+
+        if (icon) {
+          icon.textContent = isDark ? "☀️" : "🌙";
+        }
+      }
+
+      const currentTheme = document.documentElement.dataset.theme ?? "light";
+      syncThemeToggle(currentTheme);
+
+      themeToggle?.addEventListener("click", () => {
+        const activeTheme =
+          document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+
+        document.documentElement.dataset.theme = activeTheme;
+        localStorage.setItem("ebv-theme", activeTheme);
+        syncThemeToggle(activeTheme);
+      });
+    </script>
   </body>
 </html>
 
@@ -120,6 +170,31 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
 
   .nav a:hover {
     background: #fff7e8;
+  }
+
+  .theme-toggle {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 999px;
+    border: 1px solid #c8a982;
+    background: #fff7e8;
+    color: #5d3212;
+    font: inherit;
+    font-size: 1.05rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .theme-toggle:hover {
+    background: #fffaf0;
+  }
+
+  .theme-toggle-icon {
+    line-height: 1;
   }
 
   .page {
@@ -1462,10 +1537,236 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     color: #7a6a58;
   }
 
+  html[data-theme="dark"] {
+color-scheme: dark;
+  }
+
+  html[data-theme="dark"] body {
+background: #100c08;
+color: #f4eadb;
+  }
+
+  html[data-theme="dark"] .logo,
+  html[data-theme="dark"] .nav a,
+  html[data-theme="dark"] .site-footer a,
+  html[data-theme="dark"] .map-popup a,
+  html[data-theme="dark"] .button.secondary,
+  html[data-theme="dark"] .chapter-link,
+  html[data-theme="dark"] .pill-list a,
+  html[data-theme="dark"] .pill-list span,
+  html[data-theme="dark"] .connection-list a,
+  html[data-theme="dark"] .passage-study-card span,
+  html[data-theme="dark"] .search-result-type,
+  html[data-theme="dark"] .explore-count,
+  html[data-theme="dark"] .meta,
+  html[data-theme="dark"] .eyebrow,
+  html[data-theme="dark"] .study-card span,
+  html[data-theme="dark"] .mini-nav-link span,
+  html[data-theme="dark"] .lesson-nav-card span,
+  html[data-theme="dark"] .route-stat span,
+  html[data-theme="dark"] .lesson-track-content em,
+  html[data-theme="dark"] .timeline-date,
+  html[data-theme="dark"] .timeline-meta span,
+  html[data-theme="dark"] .verse-number,
+  html[data-theme="dark"] .passage-chapter h3,
+  html[data-theme="dark"] .section-count {
+color: #e9b872;
+  }
+
+  html[data-theme="dark"] .nav a:hover,
+  html[data-theme="dark"] .theme-toggle,
+  html[data-theme="dark"] .button.secondary,
+  html[data-theme="dark"] .pill-list a,
+  html[data-theme="dark"] .pill-list span,
+  html[data-theme="dark"] .chapter-link,
+  html[data-theme="dark"] .timeline-date,
+  html[data-theme="dark"] .timeline-meta span,
+  html[data-theme="dark"] .search-result-type,
+  html[data-theme="dark"] .search-empty,
+  html[data-theme="dark"] .search-result:hover,
+  html[data-theme="dark"] .explore-count,
+  html[data-theme="dark"] .info-list li,
+  html[data-theme="dark"] .notice-box,
+  html[data-theme="dark"] .copyright-box,
+  html[data-theme="dark"] .route-progress,
+  html[data-theme="dark"] .section-count,
+  html[data-theme="dark"] .lesson-toc a {
+background: #24180f;
+border-color: #4a3523;
+  }
+
+  html[data-theme="dark"] .theme-toggle:hover,
+  html[data-theme="dark"] .chapter-link:hover,
+  html[data-theme="dark"] .pill-list a:hover,
+  html[data-theme="dark"] .lesson-toc a:hover,
+  html[data-theme="dark"] .connection-list a:hover {
+background: #312113;
+border-color: #6c4c2f;
+  }
+
+  html[data-theme="dark"] .hero,
+  html[data-theme="dark"] .section,
+  html[data-theme="dark"] .card,
+  html[data-theme="dark"] .entity-card,
+  html[data-theme="dark"] .timeline-card,
+  html[data-theme="dark"] .map-shell,
+  html[data-theme="dark"] .search-input,
+  html[data-theme="dark"] .search-result,
+  html[data-theme="dark"] .explore-card,
+  html[data-theme="dark"] .route-stat,
+  html[data-theme="dark"] .lesson-study-panel,
+  html[data-theme="dark"] .mini-nav-link,
+  html[data-theme="dark"] .lesson-nav-card,
+  html[data-theme="dark"] .connections-section,
+  html[data-theme="dark"] .passage-study-section,
+  html[data-theme="dark"] .main-idea-section,
+  html[data-theme="dark"] .lesson-points-section {
+background: #18110c;
+border-color: #3a2a1d;
+box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  html[data-theme="dark"] .hero,
+  html[data-theme="dark"] .route-hero,
+  html[data-theme="dark"] .route-intro,
+  html[data-theme="dark"] .continue-section {
+background: #18110c;
+  }
+
+  html[data-theme="dark"] .subtitle,
+  html[data-theme="dark"] .breadcrumb,
+  html[data-theme="dark"] .card p,
+  html[data-theme="dark"] .entity-card p,
+  html[data-theme="dark"] .timeline-card p,
+  html[data-theme="dark"] .map-popup p,
+  html[data-theme="dark"] .search-help,
+  html[data-theme="dark"] .search-result p,
+  html[data-theme="dark"] .explore-heading p,
+  html[data-theme="dark"] .explore-card p,
+  html[data-theme="dark"] .info-list li,
+  html[data-theme="dark"] .notice-box,
+  html[data-theme="dark"] .site-footer,
+  html[data-theme="dark"] .route-stat strong,
+  html[data-theme="dark"] .lesson-track-content small,
+  html[data-theme="dark"] .storyline-content small,
+  html[data-theme="dark"] .section-intro,
+  html[data-theme="dark"] .study-card strong,
+  html[data-theme="dark"] .lesson-progress-main p,
+  html[data-theme="dark"] .passage-study-card small,
+  html[data-theme="dark"] .connection-list a,
+  html[data-theme="dark"] .verse-text {
+color: #d8c8b6;
+  }
+
+  html[data-theme="dark"] h1,
+  html[data-theme="dark"] h2,
+  html[data-theme="dark"] h3,
+  html[data-theme="dark"] .entity-card h2,
+  html[data-theme="dark"] .search-result h2,
+  html[data-theme="dark"] .explore-card h3,
+  html[data-theme="dark"] .lesson-track-content strong,
+  html[data-theme="dark"] .storyline-content strong,
+  html[data-theme="dark"] .connection-card-header h3,
+  html[data-theme="dark"] .passage-study-card strong,
+  html[data-theme="dark"] .main-idea-card p,
+  html[data-theme="dark"] .lesson-points-list p,
+  html[data-theme="dark"] .mini-nav-link strong,
+  html[data-theme="dark"] .lesson-nav-card strong,
+  html[data-theme="dark"] .lesson-progress-main h2,
+  html[data-theme="dark"] .notice-box strong,
+  html[data-theme="dark"] .study-card strong {
+color: #fff5e8;
+  }
+
+  html[data-theme="dark"] .button,
+  html[data-theme="dark"] .lesson-track-number,
+  html[data-theme="dark"] .storyline-item.is-active .storyline-dot,
+  html[data-theme="dark"] .storyline-item.is-active .storyline-content,
+  html[data-theme="dark"] .connection-card-header span,
+  html[data-theme="dark"] .lesson-point-number,
+  html[data-theme="dark"] .lesson-nav-card.center,
+  html[data-theme="dark"] .route-progress-bar span,
+  html[data-theme="dark"] .lesson-progress-bar span {
+background: #e9b872;
+border-color: #e9b872;
+color: #1b120b;
+  }
+
+  html[data-theme="dark"] .button,
+  html[data-theme="dark"] .button.secondary {
+color: #1b120b;
+  }
+
+  html[data-theme="dark"] .button.secondary {
+background: #e9b872;
+  }
+
+  html[data-theme="dark"] .study-card,
+  html[data-theme="dark"] .storyline-content,
+  html[data-theme="dark"] .connection-card,
+  html[data-theme="dark"] .passage-study-card,
+  html[data-theme="dark"] .main-idea-card,
+  html[data-theme="dark"] .lesson-points-list li,
+  html[data-theme="dark"] .lesson-track-card,
+  html[data-theme="dark"] .mini-nav-link.disabled,
+  html[data-theme="dark"] .lesson-nav-card.disabled {
+background: #21160e;
+border-color: #3a2a1d;
+  }
+
+  html[data-theme="dark"] .connection-list a {
+background: #18110c;
+border-color: #3a2a1d;
+  }
+
+  html[data-theme="dark"] .search-input {
+color: #fff5e8;
+  }
+
+  html[data-theme="dark"] .search-input::placeholder {
+color: #9d8a76;
+  }
+
+  html[data-theme="dark"] .route-progress-bar,
+  html[data-theme="dark"] .lesson-progress-bar,
+  html[data-theme="dark"] .storyline::before {
+background: #4a3523;
+  }
+
+  html[data-theme="dark"] .storyline-dot {
+background: #18110c;
+border-color: #4a3523;
+box-shadow: 0 0 0 6px #18110c;
+  }
+
+  html[data-theme="dark"] .quote-mark::before,
+  html[data-theme="dark"] .quote-mark::after {
+background: #6c4c2f;
+  }
+
+  html[data-theme="dark"] .site-footer-inner,
+  html[data-theme="dark"] .verse {
+border-color: #3a2a1d;
+  }
+
+  html[data-theme="dark"] .timeline-card::before {
+background: #e9b872;
+box-shadow: 0 0 0 6px #100c08;
+  }
+
+  html[data-theme="dark"] .map-popup {
+color: #2d2418;
+  }
+
   @media (max-width: 760px) {
     .site-header {
       align-items: flex-start;
       flex-direction: column;
+    }
+
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
     }
 
     .hero {
@@ -1631,5 +1932,7 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
       width: 32px;
       height: 32px;
     }
+
+
   }
 </style>
