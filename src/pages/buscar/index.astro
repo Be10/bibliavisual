@@ -111,13 +111,65 @@ const bibleVerses: SearchItem[] = getBibleSearchVerses()
     summary: verse.verse_text ?? "",
   }));
 
-const searchItems = [
+const sectionItems: SearchItem[] = [
   {
     title: "Lecciones",
     type: "Sección",
     url: sitePath("/lecciones/"),
     summary: "Índice de lecciones publicadas de la Enciclopedia Bíblica Visual.",
   },
+  {
+    title: "Biblia",
+    type: "Sección",
+    url: sitePath("/biblia/"),
+    summary: "Lectura bíblica por libros, capítulos y versículos.",
+  },
+  {
+    title: "Libros",
+    type: "Sección",
+    url: sitePath("/libros/"),
+    summary: "Directorio de libros bíblicos.",
+  },
+  {
+    title: "Pasajes",
+    type: "Sección",
+    url: sitePath("/pasajes/"),
+    summary: "Pasajes bíblicos conectados con lecciones y eventos.",
+  },
+  {
+    title: "Eventos",
+    type: "Sección",
+    url: sitePath("/eventos/"),
+    summary: "Línea narrativa de eventos bíblicos.",
+  },
+  {
+    title: "Temas",
+    type: "Sección",
+    url: sitePath("/temas/"),
+    summary: "Conceptos y temas bíblicos principales.",
+  },
+  {
+    title: "Personajes",
+    type: "Sección",
+    url: sitePath("/personajes/"),
+    summary: "Directorio de personajes bíblicos.",
+  },
+  {
+    title: "Lugares",
+    type: "Sección",
+    url: sitePath("/lugares/"),
+    summary: "Lugares bíblicos conectados con mapa y eventos.",
+  },
+  {
+    title: "Mapa",
+    type: "Sección",
+    url: sitePath("/mapa/"),
+    summary: "Mapa bíblico visual con lugares registrados.",
+  },
+];
+
+const searchItems = [
+  ...sectionItems,
   ...routes,
   ...lessons,
   ...books,
@@ -129,6 +181,15 @@ const searchItems = [
   ...glossary,
   ...bibleVerses,
 ];
+
+const searchStats = [
+  { label: "Lecciones", count: lessons.length },
+  { label: "Libros", count: books.length },
+  { label: "Pasajes", count: passages.length },
+  { label: "Versículos", count: bibleVerses.length },
+];
+
+const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type)));
 ---
 
 <BaseLayout
@@ -140,20 +201,67 @@ const searchItems = [
       <a href={sitePath("/")}>Inicio</a> → Buscar
     </div>
 
-    <section class="hero">
-      <p class="eyebrow">Buscador local</p>
+    <section class="hero search-hero">
+      <div class="search-hero-content">
+        <p class="eyebrow">Buscador local</p>
 
-      <h1>Buscar en la enciclopedia</h1>
+        <h1>Buscar en la enciclopedia</h1>
 
-      <p class="subtitle">
-        Encuentra libros, pasajes, lecciones, eventos, temas, personajes, lugares, términos del glosario y versículos bíblicos.
-      </p>
+        <p class="subtitle">
+          Encuentra libros, pasajes, lecciones, eventos, temas, personajes, lugares,
+          términos del glosario y versículos bíblicos desde un solo lugar.
+        </p>
+
+        <div class="actions">
+          <a href={sitePath("/explorar/")} class="button">
+            Explorar todo
+          </a>
+
+          <a href={sitePath("/biblia/")} class="button secondary">
+            Abrir Biblia
+          </a>
+
+          <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button secondary">
+            Ruta principal
+          </a>
+        </div>
+      </div>
+
+      <aside class="search-hero-card" aria-label="Resumen del buscador">
+        <span>Índice local</span>
+        <strong>{searchItems.length}</strong>
+        <p>
+          {searchableTypes.length} tipos de contenido disponibles
+        </p>
+      </aside>
     </section>
 
-    <section class="section">
-      <h2>Buscar contenido</h2>
+    <section class="search-stats" aria-label="Resumen del índice de búsqueda">
+      {searchStats.map((stat) => (
+        <article class="search-stat-card">
+          <span>{stat.label}</span>
+          <strong>{stat.count}</strong>
+        </article>
+      ))}
+    </section>
 
-      <div class="search-panel">
+    <section class="section search-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Consulta rápida</p>
+          <h2>Buscar contenido</h2>
+        </div>
+
+        <span class="section-count">
+          {searchItems.length} elementos
+        </span>
+      </div>
+
+      <div class="search-panel enhanced-search-panel">
+        <label class="search-label" for="search-input">
+          Escribe una palabra, referencia, personaje, lugar o tema
+        </label>
+
         <input
           id="search-input"
           class="search-input"
@@ -166,13 +274,23 @@ const searchItems = [
           El buscador ignora mayúsculas y tildes. Por ejemplo, puedes escribir
           “mesias” y encontrará “Mesías”.
         </p>
+
+        <div class="search-suggestions" aria-label="Sugerencias de búsqueda">
+          <button type="button" data-search-suggestion="Jesús">Jesús</button>
+          <button type="button" data-search-suggestion="Génesis">Génesis</button>
+          <button type="button" data-search-suggestion="redención">redención</button>
+          <button type="button" data-search-suggestion="Jerusalén">Jerusalén</button>
+          <button type="button" data-search-suggestion="en el principio">en el principio</button>
+        </div>
       </div>
 
-      <div id="search-empty" class="search-empty">
+      <div id="search-empty" class="search-empty enhanced-search-empty">
         Escribe una palabra para comenzar la búsqueda.
       </div>
 
-      <div id="search-results" class="search-results"></div>
+      <div id="search-results-summary" class="search-results-summary" hidden></div>
+
+      <div id="search-results" class="search-results enhanced-search-results"></div>
     </section>
 
     <script type="application/json" id="search-data" set:html={JSON.stringify(searchItems)} />
@@ -184,10 +302,26 @@ const searchItems = [
   const input = document.getElementById("search-input");
   const resultsElement = document.getElementById("search-results");
   const emptyElement = document.getElementById("search-empty");
+  const resultsSummaryElement = document.getElementById("search-results-summary");
+  const suggestionButtons = document.querySelectorAll("[data-search-suggestion]");
 
   const items = dataElement?.textContent
     ? JSON.parse(dataElement.textContent)
     : [];
+
+  const typeOrder = [
+    "Sección",
+    "Ruta",
+    "Lección",
+    "Versículo",
+    "Libro",
+    "Pasaje",
+    "Evento",
+    "Tema",
+    "Personaje",
+    "Lugar",
+    "Glosario",
+  ];
 
   function normalizeText(value) {
     return String(value ?? "")
@@ -211,20 +345,56 @@ const searchItems = [
     const type = normalizeText(item.type);
     const summary = normalizeText(item.summary);
 
-    if (title === query) return 100;
-    if (title.startsWith(query)) return 80;
-    if (title.includes(query)) return 60;
-    if (type.includes(query)) return 40;
-    if (summary.includes(query)) return 20;
+    if (title === query) return 120;
+    if (title.startsWith(query)) return 100;
+    if (title.includes(query)) return 80;
+    if (type.includes(query)) return 55;
+    if (summary.includes(query)) return 35;
+
+    const words = query.split(/\s+/).filter(Boolean);
+
+    if (words.length > 1 && words.every((word) => title.includes(word))) {
+      return 70;
+    }
+
+    if (words.length > 1 && words.every((word) => summary.includes(word))) {
+      return 30;
+    }
 
     return 0;
+  }
+
+  function groupResults(results) {
+    return results.reduce((groups, item) => {
+      if (!groups[item.type]) {
+        groups[item.type] = [];
+      }
+
+      groups[item.type].push(item);
+
+      return groups;
+    }, {});
+  }
+
+  function renderResultCard(item) {
+    return `
+      <a href="${escapeHtml(item.url)}" class="search-result">
+        <span class="search-result-type">${escapeHtml(item.type)}</span>
+        <h3>${escapeHtml(item.title)}</h3>
+        <p>${escapeHtml(item.summary)}</p>
+      </a>
+    `;
   }
 
   function renderResults(query) {
     const normalizedQuery = normalizeText(query);
 
+    if (!resultsElement || !emptyElement || !resultsSummaryElement) return;
+
     if (!normalizedQuery) {
       resultsElement.innerHTML = "";
+      resultsSummaryElement.hidden = true;
+      resultsSummaryElement.textContent = "";
       emptyElement.textContent = "Escribe una palabra para comenzar la búsqueda.";
       emptyElement.style.display = "block";
       return;
@@ -237,31 +407,336 @@ const searchItems = [
       }))
       .filter((item) => item.score > 0)
       .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
-      .slice(0, 30);
+      .slice(0, 60);
 
     if (results.length === 0) {
       resultsElement.innerHTML = "";
+      resultsSummaryElement.hidden = true;
+      resultsSummaryElement.textContent = "";
       emptyElement.textContent = "No se encontraron resultados para esa búsqueda.";
       emptyElement.style.display = "block";
       return;
     }
 
     emptyElement.style.display = "none";
+    resultsSummaryElement.hidden = false;
+    resultsSummaryElement.textContent = `${results.length} resultado${results.length === 1 ? "" : "s"} para “${query}”`;
 
-    resultsElement.innerHTML = results
-      .map(
-        (item) => `
-          <a href="${escapeHtml(item.url)}" class="search-result">
-            <span class="search-result-type">${escapeHtml(item.type)}</span>
-            <h2>${escapeHtml(item.title)}</h2>
-            <p>${escapeHtml(item.summary)}</p>
-          </a>
-        `
-      )
+    const groups = groupResults(results);
+
+    resultsElement.innerHTML = typeOrder
+      .filter((type) => groups[type]?.length)
+      .map((type) => {
+        const groupResults = groups[type].slice(0, 12);
+
+        return `
+          <section class="search-result-group">
+            <div class="search-result-group-header">
+              <span>${escapeHtml(type)}</span>
+              <strong>${groups[type].length}</strong>
+            </div>
+
+            <div class="search-result-group-grid">
+              ${groupResults.map(renderResultCard).join("")}
+            </div>
+          </section>
+        `;
+      })
       .join("");
   }
 
   input?.addEventListener("input", (event) => {
     renderResults(event.target.value);
   });
+
+  suggestionButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const value = button.getAttribute("data-search-suggestion") ?? "";
+
+      if (input) {
+        input.value = value;
+        input.focus();
+        renderResults(value);
+      }
+    });
+  });
 </script>
+
+<style>
+  .search-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 320px);
+    gap: 28px;
+    align-items: end;
+    overflow: hidden;
+  }
+
+  .search-hero::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -120px;
+    width: 320px;
+    height: 320px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
+    pointer-events: none;
+  }
+
+  .search-hero-content,
+  .search-hero-card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .search-hero-card,
+  .search-stat-card,
+  .search-result,
+  .search-result-group {
+    border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
+  }
+
+  .search-hero-card {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .search-hero-card span,
+  .search-stat-card span,
+  .search-label,
+  .search-result-group-header span,
+  .search-result-type {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .search-hero-card strong {
+    color: #2d2418;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .search-hero-card p,
+  .search-result p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .search-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .search-stat-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+  }
+
+  .search-stat-card span {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .search-stat-card strong {
+    display: block;
+    color: #2d2418;
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .enhanced-search-panel {
+    padding: 22px;
+    border-radius: 24px;
+    background: #fffaf0;
+    border: 1px solid #eadcc4;
+  }
+
+  .search-label {
+    display: block;
+  }
+
+  .search-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .search-suggestions button {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    padding: 0 13px;
+    border-radius: 999px;
+    border: 1px solid #eadcc4;
+    background: white;
+    color: #5d3212;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .search-suggestions button:hover {
+    border-color: #c8a982;
+    background: #fff7e8;
+  }
+
+  .enhanced-search-empty {
+    margin-top: 20px;
+  }
+
+  .search-results-summary {
+    margin-top: 22px;
+    color: #5d3212;
+    font-weight: 900;
+  }
+
+  .enhanced-search-results {
+    gap: 22px;
+  }
+
+  .search-result-group {
+    display: grid;
+    gap: 16px;
+    padding: 22px;
+    border-radius: 24px;
+    background: #fffaf0;
+  }
+
+  .search-result-group-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .search-result-group-header strong {
+    display: inline-flex;
+    min-width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #eadcc4;
+    color: #5d3212;
+    font-size: 0.9rem;
+  }
+
+  .search-result-group-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .search-result {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    padding: 20px;
+    border-radius: 20px;
+    background: white;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .search-result:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .search-result h3 {
+    margin: 0;
+    color: #2d2418;
+    font-size: 1.08rem;
+    line-height: 1.35;
+  }
+
+  :global(html[data-theme="dark"]) .search-hero-card,
+  :global(html[data-theme="dark"]) .search-stat-card,
+  :global(html[data-theme="dark"]) .search-section {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(html[data-theme="dark"]) .enhanced-search-panel,
+  :global(html[data-theme="dark"]) .search-result-group,
+  :global(html[data-theme="dark"]) .search-result {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .search-hero-card span,
+  :global(html[data-theme="dark"]) .search-stat-card span,
+  :global(html[data-theme="dark"]) .search-label,
+  :global(html[data-theme="dark"]) .search-result-group-header span,
+  :global(html[data-theme="dark"]) .search-result-type,
+  :global(html[data-theme="dark"]) .search-results-summary {
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"]) .search-hero-card strong,
+  :global(html[data-theme="dark"]) .search-stat-card strong,
+  :global(html[data-theme="dark"]) .search-result h3 {
+    color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"]) .search-hero-card p,
+  :global(html[data-theme="dark"]) .search-result p {
+    color: #d8c8b6;
+  }
+
+  :global(html[data-theme="dark"]) .search-suggestions button,
+  :global(html[data-theme="dark"]) .search-result-group-header strong {
+    background: #18110c;
+    border-color: #3a2a1d;
+    color: #f3d6ad;
+  }
+
+  :global(html[data-theme="dark"]) .search-suggestions button:hover {
+    background: #312113;
+    border-color: #6c4c2f;
+    color: #fff5e8;
+  }
+
+  @media (max-width: 860px) {
+    .search-hero {
+      grid-template-columns: 1fr;
+    }
+
+    .search-stats,
+    .search-result-group-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .search-stats,
+    .search-result-group-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .enhanced-search-panel,
+    .search-result-group {
+      padding: 18px;
+    }
+  }
+</style>
