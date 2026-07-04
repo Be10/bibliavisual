@@ -996,6 +996,58 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     color: #fffaf0;
   }
 
+  .passage-study-section {
+    background: white;
+  }
+
+  .passage-study-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .passage-study-card {
+    display: grid;
+    gap: 8px;
+    min-height: 132px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    border: 1px solid #eadcc4;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  a.passage-study-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .passage-study-card span {
+    color: #8a5a2b;
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .passage-study-card strong {
+    color: #2d2418;
+    font-size: 1.18rem;
+    line-height: 1.35;
+  }
+
+  .passage-study-card small {
+    color: #6a5c4d;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
 .section-count {
     display: inline-flex;
     align-items: center;
@@ -1455,6 +1507,14 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
 
     .section-count {
       align-self: flex-start;
+    }
+
+    .passage-study-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .passage-study-card {
+      min-height: auto;
     }
   }
 </style>

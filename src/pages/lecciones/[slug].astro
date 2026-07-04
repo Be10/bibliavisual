@@ -265,32 +265,46 @@ const storylineStages = [
       </section>
     )}
 
-    {passages.length > 0 ? (
-      <section class="section" id="pasajes">
-        <h2>Pasajes bíblicos principales</h2>
+    {(passages.length > 0 || bibleRefs.length > 0) && (
+      <section class="section passage-study-section" id="pasajes">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Base bíblica</p>
+            <h2>Pasajes bíblicos principales</h2>
+          </div>
 
-        <ul class="pill-list">
-          {passages.map((passage) => (
-            <li>
-              <a href={sitePath(`/pasajes/${passage.slug}/`)}>{passage.display_reference}</a>
-            </li>
-          ))}
-        </ul>
-      </section>
-    ) : (
-      bibleRefs.length > 0 && (
-        <section class="section" id="pasajes">
-          <h2>Pasajes bíblicos principales</h2>
+          <span class="section-count">
+            {passages.length > 0 ? passages.length : bibleRefs.length} pasajes
+          </span>
+        </div>
 
-          <ul class="pill-list">
-            {bibleRefs.map((ref) => (
-              <li>
-                <span>{ref.reference}</span>
-              </li>
+        <p class="section-intro">
+          Estos pasajes sostienen la lección y ayudan a ubicar el tema dentro del
+          desarrollo de la historia bíblica.
+        </p>
+
+        {passages.length > 0 ? (
+          <div class="passage-study-grid">
+            {passages.map((passage) => (
+              <a href={sitePath(`/pasajes/${passage.slug}/`)} class="passage-study-card">
+                <span>Pasaje</span>
+                <strong>{passage.display_reference}</strong>
+                <small>Leer el pasaje completo</small>
+              </a>
             ))}
-          </ul>
-        </section>
-      )
+          </div>
+        ) : (
+          <div class="passage-study-grid">
+            {bibleRefs.map((ref) => (
+              <div class="passage-study-card">
+                <span>Referencia</span>
+                <strong>{ref.reference}</strong>
+                <small>Referencia bíblica principal</small>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     )}
 
     {books.length > 0 && (
