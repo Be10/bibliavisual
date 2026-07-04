@@ -236,15 +236,6 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
       </aside>
     </section>
 
-    <section class="search-stats" aria-label="Resumen del índice de búsqueda">
-      {searchStats.map((stat) => (
-        <article class="search-stat-card">
-          <span>{stat.label}</span>
-          <strong>{stat.count}</strong>
-        </article>
-      ))}
-    </section>
-
     <section class="section search-section">
       <div class="section-header">
         <div>
@@ -293,6 +284,15 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
       <div id="search-results" class="search-results enhanced-search-results"></div>
     </section>
 
+    <section class="search-stats" aria-label="Resumen del índice de búsqueda">
+      {searchStats.map((stat) => (
+        <article class="search-stat-card">
+          <span>{stat.label}</span>
+          <strong>{stat.count}</strong>
+        </article>
+      ))}
+    </section>
+
     <script type="application/json" id="search-data" set:html={JSON.stringify(searchItems)} />
   </main>
 </BaseLayout>
@@ -304,6 +304,9 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
   const emptyElement = document.getElementById("search-empty");
   const resultsSummaryElement = document.getElementById("search-results-summary");
   const suggestionButtons = document.querySelectorAll("[data-search-suggestion]");
+
+  const initialParams = new URLSearchParams(window.location.search);
+  const initialQuery = initialParams.get("q") ?? "";
 
   const items = dataElement?.textContent
     ? JSON.parse(dataElement.textContent)
@@ -446,8 +449,20 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
   }
 
   input?.addEventListener("input", (event) => {
-    renderResults(event.target.value);
-  });
+  const value = event.target.value;
+
+  renderResults(value);
+
+  const url = new URL(window.location.href);
+
+  if (normalizeText(value)) {
+    url.searchParams.set("q", value);
+  } else {
+    url.searchParams.delete("q");
+  }
+
+  window.history.replaceState({}, "", url);
+});
 
   suggestionButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -457,9 +472,20 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
         input.value = value;
         input.focus();
         renderResults(value);
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("q", value);
+        window.history.replaceState({}, "", url);
       }
     });
   });
+
+  if (input && initialQuery) {
+  input.value = initialQuery;
+  renderResults(initialQuery);
+  input.focus();
+}
+
 </script>
 
 <style>
