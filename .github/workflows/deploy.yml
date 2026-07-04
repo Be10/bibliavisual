@@ -14,7 +14,7 @@ permissions:
 
 concurrency:
   group: github-pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -27,15 +27,33 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Install, reset database, build, and upload site
-        uses: withastro/action@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
         with:
           node-version: 22
-          build-cmd: npm run db:reset && npm run build
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Reset database
+        run: npm run db:reset
+
+      - name: Build site
+        run: npm run build
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./dist
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
 
     environment:
       name: github-pages
