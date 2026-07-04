@@ -1,9 +1,42 @@
 ---
 import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getAllPassages } from "../../lib/queries";
+import { getAllPassages, type Passage } from "../../lib/queries";
 
 const passages = getAllPassages().filter((passage) => passage.status !== "Borrador");
+
+const passagesWithSummary = passages.filter((passage) => passage.summary);
+const passagesWithoutSummary = passages.filter((passage) => !passage.summary);
+
+const books = Array.from(
+  new Map(
+    passages.map((passage) => [
+      passage.book_id,
+      {
+        id: passage.book_id,
+        name: passage.book_name,
+        slug: passage.book_slug,
+      },
+    ])
+  ).values()
+);
+
+const passagesByBook = books.map((book) => ({
+  book,
+  passages: passages.filter((passage) => passage.book_id === book.id),
+}));
+
+function getPassageRange(passage: Passage) {
+  const start = `${passage.start_chapter}${
+    passage.start_verse ? `:${passage.start_verse}` : ""
+  }`;
+
+  const end = `${passage.end_chapter}${
+    passage.end_verse ? `:${passage.end_verse}` : ""
+  }`;
+
+  return start === end ? start : `${start}–${end}`;
+}
 ---
 
 <BaseLayout
@@ -15,26 +48,488 @@ const passages = getAllPassages().filter((passage) => passage.status !== "Borrad
       <a href={sitePath("/")}>Inicio</a> → Pasajes
     </div>
 
-    <section class="hero">
-      <p class="eyebrow">Referencias bíblicas conectadas</p>
+    <section class="hero passages-hero">
+      <div class="passages-hero-content">
+        <p class="eyebrow">Referencias bíblicas conectadas</p>
 
-      <h1>Pasajes bíblicos</h1>
+        <h1>Pasajes bíblicos</h1>
 
-      <p class="subtitle">
-        Esta sección conecta referencias bíblicas con lecciones, eventos, libros,
-        temas, personajes y lugares. Más adelante incluirá el texto bíblico RVR1960
-        conforme al permiso/licencia correspondiente.
-      </p>
+        <p class="subtitle">
+          Explora referencias bíblicas conectadas con lecciones, eventos, libros,
+          temas, personajes y lugares dentro de la Enciclopedia Bíblica Visual.
+        </p>
+
+        <div class="actions">
+          <a href={sitePath("/biblia/")} class="button">
+            Abrir Biblia
+          </a>
+
+          <a href={sitePath("/libros/")} class="button secondary">
+            Explorar libros
+          </a>
+
+          <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button secondary">
+            Ruta principal
+          </a>
+        </div>
+      </div>
+
+      <aside class="passages-hero-card" aria-label="Resumen de pasajes bíblicos">
+        <span>Total de pasajes</span>
+        <strong>{passages.length}</strong>
+        <p>
+          {books.length} {books.length === 1 ? "libro representado" : "libros representados"}
+        </p>
+      </aside>
     </section>
 
-    <section class="entity-list">
-      {passages.map((passage) => (
-        <a href={sitePath(`/pasajes/${passage.slug}/`)} class="entity-card">
-          <span class="meta">{passage.book_name}</span>
-          <h2>{passage.display_reference}</h2>
-          <p>{passage.summary ?? "Resumen pendiente."}</p>
-        </a>
-      ))}
+    <section class="passages-stats" aria-label="Resumen visual de pasajes">
+      <article class="passages-stat-card">
+        <span>Pasajes publicados</span>
+        <strong>{passages.length}</strong>
+      </article>
+
+      <article class="passages-stat-card">
+        <span>Libros representados</span>
+        <strong>{books.length}</strong>
+      </article>
+
+      <article class="passages-stat-card">
+        <span>Con resumen</span>
+        <strong>{passagesWithSummary.length}</strong>
+      </article>
+
+      <article class="passages-stat-card">
+        <span>Pendientes de ampliar</span>
+        <strong>{passagesWithoutSummary.length}</strong>
+      </article>
+    </section>
+
+    <section class="section passages-index-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Explorar por libro</p>
+          <h2>Libros con pasajes registrados</h2>
+        </div>
+
+        <span class="section-count">
+          {books.length} {books.length === 1 ? "libro" : "libros"}
+        </span>
+      </div>
+
+      <nav class="passages-book-nav" aria-label="Índice de pasajes por libro">
+        {passagesByBook.map((group) => (
+          <a href={`#libro-${group.book.slug}`}>
+            <span>{group.book.name}</span>
+            <strong>{group.passages.length}</strong>
+          </a>
+        ))}
+      </nav>
+    </section>
+
+    <section class="section passages-directory-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Directorio</p>
+          <h2>Todos los pasajes</h2>
+        </div>
+
+        <span class="section-count">
+          {passages.length} {passages.length === 1 ? "pasaje" : "pasajes"}
+        </span>
+      </div>
+
+      <div class="passages-groups">
+        {passagesByBook.map((group) => (
+          <section class="passages-group" id={`libro-${group.book.slug}`}>
+            <div class="passages-group-heading">
+              <span>Libro</span>
+              <h3>{group.book.name}</h3>
+              <p>
+                {group.passages.length} {group.passages.length === 1 ? "pasaje registrado" : "pasajes registrados"}
+              </p>
+
+              <a href={sitePath(`/libros/${group.book.slug}/`)}>
+                Ver libro
+              </a>
+            </div>
+
+            <div class="passages-directory-grid">
+              {group.passages.map((passage) => (
+                <a href={sitePath(`/pasajes/${passage.slug}/`)} class="passage-directory-card">
+                  <div class="passage-directory-main">
+                    <span>{passage.book_name} {getPassageRange(passage)}</span>
+                    <h2>{passage.display_reference}</h2>
+                    <p>{passage.summary ?? "Resumen pendiente."}</p>
+                  </div>
+
+                  <div class="passage-directory-meta">
+                    <span>
+                      Inicio: {passage.start_chapter}
+                      {passage.start_verse ? `:${passage.start_verse}` : ""}
+                    </span>
+
+                    <span>
+                      Fin: {passage.end_chapter}
+                      {passage.end_verse ? `:${passage.end_verse}` : ""}
+                    </span>
+                  </div>
+
+                  <div class="passage-directory-footer">
+                    <small>{passage.summary ? "Resumen iniciado" : "Pendiente de ampliar"}</small>
+                    <strong>Ver pasaje →</strong>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
     </section>
   </main>
 </BaseLayout>
+
+<style>
+  .passages-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 320px);
+    gap: 28px;
+    align-items: end;
+    overflow: hidden;
+  }
+
+  .passages-hero::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -120px;
+    width: 320px;
+    height: 320px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
+    pointer-events: none;
+  }
+
+  .passages-hero-content,
+  .passages-hero-card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .passages-hero-card,
+  .passages-stat-card,
+  .passages-book-nav a,
+  .passages-group-heading,
+  .passage-directory-card {
+    border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
+  }
+
+  .passages-hero-card {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .passages-hero-card span,
+  .passages-stat-card span,
+  .passages-book-nav span,
+  .passages-group-heading span,
+  .passage-directory-main span {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .passages-hero-card strong {
+    color: #2d2418;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .passages-hero-card p,
+  .passages-group-heading p,
+  .passage-directory-main p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .passages-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .passages-stat-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+  }
+
+  .passages-stat-card span {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .passages-stat-card strong {
+    display: block;
+    color: #2d2418;
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .passages-book-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .passages-book-nav a {
+    display: inline-grid;
+    grid-template-columns: auto auto;
+    gap: 10px;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .passages-book-nav a:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .passages-book-nav strong {
+    display: inline-flex;
+    min-width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: white;
+    color: #5d3212;
+    font-size: 0.86rem;
+    font-weight: 900;
+  }
+
+  .passages-groups {
+    display: grid;
+    gap: 34px;
+  }
+
+  .passages-group {
+    display: grid;
+    grid-template-columns: minmax(190px, 260px) 1fr;
+    gap: 22px;
+    scroll-margin-top: 120px;
+  }
+
+  .passages-group-heading {
+    position: sticky;
+    top: 100px;
+    align-self: start;
+    display: grid;
+    gap: 8px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+  }
+
+  .passages-group-heading h3 {
+    margin: 0;
+    color: #2d2418;
+    font-size: 1.6rem;
+    line-height: 1.15;
+  }
+
+  .passages-group-heading a {
+    display: inline-flex;
+    width: fit-content;
+    margin-top: 6px;
+    color: #5d3212;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
+  .passages-group-heading a:hover {
+    text-decoration: underline;
+  }
+
+  .passages-directory-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .passage-directory-card {
+    display: grid;
+    grid-template-rows: 1fr auto auto;
+    gap: 16px;
+    min-height: 250px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .passage-directory-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .passage-directory-main {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .passage-directory-main h2 {
+    margin: 0;
+    color: #2d2418;
+    font-size: 1.22rem;
+    line-height: 1.3;
+  }
+
+  .passage-directory-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .passage-directory-meta span {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #eadcc4;
+    color: #5d3212;
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+
+  .passage-directory-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid #eadcc4;
+  }
+
+  .passage-directory-footer small {
+    color: #6a5c4d;
+    font-size: 0.88rem;
+    font-weight: 800;
+  }
+
+  .passage-directory-footer strong {
+    color: #5d3212;
+    font-size: 0.92rem;
+  }
+
+  :global(html[data-theme="dark"]) .passages-hero-card,
+  :global(html[data-theme="dark"]) .passages-stat-card,
+  :global(html[data-theme="dark"]) .passages-index-section,
+  :global(html[data-theme="dark"]) .passages-directory-section {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(html[data-theme="dark"]) .passages-book-nav a,
+  :global(html[data-theme="dark"]) .passages-group-heading,
+  :global(html[data-theme="dark"]) .passage-directory-card {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .passages-hero-card span,
+  :global(html[data-theme="dark"]) .passages-stat-card span,
+  :global(html[data-theme="dark"]) .passages-book-nav span,
+  :global(html[data-theme="dark"]) .passages-group-heading span,
+  :global(html[data-theme="dark"]) .passages-group-heading a,
+  :global(html[data-theme="dark"]) .passage-directory-main span,
+  :global(html[data-theme="dark"]) .passage-directory-footer strong {
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"]) .passages-hero-card strong,
+  :global(html[data-theme="dark"]) .passages-stat-card strong,
+  :global(html[data-theme="dark"]) .passages-group-heading h3,
+  :global(html[data-theme="dark"]) .passage-directory-main h2 {
+    color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"]) .passages-hero-card p,
+  :global(html[data-theme="dark"]) .passages-group-heading p,
+  :global(html[data-theme="dark"]) .passage-directory-main p,
+  :global(html[data-theme="dark"]) .passage-directory-footer small {
+    color: #d8c8b6;
+  }
+
+  :global(html[data-theme="dark"]) .passages-book-nav strong,
+  :global(html[data-theme="dark"]) .passage-directory-meta span {
+    background: #18110c;
+    border-color: #3a2a1d;
+    color: #f3d6ad;
+  }
+
+  :global(html[data-theme="dark"]) .passage-directory-footer {
+    border-color: #3a2a1d;
+  }
+
+  @media (max-width: 920px) {
+    .passages-hero,
+    .passages-group {
+      grid-template-columns: 1fr;
+    }
+
+    .passages-group-heading {
+      position: static;
+    }
+
+    .passages-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 700px) {
+    .passages-stats,
+    .passages-directory-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .passage-directory-card {
+      min-height: auto;
+    }
+
+    .passage-directory-footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+</style>
