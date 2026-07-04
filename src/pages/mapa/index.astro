@@ -144,7 +144,6 @@ const places = getMapPlaces().map((place) => ({
     const popupRect = popupElement.getBoundingClientRect();
     const mapWidth = map.getContainer().clientWidth;
 
-    const isMobileMap = mapWidth <= 760;
     const sidePadding = mapWidth <= 760 ? 18 : 28;
     const topPadding = mapWidth <= 760 ? 150 : 190;
     const bottomPadding = mapWidth <= 760 ? 12 : 12;
@@ -178,32 +177,32 @@ const places = getMapPlaces().map((place) => ({
   }
 
   function centerMarkerWithPopupSpace(latLng: L.LatLngExpression, zoom: number) {
-  map.invalidateSize(false);
+    map.invalidateSize(false);
 
-  const resolvedLatLng = L.latLng(latLng);
-  const mapContainer = map.getContainer();
-  const mapHeight = mapContainer.clientHeight;
-  const mapWidth = mapContainer.clientWidth;
+    const resolvedLatLng = L.latLng(latLng);
+    const mapContainer = map.getContainer();
+    const mapHeight = mapContainer.clientHeight;
+    const mapWidth = mapContainer.clientWidth;
 
-  const isMobileMap = mapWidth <= 760;
+    const isMobileMap = mapWidth <= 760;
 
-  const targetMarkerY = isMobileMap
-  ? mapHeight * 0.92
-  : mapHeight * 0.93;
+    const targetMarkerY = isMobileMap
+      ? mapHeight * 0.92
+      : mapHeight * 0.93;
 
-  const currentCenterY = mapHeight / 2;
-  const verticalShift = targetMarkerY - currentCenterY;
+    const currentCenterY = mapHeight / 2;
+    const verticalShift = targetMarkerY - currentCenterY;
 
-  const projectedPoint = map.project(resolvedLatLng, zoom);
-  const adjustedCenter = map.unproject(
-    projectedPoint.subtract([0, verticalShift]),
-    zoom
-  );
+    const projectedPoint = map.project(resolvedLatLng, zoom);
+    const adjustedCenter = map.unproject(
+      projectedPoint.subtract([0, verticalShift]),
+      zoom
+    );
 
-  map.setView(adjustedCenter, zoom, {
-    animate: false,
-  });
-}
+    map.setView(adjustedCenter, zoom, {
+      animate: false,
+    });
+  }
 
   function stabilizeSelectedPopup(marker: L.Marker, latLng: L.LatLngExpression, zoom: number) {
     const run = () => {
@@ -371,6 +370,115 @@ const places = getMapPlaces().map((place) => ({
   const bounds = L.latLngBounds([]);
   const markersBySlug = new Map<string, L.Marker>();
 
+  let lockedPopupSlug: string | null = selectedPlaceSlug;
+  let temporaryPopupSlug: string | null = null;
+  let pointerInsidePopupSlug: string | null = null;
+  let popupCloseTimer = 0;
+
+  function clearPopupCloseTimer() {
+    if (popupCloseTimer) {
+      window.clearTimeout(popupCloseTimer);
+      popupCloseTimer = 0;
+    }
+  }
+
+  function lockPopup(placeSlug: string) {
+    clearPopupCloseTimer();
+
+    lockedPopupSlug = placeSlug;
+    temporaryPopupSlug = null;
+    pointerInsidePopupSlug = placeSlug;
+  }
+
+  function releasePopup(placeSlug: string) {
+    if (lockedPopupSlug === placeSlug) {
+      lockedPopupSlug = null;
+    }
+
+    if (temporaryPopupSlug === placeSlug) {
+      temporaryPopupSlug = null;
+    }
+
+    if (pointerInsidePopupSlug === placeSlug) {
+      pointerInsidePopupSlug = null;
+    }
+
+    clearPopupCloseTimer();
+  }
+
+  function openLockedPopup(placeSlug: string, marker: L.Marker) {
+    lockPopup(placeSlug);
+    marker.openPopup();
+
+    window.requestAnimationFrame(() => {
+      keepPopupInsideMap(marker);
+    });
+  }
+
+  function closeLockedPopup(placeSlug: string, marker: L.Marker) {
+    releasePopup(placeSlug);
+    marker.closePopup();
+  }
+
+  function toggleLockedPopup(placeSlug: string, marker: L.Marker) {
+    if (lockedPopupSlug === placeSlug && marker.isPopupOpen()) {
+      closeLockedPopup(placeSlug, marker);
+      return;
+    }
+
+    openLockedPopup(placeSlug, marker);
+  }
+
+  function scheduleTemporaryPopupClose(placeSlug: string, delay = 320) {
+    clearPopupCloseTimer();
+
+    popupCloseTimer = window.setTimeout(() => {
+      if (lockedPopupSlug === placeSlug) {
+        return;
+      }
+
+      if (pointerInsidePopupSlug === placeSlug) {
+        return;
+      }
+
+      const marker = markersBySlug.get(placeSlug);
+
+      if (marker) {
+        marker.closePopup();
+      }
+
+      if (temporaryPopupSlug === placeSlug) {
+        temporaryPopupSlug = null;
+      }
+    }, delay);
+  }
+
+  function openTemporaryPopup(placeSlug: string, marker: L.Marker) {
+    if (lockedPopupSlug && lockedPopupSlug !== placeSlug) {
+      return;
+    }
+
+    clearPopupCloseTimer();
+
+    if (lockedPopupSlug === placeSlug) {
+      return;
+    }
+
+    if (temporaryPopupSlug && temporaryPopupSlug !== placeSlug) {
+      const previousMarker = markersBySlug.get(temporaryPopupSlug);
+      previousMarker?.closePopup();
+    }
+
+    temporaryPopupSlug = placeSlug;
+    pointerInsidePopupSlug = null;
+
+    marker.openPopup();
+
+    window.requestAnimationFrame(() => {
+      keepPopupInsideMap(marker);
+    });
+  }
+
   const placeIcon = L.divIcon({
     className: "ebv-map-marker",
     html: '<span aria-hidden="true"></span>',
@@ -437,11 +545,31 @@ const places = getMapPlaces().map((place) => ({
         minWidth: 0,
         autoPan: false,
         keepInView: false,
+        closeOnClick: false,
       }
     );
 
+    marker.off("click");
+
     let popupResizeObserver: ResizeObserver | null = null;
     let popupUpdateFrame = 0;
+
+    marker.on("mouseover", () => {
+      openTemporaryPopup(place.slug, marker);
+    });
+
+    marker.on("mouseout", () => {
+      if (lockedPopupSlug === place.slug) {
+        return;
+      }
+
+      scheduleTemporaryPopupClose(place.slug);
+    });
+
+    marker.on("click", (event) => {
+      L.DomEvent.stop(event);
+      toggleLockedPopup(place.slug, marker);
+    });
 
     marker.on("popupopen", () => {
       const popup = marker.getPopup();
@@ -463,6 +591,38 @@ const places = getMapPlaces().map((place) => ({
         return;
       }
 
+      popupElement.addEventListener("mouseenter", () => {
+        clearPopupCloseTimer();
+
+        if (!lockedPopupSlug && temporaryPopupSlug === place.slug) {
+          pointerInsidePopupSlug = place.slug;
+        }
+      });
+
+      popupElement.addEventListener("mouseleave", () => {
+        if (lockedPopupSlug === place.slug) {
+          return;
+        }
+
+        if (pointerInsidePopupSlug === place.slug) {
+          pointerInsidePopupSlug = null;
+        }
+
+        scheduleTemporaryPopupClose(place.slug, 240);
+      });
+
+      popupElement.addEventListener("click", (event) => {
+        const target = event.target as HTMLElement | null;
+
+        if (target?.closest(".leaflet-popup-close-button")) {
+          releasePopup(place.slug);
+          return;
+        }
+
+        lockPopup(place.slug);
+        event.stopPropagation();
+      });
+
       const schedulePopupUpdate = () => {
         window.cancelAnimationFrame(popupUpdateFrame);
 
@@ -478,6 +638,8 @@ const places = getMapPlaces().map((place) => ({
       };
 
       disclosure?.addEventListener("toggle", () => {
+        lockPopup(place.slug);
+
         if (indicator) {
           indicator.textContent = disclosure.open ? "▴" : "▾";
         }
@@ -506,6 +668,18 @@ const places = getMapPlaces().map((place) => ({
       popupResizeObserver?.disconnect();
       popupResizeObserver = null;
       window.cancelAnimationFrame(popupUpdateFrame);
+
+      if (lockedPopupSlug === place.slug) {
+        lockedPopupSlug = null;
+      }
+
+      if (temporaryPopupSlug === place.slug) {
+        temporaryPopupSlug = null;
+      }
+
+      if (pointerInsidePopupSlug === place.slug) {
+        pointerInsidePopupSlug = null;
+      }
     });
 
     bounds.extend(latLng);
