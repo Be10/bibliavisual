@@ -101,12 +101,130 @@ const map = L.map("biblical-map", {
   scrollWheelZoom: false,
 }).setView([31.778, 35.2354], 7);
 
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-    subdomains: "abcd",
-    maxZoom: 20,
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-  }).addTo(map);
+  const lightLayer = L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    {
+      subdomains: "abcd",
+      maxZoom: 20,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    }
+  );
+
+  const terrainLayer = L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+    {
+      maxZoom: 19,
+      attribution:
+        "Tiles &copy; Esri &mdash; Sources: Esri, HERE, Garmin, FAO, NOAA, USGS, OpenStreetMap contributors, and the GIS User Community",
+    }
+  );
+
+  const satelliteLayer = L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    {
+      maxZoom: 19,
+      attribution:
+        "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+    }
+  );
+
+  const baseLayers = {
+    "Satélite": satelliteLayer,
+    "Terreno": terrainLayer,
+    "Claro": lightLayer,
+  };
+
+  let activeBaseLayer = satelliteLayer;
+
+  satelliteLayer.addTo(map);
+
+  const layerControl = L.control({
+    position: "topright",
+  });
+
+  layerControl.onAdd = () => {
+    const container = L.DomUtil.create("div", "map-layer-switcher");
+
+    container.innerHTML = `
+      <button
+        type="button"
+        class="map-layer-current"
+        data-layer-toggle
+        aria-expanded="false"
+      >
+        <span>Tipo de mapa</span>
+        <strong data-current-layer>Satélite</strong>
+        <em aria-hidden="true">▾</em>
+      </button>
+
+      <div class="map-layer-options" role="group" aria-label="Tipo de mapa">
+        ${Object.keys(baseLayers)
+          .map(
+            (layerName) => `
+              <button
+                type="button"
+                class="map-layer-button ${layerName === "Satélite" ? "is-active" : ""}"
+                data-layer-name="${layerName}"
+                aria-pressed="${layerName === "Satélite" ? "true" : "false"}"
+              >
+                ${layerName}
+              </button>
+            `
+          )
+          .join("")}
+      </div>
+    `;
+
+    L.DomEvent.disableClickPropagation(container);
+    L.DomEvent.disableScrollPropagation(container);
+
+    const toggleButton = container.querySelector<HTMLButtonElement>("[data-layer-toggle]");
+    const currentLayerLabel = container.querySelector<HTMLElement>("[data-current-layer]");
+    const buttons = Array.from(
+      container.querySelectorAll<HTMLButtonElement>("[data-layer-name]")
+    );
+
+    toggleButton?.addEventListener("click", () => {
+      const isOpen = container.classList.toggle("is-open");
+      toggleButton.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const layerName = button.dataset.layerName as keyof typeof baseLayers;
+        const selectedLayer = baseLayers[layerName];
+
+        if (!selectedLayer) {
+          return;
+        }
+
+        if (selectedLayer !== activeBaseLayer) {
+          map.removeLayer(activeBaseLayer);
+          selectedLayer.addTo(map);
+          activeBaseLayer = selectedLayer;
+        }
+
+        if (currentLayerLabel) {
+          currentLayerLabel.textContent = layerName;
+        }
+
+        buttons.forEach((currentButton) => {
+          const isActive = currentButton === button;
+
+          currentButton.classList.toggle("is-active", isActive);
+          currentButton.setAttribute("aria-pressed", String(isActive));
+        });
+
+        container.classList.remove("is-open");
+        toggleButton?.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    return container;
+  };
+
+  layerControl.addTo(map);
 
   const bounds = L.latLngBounds([]);
   const markersBySlug = new Map<string, L.Marker>();
