@@ -283,40 +283,55 @@ const {
       </section>
     )}
 
-    <section class="section">
-      <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button secondary">
-        Volver a la ruta
-      </a>
+        <section class="section continue-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Recorrido guiado</p>
+          <h2>Continuar ruta</h2>
+        </div>
+
+        <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button secondary">
+          Ver ruta completa
+        </a>
+      </div>
+
+      <nav class="lesson-nav" aria-label="Navegación entre lecciones">
+        {previousLesson ? (
+          <a href={sitePath(`/lecciones/${previousLesson.slug}/`)} class="lesson-nav-card">
+            <span>← Lección anterior</span>
+            <strong>
+              Lección {previousLesson.lesson_number}: {previousLesson.title}
+            </strong>
+          </a>
+        ) : (
+          <div class="lesson-nav-card disabled">
+            <span>Inicio de la ruta</span>
+            <strong>Esta es la primera lección del recorrido.</strong>
+          </div>
+        )}
+
+        <a
+          href={sitePath("/rutas/panorama-visual-de-la-biblia/")}
+          class="lesson-nav-card center"
+        >
+          <span>Ruta principal</span>
+          <strong>Ver las 20 lecciones</strong>
+        </a>
+
+        {nextLesson ? (
+          <a href={sitePath(`/lecciones/${nextLesson.slug}/`)} class="lesson-nav-card next">
+            <span>Lección siguiente →</span>
+            <strong>
+              Lección {nextLesson.lesson_number}: {nextLesson.title}
+            </strong>
+          </a>
+        ) : (
+          <div class="lesson-nav-card disabled next">
+            <span>Final de la ruta</span>
+            <strong>Has llegado a la última lección.</strong>
+          </div>
+        )}
+      </nav>
     </section>
-
-    {(previousLesson || nextLesson) && (
-      <section class="section">
-        <h2>Continuar ruta</h2>
-
-        <nav class="lesson-nav" aria-label="Navegación entre lecciones">
-          {previousLesson ? (
-            <a href={sitePath(`/lecciones/${previousLesson.slug}/`)} class="lesson-nav-card">
-              <span>← Lección anterior</span>
-              <strong>
-                Lección {previousLesson.lesson_number}: {previousLesson.title}
-              </strong>
-            </a>
-          ) : (
-            <div class="lesson-nav-placeholder"></div>
-          )}
-
-          {nextLesson ? (
-            <a href={sitePath(`/lecciones/${nextLesson.slug}/`)} class="lesson-nav-card next">
-              <span>Lección siguiente →</span>
-              <strong>
-                Lección {nextLesson.lesson_number}: {nextLesson.title}
-              </strong>
-            </a>
-          ) : (
-            <div class="lesson-nav-placeholder"></div>
-          )}
-        </nav>
-      </section>
-    )}
   </main>
 </BaseLayout>

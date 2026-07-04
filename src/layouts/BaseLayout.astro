@@ -746,24 +746,197 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     white-space: nowrap;
   }
 
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 22px;
+  }
+
+  .section-header h2 {
+    margin-bottom: 0;
+  }
+
+  .section-header .eyebrow {
+    margin-bottom: 8px;
+  }
+
+  .route-hero {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .route-progress {
+    max-width: 560px;
+    margin-top: 32px;
+    padding: 18px;
+    border-radius: 20px;
+    background: #fff7e8;
+    border: 1px solid #eadcc4;
+  }
+
+  .route-progress-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+    color: #5d3212;
+    font-weight: 800;
+  }
+
+  .route-progress-bar {
+    height: 12px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #eadcc4;
+  }
+
+  .route-progress-bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #5d3212;
+  }
+
+  .route-overview {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .route-stat {
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+    border: 1px solid #eadcc4;
+  }
+
+  .route-stat span {
+    display: block;
+    margin-bottom: 8px;
+    color: #8a5a2b;
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .route-stat strong {
+    display: block;
+    color: #2d2418;
+    font-size: 1.05rem;
+    line-height: 1.4;
+  }
+
+  .route-intro {
+    background: #fffaf0;
+  }
+
+  .lesson-track {
+    display: grid;
+    gap: 14px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    counter-reset: lesson;
+  }
+
+  .lesson-track-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 18px;
+    padding: 20px;
+    border-radius: 22px;
+    background: #fffaf0;
+    border: 1px solid #eadcc4;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  a.lesson-track-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .lesson-track-number {
+    display: inline-flex;
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: #5d3212;
+    color: #fffaf0;
+    font-weight: 900;
+  }
+
+  .lesson-track-content {
+    display: grid;
+    gap: 8px;
+  }
+
+  .lesson-track-content strong {
+    color: #2d2418;
+    font-size: 1.2rem;
+    line-height: 1.35;
+  }
+
+  .lesson-track-content small {
+    max-width: 760px;
+    color: #5e5143;
+    font-size: 0.98rem;
+    line-height: 1.6;
+  }
+
+  .lesson-track-content em {
+    color: #8a5a2b;
+    font-size: 0.9rem;
+    font-style: normal;
+    font-weight: 800;
+  }
+
+  .lesson-track-item.is-draft {
+    opacity: 0.68;
+  }
+
+  .lesson-track-item.is-draft .lesson-track-number {
+    background: #c8a982;
+  }
+
+  .continue-section {
+    background: #fffaf0;
+  }
+
   .lesson-nav {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
   }
 
   .lesson-nav-card {
     display: block;
+    min-height: 112px;
     padding: 22px;
     border-radius: 22px;
     background: white;
     border: 1px solid #eadcc4;
     text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
   }
 
-  .lesson-nav-card:hover {
+  a.lesson-nav-card:hover {
+    transform: translateY(-2px);
     border-color: #c8a982;
-    background: #fffaf0;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
   }
 
   .lesson-nav-card span {
@@ -779,16 +952,31 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
   .lesson-nav-card strong {
     display: block;
     color: #2d2418;
-    font-size: 1.15rem;
+    font-size: 1.08rem;
     line-height: 1.4;
+  }
+
+  .lesson-nav-card.center {
+    text-align: center;
+    background: #5d3212;
+  }
+
+  .lesson-nav-card.center span,
+  .lesson-nav-card.center strong {
+    color: #fffaf0;
   }
 
   .lesson-nav-card.next {
     text-align: right;
   }
 
-  .lesson-nav-placeholder {
-    min-height: 1px;
+  .lesson-nav-card.disabled {
+    background: #f7efe2;
+    color: #7a6a58;
+  }
+
+  .lesson-nav-card.disabled strong {
+    color: #7a6a58;
   }
 
   @media (max-width: 760px) {
@@ -833,16 +1021,32 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
       grid-template-columns: 1fr;
     }
 
+    .section-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .route-overview {
+      grid-template-columns: 1fr;
+    }
+
+    .lesson-track-card {
+      grid-template-columns: 1fr;
+    }
+
+    .lesson-track-number {
+      width: 44px;
+      height: 44px;
+    }
+
     .lesson-nav {
       grid-template-columns: 1fr;
     }
 
-    .lesson-nav-card.next {
+    .lesson-nav-card,
+    .lesson-nav-card.next,
+    .lesson-nav-card.center {
       text-align: left;
-    }
-
-    .lesson-nav-placeholder {
-      display: none;
     }
   }
 </style>

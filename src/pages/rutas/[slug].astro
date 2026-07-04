@@ -26,6 +26,22 @@ export function getStaticPaths() {
 }
 
 const { route, lessons } = Astro.props;
+
+const orderedLessons = [...lessons].sort(
+  (a, b) => a.lesson_number - b.lesson_number,
+);
+
+const publishedLessons = orderedLessons.filter(
+  (lesson) => lesson.status !== "Borrador",
+);
+
+const firstPublishedLesson = publishedLessons[0] ?? null;
+const lastPublishedLesson = publishedLessons[publishedLessons.length - 1] ?? null;
+
+const completionPercent =
+  orderedLessons.length > 0
+    ? Math.round((publishedLessons.length / orderedLessons.length) * 100)
+    : 0;
 ---
 
 <BaseLayout
@@ -37,8 +53,8 @@ const { route, lessons } = Astro.props;
       <a href={sitePath("/")}>Inicio</a> → Rutas → {route.title}
     </div>
 
-    <section class="hero">
-      <p class="eyebrow">Ruta · {lessons.length} lecciones</p>
+    <section class="hero route-hero">
+      <p class="eyebrow">Ruta guiada · {orderedLessons.length} lecciones</p>
 
       <h1>{route.title}</h1>
 
@@ -46,44 +62,122 @@ const { route, lessons } = Astro.props;
         {route.description}
       </p>
 
-      {lessons.length > 0 && (
-        <div class="actions">
-          <a href={sitePath(`/lecciones/${lessons[0].slug}/`)} class="button">
-            Empezar lección 1
-          </a>
+      <div class="route-progress" aria-label={`Progreso editorial: ${completionPercent}%`}>
+        <div class="route-progress-header">
+          <span>{publishedLessons.length} de {orderedLessons.length} lecciones publicadas</span>
+          <strong>{completionPercent}%</strong>
         </div>
-      )}
+
+        <div class="route-progress-bar">
+          <span style={`width: ${completionPercent}%`}></span>
+        </div>
+      </div>
+
+      <div class="actions">
+        {firstPublishedLesson && (
+          <a href={sitePath(`/lecciones/${firstPublishedLesson.slug}/`)} class="button">
+            Empezar recorrido
+          </a>
+        )}
+
+        {lastPublishedLesson && (
+          <a href={sitePath(`/lecciones/${lastPublishedLesson.slug}/`)} class="button secondary">
+            Ir a la última lección
+          </a>
+        )}
+
+        <a href={sitePath("/linea-de-tiempo/")} class="button secondary">
+          Ver línea de tiempo
+        </a>
+
+        <a href={sitePath("/mapa/")} class="button secondary">
+          Ver mapa bíblico
+        </a>
+      </div>
     </section>
 
-    <section class="grid">
-      <article class="card">
-        <h2>Nivel</h2>
-        <p>{route.level}</p>
+    <section class="route-overview">
+      <article class="route-stat">
+        <span>Nivel</span>
+        <strong>{route.level ?? "Introductorio"}</strong>
       </article>
 
-      <article class="card">
-        <h2>Duración</h2>
-        <p>{route.estimated_duration}</p>
+      <article class="route-stat">
+        <span>Duración</span>
+        <strong>{route.estimated_duration ?? "Ruta progresiva"}</strong>
       </article>
 
-      <article class="card">
-        <h2>Estado</h2>
-        <p>{route.status}</p>
+      <article class="route-stat">
+        <span>Estado</span>
+        <strong>{route.status}</strong>
       </article>
+
+      <article class="route-stat">
+        <span>Recorrido</span>
+        <strong>Creación → Nueva creación</strong>
+      </article>
+    </section>
+
+    <section class="section route-intro">
+      <h2>Cómo recorrer esta ruta</h2>
+
+      <div class="content">
+        <p>
+          Esta ruta presenta la Biblia como una sola historia: creación, caída,
+          promesa, redención y nueva creación. Puedes avanzar lección por lección,
+          usar los enlaces relacionados para explorar personajes, lugares y temas,
+          o volver a la ruta principal cuando quieras retomar el recorrido.
+        </p>
+      </div>
     </section>
 
     <section class="section">
-      <h2>Lecciones de la ruta</h2>
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Recorrido completo</p>
+          <h2>Lecciones de la ruta</h2>
+        </div>
 
-      <ol class="list">
-        {lessons.map((lesson) => (
-          <li>
+        {firstPublishedLesson && (
+          <a href={sitePath(`/lecciones/${firstPublishedLesson.slug}/`)} class="button secondary">
+            Comenzar
+          </a>
+        )}
+      </div>
+
+      <ol class="lesson-track">
+        {orderedLessons.map((lesson) => (
+          <li class:list={["lesson-track-item", lesson.status === "Borrador" && "is-draft"]}>
             {lesson.status !== "Borrador" ? (
-              <a href={sitePath(`/lecciones/${lesson.slug}/`)}>
-                {lesson.title}
+              <a href={sitePath(`/lecciones/${lesson.slug}/`)} class="lesson-track-card">
+                <span class="lesson-track-number">
+                  {String(lesson.lesson_number).padStart(2, "0")}
+                </span>
+
+                <span class="lesson-track-content">
+                  <strong>{lesson.title}</strong>
+
+                  {lesson.main_idea && (
+                    <small>{lesson.main_idea}</small>
+                  )}
+
+                  <em>
+                    {lesson.estimated_time ?? "7–10 minutos"} · {lesson.status}
+                  </em>
+                </span>
               </a>
             ) : (
-              <span>{lesson.title} · próximamente</span>
+              <div class="lesson-track-card">
+                <span class="lesson-track-number">
+                  {String(lesson.lesson_number).padStart(2, "0")}
+                </span>
+
+                <span class="lesson-track-content">
+                  <strong>{lesson.title}</strong>
+                  <small>Esta lección todavía está pendiente de publicación.</small>
+                  <em>Próximamente</em>
+                </span>
+              </div>
             )}
           </li>
         ))}
