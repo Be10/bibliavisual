@@ -1,9 +1,29 @@
 ---
 import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getAllPeople } from "../../lib/queries";
+import { getAllPeople, type Person } from "../../lib/queries";
 
 const people = getAllPeople().filter((person) => person.status !== "Borrador");
+
+const peopleWithSummary = people.filter((person) => person.summary);
+const peopleWithoutSummary = people.filter((person) => !person.summary);
+
+const initials = Array.from(
+  new Set(
+    people.map((person) => person.name.trim().charAt(0).toUpperCase())
+  )
+).sort((a, b) => a.localeCompare(b, "es"));
+
+const peopleByInitial = initials.map((initial) => ({
+  initial,
+  people: people.filter(
+    (person) => person.name.trim().charAt(0).toUpperCase() === initial
+  ),
+}));
+
+function getPersonInitial(person: Person) {
+  return person.name.trim().charAt(0).toUpperCase();
+}
 ---
 
 <BaseLayout
@@ -15,25 +35,459 @@ const people = getAllPeople().filter((person) => person.status !== "Borrador");
       <a href={sitePath("/")}>Inicio</a> → Personajes
     </div>
 
-    <section class="hero">
-      <p class="eyebrow">Exploración libre</p>
+    <section class="hero people-hero">
+      <div class="people-hero-content">
+        <p class="eyebrow">Exploración libre</p>
 
-      <h1>Personajes bíblicos</h1>
+        <h1>Personajes bíblicos</h1>
 
-      <p class="subtitle">
-        Biografías y fichas de personajes relacionados con la historia bíblica,
-        sus eventos, lugares, temas y conexiones principales.
-      </p>
+        <p class="subtitle">
+          Explora biografías y fichas de personajes relacionados con la historia bíblica,
+          sus eventos, lugares, temas, pasajes y lecciones principales.
+        </p>
+
+        <div class="actions">
+          <a href={sitePath("/eventos/")} class="button">
+            Explorar eventos
+          </a>
+
+          <a href={sitePath("/lugares/")} class="button secondary">
+            Explorar lugares
+          </a>
+
+          <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button secondary">
+            Ruta principal
+          </a>
+        </div>
+      </div>
+
+      <aside class="people-hero-card" aria-label="Resumen de personajes bíblicos">
+        <span>Total de personajes</span>
+        <strong>{people.length}</strong>
+        <p>
+          {peopleWithSummary.length} con resumen · {peopleWithoutSummary.length} pendientes
+        </p>
+      </aside>
     </section>
 
-    <section class="entity-list">
-      {people.map((person) => (
-        <a href={sitePath(`/personajes/${person.slug}/`)} class="entity-card">
-          <span class="meta">Personaje</span>
-          <h2>{person.name}</h2>
-          <p>{person.summary ?? "Biografía pendiente."}</p>
-        </a>
-      ))}
+    <section class="people-stats" aria-label="Resumen visual de personajes">
+      <article class="people-stat-card">
+        <span>Personajes publicados</span>
+        <strong>{people.length}</strong>
+      </article>
+
+      <article class="people-stat-card">
+        <span>Con biografía breve</span>
+        <strong>{peopleWithSummary.length}</strong>
+      </article>
+
+      <article class="people-stat-card">
+        <span>Pendientes de ampliar</span>
+        <strong>{peopleWithoutSummary.length}</strong>
+      </article>
+
+      <article class="people-stat-card">
+        <span>Iniciales disponibles</span>
+        <strong>{initials.length}</strong>
+      </article>
+    </section>
+
+    <section class="section people-index-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Índice alfabético</p>
+          <h2>Explorar por inicial</h2>
+        </div>
+
+        <span class="section-count">
+          {initials.length} {initials.length === 1 ? "inicial" : "iniciales"}
+        </span>
+      </div>
+
+      <nav class="people-initial-nav" aria-label="Índice de personajes por inicial">
+        {peopleByInitial.map((group) => (
+          <a href={`#inicial-${group.initial}`}>
+            <span>{group.initial}</span>
+            <strong>{group.people.length}</strong>
+          </a>
+        ))}
+      </nav>
+    </section>
+
+    <section class="section people-directory-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Directorio</p>
+          <h2>Todos los personajes</h2>
+        </div>
+
+        <span class="section-count">
+          {people.length} {people.length === 1 ? "personaje" : "personajes"}
+        </span>
+      </div>
+
+      <div class="people-groups">
+        {peopleByInitial.map((group) => (
+          <section class="people-group" id={`inicial-${group.initial}`}>
+            <div class="people-group-heading">
+              <span>Inicial</span>
+              <h3>{group.initial}</h3>
+              <p>
+                {group.people.length} {group.people.length === 1 ? "personaje" : "personajes"}
+              </p>
+            </div>
+
+            <div class="people-directory-grid">
+              {group.people.map((person) => (
+                <a href={sitePath(`/personajes/${person.slug}/`)} class="person-directory-card">
+                  <div class="person-directory-avatar" aria-hidden="true">
+                    {getPersonInitial(person)}
+                  </div>
+
+                  <div class="person-directory-content">
+                    <span>Personaje bíblico</span>
+                    <h2>{person.name}</h2>
+                    <p>{person.summary ?? "Biografía pendiente."}</p>
+                  </div>
+
+                  <div class="person-directory-footer">
+                    <small>{person.summary ? "Ficha iniciada" : "Pendiente de ampliar"}</small>
+                    <strong>Ver personaje →</strong>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
     </section>
   </main>
 </BaseLayout>
+
+<style>
+  .people-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 320px);
+    gap: 28px;
+    align-items: end;
+    overflow: hidden;
+  }
+
+  .people-hero::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -120px;
+    width: 320px;
+    height: 320px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
+    pointer-events: none;
+  }
+
+  .people-hero-content,
+  .people-hero-card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .people-hero-card,
+  .people-stat-card,
+  .people-initial-nav a,
+  .people-group-heading,
+  .person-directory-card {
+    border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
+  }
+
+  .people-hero-card {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .people-hero-card span,
+  .people-stat-card span,
+  .people-initial-nav span,
+  .people-group-heading span,
+  .person-directory-content span {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .people-hero-card strong {
+    color: #2d2418;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .people-hero-card p,
+  .people-group-heading p,
+  .person-directory-content p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .people-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .people-stat-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+  }
+
+  .people-stat-card span {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .people-stat-card strong {
+    display: block;
+    color: #2d2418;
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .people-initial-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .people-initial-nav a {
+    display: inline-grid;
+    grid-template-columns: auto auto;
+    gap: 10px;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .people-initial-nav a:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .people-initial-nav strong {
+    display: inline-flex;
+    min-width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: white;
+    color: #5d3212;
+    font-size: 0.86rem;
+    font-weight: 900;
+  }
+
+  .people-groups {
+    display: grid;
+    gap: 34px;
+  }
+
+  .people-group {
+    display: grid;
+    grid-template-columns: minmax(150px, 220px) 1fr;
+    gap: 22px;
+    scroll-margin-top: 120px;
+  }
+
+  .people-group-heading {
+    position: sticky;
+    top: 100px;
+    align-self: start;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+  }
+
+  .people-group-heading h3 {
+    margin: 8px 0;
+    color: #2d2418;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .people-directory-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .person-directory-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    min-height: 210px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .person-directory-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .person-directory-avatar {
+    display: inline-flex;
+    width: 54px;
+    height: 54px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: #5d3212;
+    color: #fffaf0;
+    font-size: 1.35rem;
+    font-weight: 900;
+  }
+
+  .person-directory-content {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .person-directory-content h2 {
+    margin: 0;
+    color: #2d2418;
+    font-size: 1.2rem;
+    line-height: 1.3;
+  }
+
+  .person-directory-footer {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid #eadcc4;
+  }
+
+  .person-directory-footer small {
+    color: #6a5c4d;
+    font-size: 0.88rem;
+    font-weight: 800;
+  }
+
+  .person-directory-footer strong {
+    color: #5d3212;
+    font-size: 0.92rem;
+  }
+
+  :global(html[data-theme="dark"]) .people-hero-card,
+  :global(html[data-theme="dark"]) .people-stat-card,
+  :global(html[data-theme="dark"]) .people-index-section,
+  :global(html[data-theme="dark"]) .people-directory-section {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(html[data-theme="dark"]) .people-initial-nav a,
+  :global(html[data-theme="dark"]) .people-group-heading,
+  :global(html[data-theme="dark"]) .person-directory-card {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .people-hero-card span,
+  :global(html[data-theme="dark"]) .people-stat-card span,
+  :global(html[data-theme="dark"]) .people-initial-nav span,
+  :global(html[data-theme="dark"]) .people-group-heading span,
+  :global(html[data-theme="dark"]) .person-directory-content span,
+  :global(html[data-theme="dark"]) .person-directory-footer strong {
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"]) .people-hero-card strong,
+  :global(html[data-theme="dark"]) .people-stat-card strong,
+  :global(html[data-theme="dark"]) .people-group-heading h3,
+  :global(html[data-theme="dark"]) .person-directory-content h2 {
+    color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"]) .people-hero-card p,
+  :global(html[data-theme="dark"]) .people-group-heading p,
+  :global(html[data-theme="dark"]) .person-directory-content p,
+  :global(html[data-theme="dark"]) .person-directory-footer small {
+    color: #d8c8b6;
+  }
+
+  :global(html[data-theme="dark"]) .people-initial-nav strong {
+    background: #18110c;
+    color: #f3d6ad;
+  }
+
+  :global(html[data-theme="dark"]) .person-directory-avatar {
+    background: #e9b872;
+    color: #1b120b;
+  }
+
+  :global(html[data-theme="dark"]) .person-directory-footer {
+    border-color: #3a2a1d;
+  }
+
+  @media (max-width: 920px) {
+    .people-hero,
+    .people-group {
+      grid-template-columns: 1fr;
+    }
+
+    .people-group-heading {
+      position: static;
+    }
+
+    .people-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 700px) {
+    .people-stats,
+    .people-directory-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .person-directory-card {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+
+    .person-directory-footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+</style>
