@@ -244,22 +244,43 @@ const storylineStages = [
     )}
 
     {lesson.main_idea && (
-      <section class="section" id="idea-principal">
-        <h2>Idea principal</h2>
+      <section class="section main-idea-section" id="idea-principal">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">En una frase</p>
+            <h2>Idea principal</h2>
+          </div>
+        </div>
 
-        <div class="content">
+        <div class="main-idea-card">
+          <span class="quote-mark" aria-hidden="true"></span>
           <p>{lesson.main_idea}</p>
         </div>
       </section>
     )}
 
     {points.length > 0 && (
-      <section class="section" id="resumen">
-        <h2>Resumen en 5 ideas</h2>
+      <section class="section lesson-points-section" id="resumen">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Resumen guiado</p>
+            <h2>Resumen en 5 ideas</h2>
+          </div>
 
-        <ol class="list">
-          {points.map((point) => (
-            <li>{point.point_text}</li>
+          <span class="section-count">
+            {points.length} ideas
+          </span>
+        </div>
+
+        <ol class="lesson-points-list">
+          {points.map((point, index) => (
+            <li>
+              <span class="lesson-point-number">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+
+              <p>{point.point_text}</p>
+            </li>
           ))}
         </ol>
       </section>

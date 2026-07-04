@@ -996,6 +996,94 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     color: #fffaf0;
   }
 
+    .main-idea-section {
+    background: white;
+  }
+
+  .main-idea-card {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 30px 34px 34px;
+    border-radius: 24px;
+    background: #fffaf0;
+    border: 1px solid #eadcc4;
+    text-align: center;
+  }
+
+  .quote-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+  }
+
+  .quote-mark::before,
+  .quote-mark::after {
+    content: "";
+    width: 18px;
+    height: 28px;
+    border-radius: 999px 999px 999px 0;
+    background: #eadcc4;
+    transform: rotate(180deg) skew(-8deg);
+  }
+
+  .main-idea-card p {
+    max-width: 880px;
+    margin: 0;
+    color: #2d2418;
+    font-size: clamp(1.35rem, 2.4vw, 2rem);
+    font-weight: 800;
+    line-height: 1.45;
+    letter-spacing: -0.03em;
+  }
+
+  .lesson-points-section {
+    background: white;
+  }
+
+  .lesson-points-list {
+    display: grid;
+    gap: 14px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .lesson-points-list li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: center;
+    min-height: 50px;
+    padding: 9px 14px;
+    border-radius: 18px;
+    background: #fffaf0;
+    border: 1px solid #eadcc4;
+  }
+
+  .lesson-point-number {
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: #5d3212;
+    color: #fffaf0;
+    font-size: 0.8rem;
+    font-weight: 900;
+  }
+
+  .lesson-points-list p {
+    margin: 0;
+    align-self: center;
+    color: #2d2418;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
   .passage-study-section {
     background: white;
   }
@@ -1515,6 +1603,33 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
 
     .passage-study-card {
       min-height: auto;
+    }
+
+        .main-idea-card {
+      gap: 8px;
+      padding: 26px 20px 28px;
+    }
+
+    .quote-mark {
+      height: 32px;
+    }
+
+    .quote-mark::before,
+    .quote-mark::after {
+      width: 16px;
+      height: 24px;
+    }
+
+    .lesson-points-list li {
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      min-height: 48px;
+      padding: 9px 12px;
+    }
+
+    .lesson-point-number {
+      width: 32px;
+      height: 32px;
     }
   }
 </style>
