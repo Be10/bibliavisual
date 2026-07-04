@@ -1,9 +1,46 @@
 ---
 import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getAllEvents } from "../../lib/queries";
+import { getAllEvents, type Event } from "../../lib/queries";
 
 const events = getAllEvents().filter((event) => event.status !== "Borrador");
+
+const timelineEvents = events.filter((event) => event.appears_on_timeline);
+const mapEvents = events.filter((event) => event.appears_on_map);
+
+const periodFallback = "Período pendiente";
+const typeFallback = "Evento bíblico";
+
+const periods = Array.from(
+  new Set(events.map((event) => event.biblical_period ?? periodFallback))
+);
+
+const eventTypes = Array.from(
+  new Set(events.map((event) => event.event_type ?? typeFallback))
+);
+
+const eventsByPeriod = periods.map((period) => ({
+  period,
+  slug: period
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, ""),
+  events: events.filter((event) => (event.biblical_period ?? periodFallback) === period),
+}));
+
+function getCertaintyLabel(value: string | null) {
+  return value ?? "Certeza pendiente";
+}
+
+function getTimelineLabel(event: Event) {
+  return event.appears_on_timeline ? "En línea de tiempo" : "Fuera de línea de tiempo";
+}
+
+function getMapLabel(event: Event) {
+  return event.appears_on_map ? "Con uso en mapa" : "Sin uso directo en mapa";
+}
 ---
 
 <BaseLayout
@@ -15,24 +52,511 @@ const events = getAllEvents().filter((event) => event.status !== "Borrador");
       <a href={sitePath("/")}>Inicio</a> → Eventos
     </div>
 
-    <section class="hero">
-      <p class="eyebrow">Línea de tiempo futura</p>
+    <section class="hero events-hero">
+      <div class="events-hero-content">
+        <p class="eyebrow">Línea narrativa bíblica</p>
 
-      <h1>Eventos bíblicos</h1>
+        <h1>Eventos bíblicos</h1>
 
-      <p class="subtitle">
-        Eventos que conectan lecciones, personajes, lugares, temas, mapas y líneas de tiempo.
-      </p>
+        <p class="subtitle">
+          Explora los acontecimientos principales de la historia bíblica y su conexión
+          con lugares, personajes, temas, pasajes, mapas y lecciones.
+        </p>
+
+        <div class="actions">
+          <a href={sitePath("/linea-de-tiempo/")} class="button">
+            Ver línea de tiempo
+          </a>
+
+          <a href={sitePath("/mapa/")} class="button secondary">
+            Ver mapa bíblico
+          </a>
+        </div>
+      </div>
+
+      <aside class="events-hero-card" aria-label="Resumen de eventos bíblicos">
+        <span>Total de eventos</span>
+        <strong>{events.length}</strong>
+        <p>
+          {timelineEvents.length} en línea de tiempo · {mapEvents.length} con uso en mapa
+        </p>
+      </aside>
     </section>
 
-    <section class="entity-list">
-      {events.map((event) => (
-        <a href={sitePath(`/eventos/${event.slug}/`)} class="entity-card">
-          <span class="meta">{event.biblical_period ?? "Evento bíblico"}</span>
-          <h2>{event.title}</h2>
-          <p>{event.summary ?? "Resumen pendiente."}</p>
-        </a>
-      ))}
+    <section class="events-stats" aria-label="Resumen visual de eventos">
+      <article class="events-stat-card">
+        <span>Eventos registrados</span>
+        <strong>{events.length}</strong>
+      </article>
+
+      <article class="events-stat-card">
+        <span>Períodos bíblicos</span>
+        <strong>{periods.length}</strong>
+      </article>
+
+      <article class="events-stat-card">
+        <span>Tipos de evento</span>
+        <strong>{eventTypes.length}</strong>
+      </article>
+
+      <article class="events-stat-card">
+        <span>Eventos en mapa</span>
+        <strong>{mapEvents.length}</strong>
+      </article>
+    </section>
+
+    <section class="section events-explorer">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Explorar por período</p>
+          <h2>Recorrido histórico</h2>
+        </div>
+
+        <span class="section-count">
+          {periods.length} {periods.length === 1 ? "período" : "períodos"}
+        </span>
+      </div>
+
+      <div class="period-nav">
+        {eventsByPeriod.map((group) => (
+          <a href={`#${group.slug}`}>
+            <span>{group.period}</span>
+            <strong>{group.events.length}</strong>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="section events-timeline">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Línea narrativa</p>
+          <h2>Eventos agrupados por período</h2>
+        </div>
+
+        <span class="section-count">
+          {events.length} {events.length === 1 ? "evento" : "eventos"}
+        </span>
+      </div>
+
+      <div class="timeline-groups">
+        {eventsByPeriod.map((group) => (
+          <section class="timeline-group" id={group.slug}>
+            <div class="timeline-period">
+              <span>Período</span>
+              <h3>{group.period}</h3>
+              <p>
+                {group.events.length} {group.events.length === 1 ? "evento relacionado" : "eventos relacionados"}
+              </p>
+            </div>
+
+            <div class="timeline-list">
+              {group.events.map((event) => (
+                <article class="event-card">
+                  <div class="event-card-marker" aria-hidden="true"></div>
+
+                  <div class="event-card-body">
+                    <div class="event-card-topline">
+                      <span>{event.event_type ?? typeFallback}</span>
+
+                      {event.approximate_date && (
+                        <small>{event.approximate_date}</small>
+                      )}
+                    </div>
+
+                    <h3>
+                      <a href={sitePath(`/eventos/${event.slug}/`)}>
+                        {event.title}
+                      </a>
+                    </h3>
+
+                    <p>{event.summary ?? "Resumen pendiente."}</p>
+
+                    <div class="event-badges" aria-label="Indicadores del evento">
+                      <span>{getTimelineLabel(event)}</span>
+                      <span>{getMapLabel(event)}</span>
+                      <span>{getCertaintyLabel(event.temporal_certainty)}</span>
+                    </div>
+
+                    <div class="event-card-actions">
+                      <a href={sitePath(`/eventos/${event.slug}/`)}>
+                        Ver evento
+                      </a>
+
+                      {event.appears_on_timeline ? (
+                        <a href={sitePath("/linea-de-tiempo/")}>
+                          Línea de tiempo
+                        </a>
+                      ) : null}
+
+                      {event.appears_on_map ? (
+                        <a href={sitePath("/mapa/")}>
+                          Mapa
+                        </a>
+                      ) : null}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
     </section>
   </main>
 </BaseLayout>
+
+<style>
+  .events-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(230px, 340px);
+    gap: 28px;
+    align-items: end;
+    overflow: hidden;
+  }
+
+  .events-hero::after {
+    content: "";
+    position: absolute;
+    right: -120px;
+    bottom: -140px;
+    width: 360px;
+    height: 360px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(200, 169, 130, 0.3), transparent 68%);
+    pointer-events: none;
+  }
+
+  .events-hero-content,
+  .events-hero-card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .events-hero-card,
+  .events-stat-card,
+  .period-nav a,
+  .timeline-period,
+  .event-card {
+    border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
+  }
+
+  .events-hero-card {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .events-hero-card span,
+  .events-stat-card span,
+  .period-nav span,
+  .timeline-period span,
+  .event-card-topline span {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .events-hero-card strong {
+    color: #2d2418;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .events-hero-card p,
+  .timeline-period p,
+  .event-card p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .events-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .events-stat-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+  }
+
+  .events-stat-card span {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .events-stat-card strong {
+    display: block;
+    color: #2d2418;
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .period-nav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .period-nav a {
+    display: grid;
+    gap: 8px;
+    padding: 18px;
+    border-radius: 20px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .period-nav a:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .period-nav strong {
+    color: #2d2418;
+    font-size: 1.45rem;
+    line-height: 1;
+  }
+
+  .timeline-groups {
+    display: grid;
+    gap: 34px;
+  }
+
+  .timeline-group {
+    display: grid;
+    grid-template-columns: minmax(210px, 280px) 1fr;
+    gap: 22px;
+    scroll-margin-top: 120px;
+  }
+
+  .timeline-period {
+    position: sticky;
+    top: 100px;
+    align-self: start;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+  }
+
+  .timeline-period h3 {
+    margin: 8px 0;
+    color: #2d2418;
+    font-size: 1.35rem;
+    line-height: 1.2;
+  }
+
+  .timeline-list {
+    position: relative;
+    display: grid;
+    gap: 16px;
+  }
+
+  .timeline-list::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    left: 11px;
+    width: 2px;
+    background: #eadcc4;
+  }
+
+  .event-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 16px;
+    padding: 18px;
+    border-radius: 24px;
+    background: white;
+  }
+
+  .event-card-marker {
+    position: relative;
+    z-index: 1;
+    width: 24px;
+    height: 24px;
+    margin-top: 4px;
+    border-radius: 999px;
+    border: 5px solid #fffaf0;
+    background: #8a5a2b;
+    box-shadow: 0 0 0 1px #c8a982;
+  }
+
+  .event-card-body {
+    display: grid;
+    gap: 10px;
+  }
+
+  .event-card-topline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .event-card-topline small {
+    color: #6a5c4d;
+    font-weight: 800;
+  }
+
+  .event-card h3 {
+    margin: 0;
+    color: #2d2418;
+    font-size: 1.35rem;
+    line-height: 1.25;
+  }
+
+  .event-card h3 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .event-card h3 a:hover {
+    text-decoration: underline;
+  }
+
+  .event-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .event-badges span {
+    display: inline-flex;
+    width: fit-content;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: #f6ead7;
+    color: #5d3212;
+    font-size: 0.78rem;
+    font-weight: 900;
+  }
+
+  .event-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .event-card-actions a {
+    color: #5d3212;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
+  .event-card-actions a:hover {
+    text-decoration: underline;
+  }
+
+  :global(html[data-theme="dark"]) .events-hero-card,
+  :global(html[data-theme="dark"]) .events-stat-card,
+  :global(html[data-theme="dark"]) .events-explorer,
+  :global(html[data-theme="dark"]) .events-timeline {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(html[data-theme="dark"]) .period-nav a,
+  :global(html[data-theme="dark"]) .timeline-period,
+  :global(html[data-theme="dark"]) .event-card {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .timeline-list::before {
+    background: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .event-card-marker {
+    border-color: #18110c;
+    background: #e9b872;
+    box-shadow: 0 0 0 1px #5d3212;
+  }
+
+  :global(html[data-theme="dark"]) .events-hero-card span,
+  :global(html[data-theme="dark"]) .events-stat-card span,
+  :global(html[data-theme="dark"]) .period-nav span,
+  :global(html[data-theme="dark"]) .timeline-period span,
+  :global(html[data-theme="dark"]) .event-card-topline span,
+  :global(html[data-theme="dark"]) .event-card-actions a {
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"]) .events-hero-card strong,
+  :global(html[data-theme="dark"]) .events-stat-card strong,
+  :global(html[data-theme="dark"]) .period-nav strong,
+  :global(html[data-theme="dark"]) .timeline-period h3,
+  :global(html[data-theme="dark"]) .event-card h3 {
+    color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"]) .events-hero-card p,
+  :global(html[data-theme="dark"]) .timeline-period p,
+  :global(html[data-theme="dark"]) .event-card p,
+  :global(html[data-theme="dark"]) .event-card-topline small {
+    color: #d8c8b6;
+  }
+
+  :global(html[data-theme="dark"]) .event-badges span {
+    background: #2b1d13;
+    color: #f3d6ad;
+  }
+
+  @media (max-width: 920px) {
+    .events-hero,
+    .timeline-group {
+      grid-template-columns: 1fr;
+    }
+
+    .timeline-period {
+      position: static;
+    }
+
+    .events-stats,
+    .period-nav {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .events-stats,
+    .period-nav {
+      grid-template-columns: 1fr;
+    }
+
+    .event-card {
+      grid-template-columns: 1fr;
+    }
+
+    .event-card-marker,
+    .timeline-list::before {
+      display: none;
+    }
+
+    .event-card-topline {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+</style>

@@ -22,11 +22,23 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     <title>{pageTitle}</title>
 
     <script is:inline>
-      const storedTheme = localStorage.getItem("ebv-theme");
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const initialTheme = storedTheme ?? (prefersDark ? "dark" : "light");
+      function getPreferredTheme() {
+        const storedTheme = localStorage.getItem("ebv-theme");
 
-      document.documentElement.dataset.theme = initialTheme;
+        if (storedTheme === "dark" || storedTheme === "light") {
+          return storedTheme;
+        }
+
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      }
+
+      function applyTheme(theme) {
+        document.documentElement.dataset.theme = theme;
+      }
+
+      applyTheme(getPreferredTheme());
     </script>
   </head>
 
@@ -84,6 +96,22 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     <script is:inline>
       const themeToggle = document.querySelector("[data-theme-toggle]");
 
+      function getPreferredTheme() {
+        const storedTheme = localStorage.getItem("ebv-theme");
+
+        if (storedTheme === "dark" || storedTheme === "light") {
+          return storedTheme;
+        }
+
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      }
+
+      function applyTheme(theme) {
+        document.documentElement.dataset.theme = theme;
+      }
+
       function syncThemeToggle(theme) {
         if (!themeToggle) return;
 
@@ -101,17 +129,37 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
         }
       }
 
-      const currentTheme = document.documentElement.dataset.theme ?? "light";
-      syncThemeToggle(currentTheme);
+      function syncThemeFromStorage() {
+        const theme = getPreferredTheme();
+
+        applyTheme(theme);
+        syncThemeToggle(theme);
+      }
+
+      syncThemeFromStorage();
 
       themeToggle?.addEventListener("click", () => {
         const activeTheme =
           document.documentElement.dataset.theme === "dark" ? "light" : "dark";
 
-        document.documentElement.dataset.theme = activeTheme;
         localStorage.setItem("ebv-theme", activeTheme);
+        applyTheme(activeTheme);
         syncThemeToggle(activeTheme);
       });
+
+      window.addEventListener("pageshow", () => {
+        syncThemeFromStorage();
+      });
+
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", () => {
+          const storedTheme = localStorage.getItem("ebv-theme");
+
+          if (storedTheme !== "dark" && storedTheme !== "light") {
+            syncThemeFromStorage();
+          }
+        });
     </script>
   </body>
 </html>
