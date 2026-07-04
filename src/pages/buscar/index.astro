@@ -11,6 +11,7 @@ import {
   getAllPlaces,
   getAllRoutes,
   getAllTopics,
+  getBibleSearchVerses,
 } from "../../lib/queries";
 
 type SearchItem = {
@@ -101,6 +102,15 @@ const routes: SearchItem[] = getAllRoutes()
     summary: route.description ?? "Ruta guiada.",
   }));
 
+const bibleVerses: SearchItem[] = getBibleSearchVerses()
+  .filter((verse) => verse.verse_text)
+  .map((verse) => ({
+    title: `${verse.book_name} ${verse.chapter_number}:${verse.verse_number}`,
+    type: "Versículo",
+    url: sitePath(`/biblia/${verse.book_slug}/${verse.chapter_number}/#v${verse.verse_number}`),
+    summary: verse.verse_text ?? "",
+  }));
+
 const searchItems = [
   {
     title: "Lecciones",
@@ -117,6 +127,7 @@ const searchItems = [
   ...people,
   ...places,
   ...glossary,
+  ...bibleVerses,
 ];
 ---
 
@@ -135,8 +146,7 @@ const searchItems = [
       <h1>Buscar en la enciclopedia</h1>
 
       <p class="subtitle">
-        Encuentra libros, pasajes, lecciones, eventos, temas, personajes, lugares
-        y términos del glosario.
+        Encuentra libros, pasajes, lecciones, eventos, temas, personajes, lugares, términos del glosario y versículos bíblicos.
       </p>
     </section>
 
@@ -148,7 +158,7 @@ const searchItems = [
           id="search-input"
           class="search-input"
           type="search"
-          placeholder="Busca: Jesús, Génesis, redención, Jerusalén, Lucas 24..."
+          placeholder="Busca: Jesús, Génesis, redención, Jerusalén, en el principio..."
           autocomplete="off"
         />
 

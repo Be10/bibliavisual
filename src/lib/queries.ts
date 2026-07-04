@@ -649,6 +649,35 @@ export type BibleVerse = {
   verse_text: string | null;
 };
 
+export type BibleSearchVerse = {
+  id: string;
+  book_name: string;
+  book_slug: string;
+  chapter_number: number;
+  verse_number: number;
+  verse_text: string | null;
+};
+
+export function getBibleSearchVerses(versionId = "rvr1960"): BibleSearchVerse[] {
+  return db
+    .prepare(
+      `
+      SELECT
+        bible_verses.id,
+        books.name AS book_name,
+        books.slug AS book_slug,
+        bible_verses.chapter_number,
+        bible_verses.verse_number,
+        bible_verses.verse_text
+      FROM bible_verses
+      JOIN books ON books.id = bible_verses.book_id
+      WHERE bible_verses.version_id = ?
+      ORDER BY books.order_number ASC, bible_verses.chapter_number ASC, bible_verses.verse_number ASC
+      `
+    )
+    .all(versionId) as BibleSearchVerse[];
+}
+
 export type BibleChapter = {
   book_id: string;
   book_name: string;
