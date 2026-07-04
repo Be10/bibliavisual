@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllBooks,
@@ -39,7 +40,7 @@ const { book, lessons, events } = Astro.props;
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → <a href="/libros/">Libros</a> → {book.name}
+      <a href={sitePath("/")}>Inicio</a> → <a href={sitePath("/libros/")}>Libros</a> → {book.name}
     </div>
 
     <section class="hero">
@@ -54,7 +55,7 @@ const { book, lessons, events } = Astro.props;
       )}
 
       <div class="actions">
-        <a href={`/biblia/${book.slug}/`} class="button">
+        <a href={sitePath(`/biblia/${book.slug}/`)} class="button">
           Leer en la Biblia
         </a>
       </div>
@@ -92,7 +93,7 @@ const { book, lessons, events } = Astro.props;
         <ul class="pill-list">
           {lessons.map((lesson) => (
             <li>
-              <a href={`/lecciones/${lesson.slug}/`}>{lesson.title}</a>
+              <a href={sitePath(`/lecciones/${lesson.slug}/`)}>{lesson.title}</a>
             </li>
           ))}
         </ul>
@@ -105,7 +106,7 @@ const { book, lessons, events } = Astro.props;
 
         <div class="entity-list">
           {events.map((event) => (
-            <a href={`/eventos/${event.slug}/`} class="entity-card">
+            <a href={sitePath(`/eventos/${event.slug}/`)} class="entity-card">
               <span class="meta">{event.biblical_period ?? "Evento"}</span>
               <h2>{event.title}</h2>
               <p>{event.summary ?? "Resumen pendiente."}</p>
@@ -116,7 +117,7 @@ const { book, lessons, events } = Astro.props;
     )}
 
     <section class="section">
-      <a href="/libros/" class="button secondary">
+      <a href={sitePath("/libros/")} class="button secondary">
         Volver a libros
       </a>
     </section>

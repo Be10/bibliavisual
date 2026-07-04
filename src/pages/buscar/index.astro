@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllBooks,
@@ -24,7 +25,7 @@ const books: SearchItem[] = getAllBooks()
   .map((book) => ({
     title: book.name,
     type: "Libro",
-    url: `/libros/${book.slug}/`,
+    url: sitePath(`/libros/${book.slug}/`),
     summary: book.summary ?? book.category ?? "Libro bíblico.",
   }));
 
@@ -33,7 +34,7 @@ const passages: SearchItem[] = getAllPassages()
   .map((passage) => ({
     title: passage.display_reference,
     type: "Pasaje",
-    url: `/pasajes/${passage.slug}/`,
+    url: sitePath(`/pasajes/${passage.slug}/`),
     summary: passage.summary ?? `Pasaje en ${passage.book_name}.`,
   }));
 
@@ -42,7 +43,7 @@ const lessons: SearchItem[] = getAllLessons()
   .map((lesson) => ({
     title: lesson.title,
     type: "Lección",
-    url: `/lecciones/${lesson.slug}/`,
+    url: sitePath(`/lecciones/${lesson.slug}/`),
     summary: lesson.main_idea ?? lesson.summary ?? "Lección bíblica.",
   }));
 
@@ -51,7 +52,7 @@ const events: SearchItem[] = getAllEvents()
   .map((event) => ({
     title: event.title,
     type: "Evento",
-    url: `/eventos/${event.slug}/`,
+    url: sitePath(`/eventos/${event.slug}/`),
     summary: event.summary ?? event.biblical_period ?? "Evento bíblico.",
   }));
 
@@ -60,7 +61,7 @@ const topics: SearchItem[] = getAllTopics()
   .map((topic) => ({
     title: topic.title,
     type: "Tema",
-    url: `/temas/${topic.slug}/`,
+    url: sitePath(`/temas/${topic.slug}/`),
     summary: topic.definition ?? "Tema bíblico.",
   }));
 
@@ -69,7 +70,7 @@ const people: SearchItem[] = getAllPeople()
   .map((person) => ({
     title: person.name,
     type: "Personaje",
-    url: `/personajes/${person.slug}/`,
+    url: sitePath(`/personajes/${person.slug}/`),
     summary: person.summary ?? "Personaje bíblico.",
   }));
 
@@ -78,7 +79,7 @@ const places: SearchItem[] = getAllPlaces()
   .map((place) => ({
     title: place.name,
     type: "Lugar",
-    url: `/lugares/${place.slug}/`,
+    url: sitePath(`/lugares/${place.slug}/`),
     summary: place.summary ?? place.place_type ?? "Lugar bíblico.",
   }));
 
@@ -87,7 +88,7 @@ const glossary: SearchItem[] = getAllGlossaryTerms()
   .map((term) => ({
     title: term.term,
     type: "Glosario",
-    url: `/glosario/${term.slug}/`,
+    url: sitePath(`/glosario/${term.slug}/`),
     summary: term.definition ?? "Término del glosario.",
   }));
 
@@ -96,7 +97,7 @@ const routes: SearchItem[] = getAllRoutes()
   .map((route) => ({
     title: route.title,
     type: "Ruta",
-    url: `/rutas/${route.slug}/`,
+    url: sitePath(`/rutas/${route.slug}/`),
     summary: route.description ?? "Ruta guiada.",
   }));
 
@@ -104,7 +105,7 @@ const searchItems = [
   {
     title: "Lecciones",
     type: "Sección",
-    url: "/lecciones/",
+    url: sitePath("/lecciones/"),
     summary: "Índice de lecciones publicadas de la Enciclopedia Bíblica Visual.",
   },
   ...routes,
@@ -125,7 +126,7 @@ const searchItems = [
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Buscar
+      <a href={sitePath("/")}>Inicio</a> → Buscar
     </div>
 
     <section class="hero">

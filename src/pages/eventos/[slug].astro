@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllEvents,
@@ -54,7 +55,7 @@ const firstMappablePlace = places.find(
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Eventos → {event.title}
+      <a href={sitePath("/")}>Inicio</a> → Eventos → {event.title}
     </div>
 
     <section class="hero">
@@ -70,7 +71,7 @@ const firstMappablePlace = places.find(
 
       {firstMappablePlace && (
         <div class="actions">
-          <a href={`/mapa/?lugar=${firstMappablePlace.slug}`} class="button">
+          <a href={sitePath(`/mapa/?lugar=${firstMappablePlace.slug}`)} class="button">
             Ver en el mapa bíblico
           </a>
         </div>
@@ -109,7 +110,7 @@ const firstMappablePlace = places.find(
         <ul class="pill-list">
           {books.map((book) => (
             <li>
-              <a href={`/libros/${book.slug}/`}>{book.name}</a>
+              <a href={sitePath(`/libros/${book.slug}/`)}>{book.name}</a>
             </li>
           ))}
         </ul>
@@ -123,7 +124,7 @@ const firstMappablePlace = places.find(
         <ul class="pill-list">
           {passages.map((passage) => (
             <li>
-              <a href={`/pasajes/${passage.slug}/`}>{passage.display_reference}</a>
+              <a href={sitePath(`/pasajes/${passage.slug}/`)}>{passage.display_reference}</a>
             </li>
           ))}
         </ul>
@@ -139,7 +140,7 @@ const firstMappablePlace = places.find(
             <ul class="list">
               {places.map((place) => (
                 <li>
-                  <a href={`/lugares/${place.slug}/`}>{place.title}</a>
+                  <a href={sitePath(`/lugares/${place.slug}/`)}>{place.title}</a>
                   {place.geographical_certainty && (
                     <span> · certeza: {place.geographical_certainty}</span>
                   )}
@@ -156,7 +157,7 @@ const firstMappablePlace = places.find(
             <ul class="list">
               {people.map((person) => (
                 <li>
-                  <a href={`/personajes/${person.slug}/`}>{person.title}</a>
+                  <a href={sitePath(`/personajes/${person.slug}/`)}>{person.title}</a>
                 </li>
               ))}
             </ul>
@@ -170,7 +171,7 @@ const firstMappablePlace = places.find(
             <ul class="list">
               {topics.map((topic) => (
                 <li>
-                  <a href={`/temas/${topic.slug}/`}>{topic.title}</a>
+                  <a href={sitePath(`/temas/${topic.slug}/`)}>{topic.title}</a>
                 </li>
               ))}
             </ul>
@@ -185,7 +186,7 @@ const firstMappablePlace = places.find(
 
         <div class="entity-list">
           {places.map((place) => (
-            <a href={`/lugares/${place.slug}/`} class="entity-card">
+            <a href={sitePath(`/lugares/${place.slug}/`)} class="entity-card">
               <span class="meta">{place.place_type ?? "Lugar"}</span>
               <h2>{place.title}</h2>
               <p>{place.summary ?? "Descripción pendiente."}</p>
@@ -206,7 +207,7 @@ const firstMappablePlace = places.find(
     </section>
 
     <section class="section">
-      <a href="/eventos/" class="button secondary">
+      <a href={sitePath("/eventos/")} class="button secondary">
         Volver a eventos
       </a>
     </section>

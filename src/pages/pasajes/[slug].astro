@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllPassages,
@@ -63,8 +64,8 @@ const chapterNumbers = Object.keys(versesByChapter)
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> →
-      <a href="/pasajes/">Pasajes</a> →
+      <a href={sitePath("/")}>Inicio</a> →
+      <a href={sitePath("/pasajes/")}>Pasajes</a> →
       {passage.display_reference}
     </div>
 
@@ -82,11 +83,11 @@ const chapterNumbers = Object.keys(versesByChapter)
       )}
 
       <div class="actions">
-        <a href={`/libros/${passage.book_slug}/`} class="button secondary">
+        <a href={sitePath(`/libros/${passage.book_slug}/`)} class="button secondary">
           Ver ficha del libro
         </a>
 
-        <a href={`/biblia/${passage.book_slug}/${passage.start_chapter}/`} class="button secondary">
+        <a href={sitePath(`/biblia/${passage.book_slug}/${passage.start_chapter}/`)} class="button secondary">
           Leer capítulo
         </a>
       </div>
@@ -131,7 +132,7 @@ const chapterNumbers = Object.keys(versesByChapter)
                   <article class="verse" id={`v${verse.verse_number}`}>
                     <span class="verse-number">
                       <a
-                        href={`/biblia/${passage.book_slug}/${verse.chapter_number}/#v${verse.verse_number}`}
+                        href={sitePath(`/biblia/${passage.book_slug}/${verse.chapter_number}/#v${verse.verse_number}`)}
                         class="verse-ref-link"
                       >
                         {verse.verse_number}
@@ -170,7 +171,7 @@ const chapterNumbers = Object.keys(versesByChapter)
         <ul class="pill-list">
           {lessons.map((lesson) => (
             <li>
-              <a href={`/lecciones/${lesson.slug}/`}>{lesson.title}</a>
+              <a href={sitePath(`/lecciones/${lesson.slug}/`)}>{lesson.title}</a>
             </li>
           ))}
         </ul>
@@ -183,7 +184,7 @@ const chapterNumbers = Object.keys(versesByChapter)
 
         <div class="entity-list">
           {events.map((event) => (
-            <a href={`/eventos/${event.slug}/`} class="entity-card">
+            <a href={sitePath(`/eventos/${event.slug}/`)} class="entity-card">
               <span class="meta">{event.biblical_period ?? "Evento"}</span>
               <h2>{event.title}</h2>
               <p>{event.summary ?? "Resumen pendiente."}</p>
@@ -200,7 +201,7 @@ const chapterNumbers = Object.keys(versesByChapter)
     )}
 
     <section class="section">
-      <a href="/pasajes/" class="button secondary">
+      <a href={sitePath("/pasajes/")} class="button secondary">
         Volver a pasajes
       </a>
     </section>

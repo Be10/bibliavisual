@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../../lib/site-paths";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import {
   getAllBooks,
@@ -36,8 +37,8 @@ const version = getBibleVersionById("rvr1960");
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> →
-      <a href="/biblia/">Biblia</a> →
+      <a href={sitePath("/")}>Inicio</a> →
+      <a href={sitePath("/biblia/")}>Biblia</a> →
       {book.name}
     </div>
 
@@ -53,7 +54,7 @@ const version = getBibleVersionById("rvr1960");
       )}
 
       <div class="actions">
-        <a href={`/libros/${book.slug}/`} class="button secondary">
+        <a href={sitePath(`/libros/${book.slug}/`)} class="button secondary">
           Ver ficha del libro
         </a>
       </div>
@@ -83,7 +84,7 @@ const version = getBibleVersionById("rvr1960");
         <div class="chapter-grid">
           {chapters.map((chapter) => (
             <a
-              href={`/biblia/${book.slug}/${chapter.chapter_number}/`}
+              href={sitePath(`/biblia/${book.slug}/${chapter.chapter_number}/`)}
               class="chapter-link"
             >
               {chapter.chapter_number}

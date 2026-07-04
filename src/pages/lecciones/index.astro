@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getAllLessons } from "../../lib/queries";
 
@@ -19,7 +20,7 @@ const draftLessonsCount = allLessons.filter(
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Lecciones
+      <a href={sitePath("/")}>Inicio</a> → Lecciones
     </div>
 
     <section class="hero">
@@ -33,11 +34,11 @@ const draftLessonsCount = allLessons.filter(
       </p>
 
       <div class="actions">
-        <a href="/rutas/panorama-visual-de-la-biblia/" class="button">
+        <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button">
           Ver ruta principal
         </a>
 
-        <a href="/explorar/" class="button secondary">
+        <a href={sitePath("/explorar/")} class="button secondary">
           Explorar enciclopedia
         </a>
       </div>
@@ -49,7 +50,7 @@ const draftLessonsCount = allLessons.filter(
       {publishedLessons.length > 0 ? (
         <div class="entity-list">
           {publishedLessons.map((lesson) => (
-            <a href={`/lecciones/${lesson.slug}/`} class="entity-card">
+            <a href={sitePath(`/lecciones/${lesson.slug}/`)} class="entity-card">
               <span class="meta">Lección {lesson.lesson_number}</span>
 
               <h2>{lesson.title}</h2>

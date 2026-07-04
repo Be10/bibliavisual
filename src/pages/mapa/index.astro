@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import "leaflet/dist/leaflet.css";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getEventsByPlaceId, getMapPlaces } from "../../lib/queries";
@@ -18,7 +19,7 @@ const places = getMapPlaces().map((place) => ({
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Mapa bíblico
+      <a href={sitePath("/")}>Inicio</a> → Mapa bíblico
     </div>
 
     <section class="hero">
@@ -32,7 +33,7 @@ const places = getMapPlaces().map((place) => ({
       </p>
 
       <div class="actions">
-        <a href="/lugares/" class="button secondary">
+        <a href={sitePath("/lugares/")} class="button secondary">
           Ver lugares
         </a>
       </div>
@@ -85,6 +86,15 @@ const places = getMapPlaces().map((place) => ({
 
   const markersBySlug = new Map<string, L.Marker>();
 
+  const baseUrl = import.meta.env.BASE_URL;
+
+  function clientSitePath(path: string): string {
+    const cleanBase = baseUrl.replace(/\/$/, "");
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+
+    return `${cleanBase}${cleanPath}`;
+  }
+
   places.forEach((place) => {
     const latLng: [number, number] = [place.latitude, place.longitude];
 
@@ -100,7 +110,7 @@ const places = getMapPlaces().map((place) => ({
             ${place.events
               .map(
                 (event) =>
-                  `<li><a href="/eventos/${event.slug}/">${event.title}</a></li>`
+                  `<li><a href="${clientSitePath(`/eventos/${event.slug}/`)}">${event.title}</a></li>`
               )
               .join("")}
           </ul>
@@ -113,7 +123,7 @@ const places = getMapPlaces().map((place) => ({
         <p>${place.summary ?? ""}</p>
         <p><strong>Certeza:</strong> ${place.geographical_certainty ?? "Pendiente"}</p>
         ${eventsHtml}
-        <a href="/lugares/${place.slug}/">Ver lugar</a>
+        <a href="${clientSitePath(`/lugares/${place.slug}/`)}">Ver lugar</a>
       </div>
     `);
 

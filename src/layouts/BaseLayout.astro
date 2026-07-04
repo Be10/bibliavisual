@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../lib/site-paths";
 interface Props {
   title: string;
   description?: string;
@@ -23,15 +24,15 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
 
   <body>
     <header class="site-header">
-      <a href="/" class="logo">Enciclopedia Bíblica Visual</a>
+      <a href={sitePath("/")} class="logo">Enciclopedia Bíblica Visual</a>
 
       <nav class="nav" aria-label="Navegación principal">
-        <a href="/rutas/panorama-visual-de-la-biblia/">Ruta principal</a>
-        <a href="/explorar/">Explorar</a>
-        <a href="/buscar/">Buscar</a>
-        <a href="/biblia/">Biblia</a>
-        <a href="/mapa/">Mapa</a>
-        <a href="/acerca/">Acerca</a>
+        <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")}>Ruta principal</a>
+        <a href={sitePath("/explorar/")}>Explorar</a>
+        <a href={sitePath("/buscar/")}>Buscar</a>
+        <a href={sitePath("/biblia/")}>Biblia</a>
+        <a href={sitePath("/mapa/")}>Mapa</a>
+        <a href={sitePath("/acerca/")}>Acerca</a>
       </nav>
     </header>
 
@@ -44,21 +45,21 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
         </p>
 
         <nav class="footer-links" aria-label="Navegación secundaria">
-          <a href="/explorar/">Explorar</a>
-          <a href="/buscar/">Buscar</a>
-          <a href="/lecciones/">Lecciones</a>
-          <a href="/biblia/">Biblia</a>
-          <a href="/libros/">Libros</a>
-          <a href="/pasajes/">Pasajes</a>
-          <a href="/linea-de-tiempo/">Línea de tiempo</a>
-          <a href="/mapa/">Mapa</a>
-          <a href="/temas/">Temas</a>
-          <a href="/personajes/">Personajes</a>
-          <a href="/lugares/">Lugares</a>
-          <a href="/eventos/">Eventos</a>
-          <a href="/glosario/">Glosario</a>
-          <a href="/acerca/">Acerca</a>
-          <a href="/legal/">Avisos legales</a>
+          <a href={sitePath("/explorar/")}>Explorar</a>
+          <a href={sitePath("/buscar/")}>Buscar</a>
+          <a href={sitePath("/lecciones/")}>Lecciones</a>
+          <a href={sitePath("/biblia/")}>Biblia</a>
+          <a href={sitePath("/libros/")}>Libros</a>
+          <a href={sitePath("/pasajes/")}>Pasajes</a>
+          <a href={sitePath("/linea-de-tiempo/")}>Línea de tiempo</a>
+          <a href={sitePath("/mapa/")}>Mapa</a>
+          <a href={sitePath("/temas/")}>Temas</a>
+          <a href={sitePath("/personajes/")}>Personajes</a>
+          <a href={sitePath("/lugares/")}>Lugares</a>
+          <a href={sitePath("/eventos/")}>Eventos</a>
+          <a href={sitePath("/glosario/")}>Glosario</a>
+          <a href={sitePath("/acerca/")}>Acerca</a>
+          <a href={sitePath("/legal/")}>Avisos legales</a>
         </nav>
       </div>
     </footer>

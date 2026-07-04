@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../lib/site-paths";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const siteTitle = "Enciclopedia Bíblica Visual";
@@ -17,39 +18,39 @@ const siteTitle = "Enciclopedia Bíblica Visual";
       </p>
 
       <div class="actions">
-        <a href="/rutas/panorama-visual-de-la-biblia/" class="button">
+        <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button">
           Ver ruta principal
         </a>
 
-        <a href="/explorar/" class="button secondary">
+        <a href={sitePath("/explorar/")} class="button secondary">
           Explorar enciclopedia
         </a>
 
-        <a href="/buscar/" class="button secondary">
+        <a href={sitePath("/buscar/")} class="button secondary">
           Buscar contenido
         </a>
 
-        <a href="/biblia/" class="button secondary">
+        <a href={sitePath("/biblia/")} class="button secondary">
           Leer Biblia
         </a>
 
-        <a href="/libros/" class="button secondary">
+        <a href={sitePath("/libros/")} class="button secondary">
           Ver libros bíblicos
         </a>
 
-        <a href="/pasajes/" class="button secondary">
+        <a href={sitePath("/pasajes/")} class="button secondary">
           Ver pasajes
         </a>
 
-        <a href="/linea-de-tiempo/" class="button secondary">
+        <a href={sitePath("/linea-de-tiempo/")} class="button secondary">
           Ver línea de tiempo
         </a>
 
-        <a href="/mapa/" class="button secondary">
+        <a href={sitePath("/mapa/")} class="button secondary">
           Ver mapa bíblico
         </a>
 
-        <a href="/acerca/" class="button secondary">
+        <a href={sitePath("/acerca/")} class="button secondary">
           Acerca del proyecto
         </a>
       </div>

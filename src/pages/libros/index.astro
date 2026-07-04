@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getAllBooks } from "../../lib/queries";
 
@@ -19,7 +20,7 @@ const newTestamentBooks = books.filter(
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Libros
+      <a href={sitePath("/")}>Inicio</a> → Libros
     </div>
 
     <section class="hero">
@@ -38,7 +39,7 @@ const newTestamentBooks = books.filter(
 
       <div class="entity-list">
         {oldTestamentBooks.map((book) => (
-          <a href={`/libros/${book.slug}/`} class="entity-card">
+          <a href={sitePath(`/libros/${book.slug}/`)} class="entity-card">
             <span class="meta">{book.category ?? book.testament}</span>
             <h2>{book.name}</h2>
             <p>{book.summary ?? "Resumen pendiente."}</p>
@@ -52,7 +53,7 @@ const newTestamentBooks = books.filter(
 
       <div class="entity-list">
         {newTestamentBooks.map((book) => (
-          <a href={`/libros/${book.slug}/`} class="entity-card">
+          <a href={sitePath(`/libros/${book.slug}/`)} class="entity-card">
             <span class="meta">{book.category ?? book.testament}</span>
             <h2>{book.name}</h2>
             <p>{book.summary ?? "Resumen pendiente."}</p>

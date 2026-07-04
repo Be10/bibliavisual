@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getAllPlaces } from "../../lib/queries";
 
@@ -11,7 +12,7 @@ const places = getAllPlaces().filter((place) => place.status !== "Borrador");
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Lugares
+      <a href={sitePath("/")}>Inicio</a> → Lugares
     </div>
 
     <section class="hero">
@@ -27,7 +28,7 @@ const places = getAllPlaces().filter((place) => place.status !== "Borrador");
 
     <section class="entity-list">
       {places.map((place) => (
-        <a href={`/lugares/${place.slug}/`} class="entity-card">
+        <a href={sitePath(`/lugares/${place.slug}/`)} class="entity-card">
           <span class="meta">{place.place_type ?? "Lugar"}</span>
           <h2>{place.name}</h2>
           <p>{place.summary ?? "Descripción pendiente."}</p>

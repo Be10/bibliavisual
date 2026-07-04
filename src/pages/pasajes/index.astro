@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getAllPassages } from "../../lib/queries";
 
@@ -11,7 +12,7 @@ const passages = getAllPassages().filter((passage) => passage.status !== "Borrad
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Pasajes
+      <a href={sitePath("/")}>Inicio</a> → Pasajes
     </div>
 
     <section class="hero">
@@ -28,7 +29,7 @@ const passages = getAllPassages().filter((passage) => passage.status !== "Borrad
 
     <section class="entity-list">
       {passages.map((passage) => (
-        <a href={`/pasajes/${passage.slug}/`} class="entity-card">
+        <a href={sitePath(`/pasajes/${passage.slug}/`)} class="entity-card">
           <span class="meta">{passage.book_name}</span>
           <h2>{passage.display_reference}</h2>
           <p>{passage.summary ?? "Resumen pendiente."}</p>

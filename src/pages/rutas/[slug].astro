@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllRoutes,
@@ -33,7 +34,7 @@ const { route, lessons } = Astro.props;
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Rutas → {route.title}
+      <a href={sitePath("/")}>Inicio</a> → Rutas → {route.title}
     </div>
 
     <section class="hero">
@@ -47,7 +48,7 @@ const { route, lessons } = Astro.props;
 
       {lessons.length > 0 && (
         <div class="actions">
-          <a href={`/lecciones/${lessons[0].slug}/`} class="button">
+          <a href={sitePath(`/lecciones/${lessons[0].slug}/`)} class="button">
             Empezar lección 1
           </a>
         </div>
@@ -78,7 +79,7 @@ const { route, lessons } = Astro.props;
         {lessons.map((lesson) => (
           <li>
             {lesson.status !== "Borrador" ? (
-              <a href={`/lecciones/${lesson.slug}/`}>
+              <a href={sitePath(`/lecciones/${lesson.slug}/`)}>
                 {lesson.title}
               </a>
             ) : (

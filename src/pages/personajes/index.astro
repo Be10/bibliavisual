@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getAllPeople } from "../../lib/queries";
 
@@ -11,7 +12,7 @@ const people = getAllPeople().filter((person) => person.status !== "Borrador");
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Personajes
+      <a href={sitePath("/")}>Inicio</a> → Personajes
     </div>
 
     <section class="hero">
@@ -27,7 +28,7 @@ const people = getAllPeople().filter((person) => person.status !== "Borrador");
 
     <section class="entity-list">
       {people.map((person) => (
-        <a href={`/personajes/${person.slug}/`} class="entity-card">
+        <a href={sitePath(`/personajes/${person.slug}/`)} class="entity-card">
           <span class="meta">Personaje</span>
           <h2>{person.name}</h2>
           <p>{person.summary ?? "Biografía pendiente."}</p>

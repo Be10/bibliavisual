@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllGlossaryTerms,
@@ -29,7 +30,7 @@ const { term } = Astro.props;
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Glosario → {term.term}
+      <a href={sitePath("/")}>Inicio</a> → Glosario → {term.term}
     </div>
 
     <section class="hero">

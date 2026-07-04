@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../../lib/site-paths";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import {
   getAllBooks,
@@ -59,9 +60,9 @@ const nextChapter = chapters.find(
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> →
-      <a href="/biblia/">Biblia</a> →
-      <a href={`/biblia/${book.slug}/`}>{book.name}</a> →
+      <a href={sitePath("/")}>Inicio</a> →
+      <a href={sitePath("/biblia/")}>Biblia</a> →
+      <a href={sitePath(`/biblia/${book.slug}/`)}>{book.name}</a> →
       Capítulo {currentChapterNumber}
     </div>
 
@@ -76,11 +77,11 @@ const nextChapter = chapters.find(
       </p>
 
       <div class="actions">
-        <a href={`/biblia/${book.slug}/`} class="button secondary">
+        <a href={sitePath(`/biblia/${book.slug}/`)} class="button secondary">
           Ver capítulos de {book.name}
         </a>
 
-        <a href={`/libros/${book.slug}/`} class="button secondary">
+        <a href={sitePath(`/libros/${book.slug}/`)} class="button secondary">
           Ver ficha del libro
         </a>
       </div>
@@ -110,7 +111,7 @@ const nextChapter = chapters.find(
       <nav class="chapter-nav">
         {previousChapter ? (
           <a
-            href={`/biblia/${book.slug}/${previousChapter.chapter_number}/`}
+            href={sitePath(`/biblia/${book.slug}/${previousChapter.chapter_number}/`)}
             class="button secondary"
           >
             ← Capítulo {previousChapter.chapter_number}
@@ -121,7 +122,7 @@ const nextChapter = chapters.find(
 
         {nextChapter ? (
           <a
-            href={`/biblia/${book.slug}/${nextChapter.chapter_number}/`}
+            href={sitePath(`/biblia/${book.slug}/${nextChapter.chapter_number}/`)}
             class="button secondary"
           >
             Capítulo {nextChapter.chapter_number} →

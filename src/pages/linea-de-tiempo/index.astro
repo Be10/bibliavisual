@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getAllEvents } from "../../lib/queries";
 
@@ -13,7 +14,7 @@ const events = getAllEvents().filter(
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Línea de tiempo
+      <a href={sitePath("/")}>Inicio</a> → Línea de tiempo
     </div>
 
     <section class="hero">
@@ -27,7 +28,7 @@ const events = getAllEvents().filter(
       </p>
 
       <div class="actions">
-        <a href="/eventos/" class="button secondary">
+        <a href={sitePath("/eventos/")} class="button secondary">
           Ver todos los eventos
         </a>
       </div>
@@ -43,7 +44,7 @@ const events = getAllEvents().filter(
               {event.approximate_date ?? "Fecha pendiente"}
             </div>
 
-            <a href={`/eventos/${event.slug}/`} class="timeline-card">
+            <a href={sitePath(`/eventos/${event.slug}/`)} class="timeline-card">
               <span class="meta">{event.biblical_period ?? "Evento bíblico"}</span>
 
               <h2>{event.title}</h2>

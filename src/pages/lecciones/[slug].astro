@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllLessons,
@@ -86,8 +87,8 @@ const {
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> →
-      <a href="/rutas/panorama-visual-de-la-biblia/">Panorama Visual de la Biblia</a> →
+      <a href={sitePath("/")}>Inicio</a> →
+      <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")}>Panorama Visual de la Biblia</a> →
       Lección {lesson.lesson_number}
     </div>
 
@@ -132,7 +133,7 @@ const {
         <ul class="pill-list">
           {passages.map((passage) => (
             <li>
-              <a href={`/pasajes/${passage.slug}/`}>{passage.display_reference}</a>
+              <a href={sitePath(`/pasajes/${passage.slug}/`)}>{passage.display_reference}</a>
             </li>
           ))}
         </ul>
@@ -160,7 +161,7 @@ const {
         <ul class="pill-list">
           {books.map((book) => (
             <li>
-              <a href={`/libros/${book.slug}/`}>{book.name}</a>
+              <a href={sitePath(`/libros/${book.slug}/`)}>{book.name}</a>
             </li>
           ))}
         </ul>
@@ -198,7 +199,7 @@ const {
       <ul class="pill-list">
         {events.map((event) => (
           <li>
-            <a href={`/eventos/${event.slug}/`}>{event.title}</a>
+            <a href={sitePath(`/eventos/${event.slug}/`)}>{event.title}</a>
           </li>
         ))}
       </ul>
@@ -212,7 +213,7 @@ const {
           <ul class="list">
             {people.map((person) => (
                 <li>
-                    <a href={`/personajes/${person.slug}/`}>{person.title}</a>
+                    <a href={sitePath(`/personajes/${person.slug}/`)}>{person.title}</a>
                 </li>
             ))}
           </ul>
@@ -225,7 +226,7 @@ const {
           <ul class="list">
             {topics.map((topic) => (
                 <li>
-                    <a href={`/temas/${topic.slug}/`}>{topic.title}</a>
+                    <a href={sitePath(`/temas/${topic.slug}/`)}>{topic.title}</a>
                 </li>
             ))}
           </ul>
@@ -238,7 +239,7 @@ const {
           <ul class="list">
             {glossary.map((term) => (
                 <li>
-                    <a href={`/glosario/${term.slug}/`}>{term.title}</a>
+                    <a href={sitePath(`/glosario/${term.slug}/`)}>{term.title}</a>
                 </li>
             ))}
           </ul>
@@ -253,7 +254,7 @@ const {
         <ul class="pill-list">
             {places.map((place) => (
                 <li>
-                    <a href={`/lugares/${place.slug}/`}>{place.title}</a>
+                    <a href={sitePath(`/lugares/${place.slug}/`)}>{place.title}</a>
                 </li>
             ))}
         </ul>
@@ -283,7 +284,7 @@ const {
     )}
 
     <section class="section">
-      <a href="/rutas/panorama-visual-de-la-biblia/" class="button secondary">
+      <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button secondary">
         Volver a la ruta
       </a>
     </section>
@@ -294,7 +295,7 @@ const {
 
         <nav class="lesson-nav" aria-label="Navegación entre lecciones">
           {previousLesson ? (
-            <a href={`/lecciones/${previousLesson.slug}/`} class="lesson-nav-card">
+            <a href={sitePath(`/lecciones/${previousLesson.slug}/`)} class="lesson-nav-card">
               <span>← Lección anterior</span>
               <strong>
                 Lección {previousLesson.lesson_number}: {previousLesson.title}
@@ -305,7 +306,7 @@ const {
           )}
 
           {nextLesson ? (
-            <a href={`/lecciones/${nextLesson.slug}/`} class="lesson-nav-card next">
+            <a href={sitePath(`/lecciones/${nextLesson.slug}/`)} class="lesson-nav-card next">
               <span>Lección siguiente →</span>
               <strong>
                 Lección {nextLesson.lesson_number}: {nextLesson.title}

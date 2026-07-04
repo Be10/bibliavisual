@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllPeople,
@@ -29,7 +30,7 @@ const { person } = Astro.props;
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Personajes → {person.name}
+      <a href={sitePath("/")}>Inicio</a> → Personajes → {person.name}
     </div>
 
     <section class="hero">

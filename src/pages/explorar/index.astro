@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllBooks,
@@ -29,7 +30,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Explorar
+      <a href={sitePath("/")}>Inicio</a> → Explorar
     </div>
 
     <section class="hero">
@@ -43,11 +44,11 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
       </p>
 
       <div class="actions">
-        <a href="/buscar/" class="button">
+        <a href={sitePath("/buscar/")} class="button">
           Buscar contenido
         </a>
 
-        <a href="/rutas/panorama-visual-de-la-biblia/" class="button secondary">
+        <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button secondary">
           Empezar ruta principal
         </a>
       </div>
@@ -62,7 +63,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
       </div>
 
       <div class="explore-grid">
-        <a href="/rutas/panorama-visual-de-la-biblia/" class="explore-card">
+        <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="explore-card">
           <span class="explore-count">{routesCount} ruta</span>
           <h3>Ruta principal</h3>
           <p>
@@ -70,7 +71,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
           </p>
         </a>
 
-        <a href="/lecciones/" class="explore-card">
+        <a href={sitePath("/lecciones/")} class="explore-card">
           <span class="explore-count">{lessonsCount} lecciones</span>
           <h3>Lecciones</h3>
           <p>
@@ -78,7 +79,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
           </p>
         </a>
 
-        <a href="/buscar/" class="explore-card">
+        <a href={sitePath("/buscar/")} class="explore-card">
           <span class="explore-count">Buscador</span>
           <h3>Buscar contenido</h3>
           <p>
@@ -97,7 +98,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
       </div>
 
       <div class="explore-grid">
-        <a href="/biblia/" class="explore-card">
+        <a href={sitePath("/biblia/")} class="explore-card">
           <span class="explore-count">RVR1960</span>
           <h3>Biblia</h3>
           <p>
@@ -105,7 +106,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
           </p>
         </a>
 
-        <a href="/libros/" class="explore-card">
+        <a href={sitePath("/libros/")} class="explore-card">
           <span class="explore-count">{booksCount} libros</span>
           <h3>Libros bíblicos</h3>
           <p>
@@ -113,7 +114,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
           </p>
         </a>
 
-        <a href="/pasajes/" class="explore-card">
+        <a href={sitePath("/pasajes/")} class="explore-card">
           <span class="explore-count">{passagesCount} pasajes</span>
           <h3>Pasajes bíblicos</h3>
           <p>
@@ -132,7 +133,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
       </div>
 
       <div class="explore-grid">
-        <a href="/linea-de-tiempo/" class="explore-card">
+        <a href={sitePath("/linea-de-tiempo/")} class="explore-card">
           <span class="explore-count">Cronología</span>
           <h3>Línea de tiempo</h3>
           <p>
@@ -140,7 +141,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
           </p>
         </a>
 
-        <a href="/mapa/" class="explore-card">
+        <a href={sitePath("/mapa/")} class="explore-card">
           <span class="explore-count">Mapa</span>
           <h3>Mapa bíblico</h3>
           <p>
@@ -148,7 +149,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
           </p>
         </a>
 
-        <a href="/eventos/" class="explore-card">
+        <a href={sitePath("/eventos/")} class="explore-card">
           <span class="explore-count">{eventsCount} eventos</span>
           <h3>Eventos bíblicos</h3>
           <p>
@@ -167,7 +168,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
       </div>
 
       <div class="explore-grid">
-        <a href="/temas/" class="explore-card">
+        <a href={sitePath("/temas/")} class="explore-card">
           <span class="explore-count">{topicsCount} temas</span>
           <h3>Temas</h3>
           <p>
@@ -175,7 +176,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
           </p>
         </a>
 
-        <a href="/personajes/" class="explore-card">
+        <a href={sitePath("/personajes/")} class="explore-card">
           <span class="explore-count">{peopleCount} personajes</span>
           <h3>Personajes</h3>
           <p>
@@ -183,7 +184,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
           </p>
         </a>
 
-        <a href="/lugares/" class="explore-card">
+        <a href={sitePath("/lugares/")} class="explore-card">
           <span class="explore-count">{placesCount} lugares</span>
           <h3>Lugares</h3>
           <p>
@@ -191,7 +192,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
           </p>
         </a>
 
-        <a href="/glosario/" class="explore-card">
+        <a href={sitePath("/glosario/")} class="explore-card">
           <span class="explore-count">{glossaryCount} términos</span>
           <h3>Glosario</h3>
           <p>
@@ -210,7 +211,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
       </div>
 
       <div class="explore-grid">
-        <a href="/acerca/" class="explore-card">
+        <a href={sitePath("/acerca/")} class="explore-card">
           <span class="explore-count">Proyecto</span>
           <h3>Acerca</h3>
           <p>
@@ -218,7 +219,7 @@ const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Bo
           </p>
         </a>
 
-        <a href="/legal/" class="explore-card">
+        <a href={sitePath("/legal/")} class="explore-card">
           <span class="explore-count">Legal</span>
           <h3>Avisos legales</h3>
           <p>

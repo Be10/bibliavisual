@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllTopics,
@@ -30,7 +31,7 @@ const { topic } = Astro.props;
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Temas → {topic.title}
+      <a href={sitePath("/")}>Inicio</a> → Temas → {topic.title}
     </div>
 
     <section class="hero">

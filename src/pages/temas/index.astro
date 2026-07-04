@@ -1,4 +1,5 @@
 ---
+import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getAllTopics } from "../../lib/queries";
 
@@ -11,7 +12,7 @@ const topics = getAllTopics().filter((topic) => topic.status !== "Borrador");
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href="/">Inicio</a> → Temas
+      <a href={sitePath("/")}>Inicio</a> → Temas
     </div>
 
     <section class="hero">
@@ -27,7 +28,7 @@ const topics = getAllTopics().filter((topic) => topic.status !== "Borrador");
 
     <section class="entity-list">
       {topics.map((topic) => (
-        <a href={`/temas/${topic.slug}/`} class="entity-card">
+        <a href={sitePath(`/temas/${topic.slug}/`)} class="entity-card">
           <span class="meta">Tema</span>
           <h2>{topic.title}</h2>
           <p>{topic.definition ?? "Definición pendiente."}</p>
