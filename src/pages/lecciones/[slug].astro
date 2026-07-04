@@ -83,6 +83,26 @@ const {
 const totalRouteLessons = 20;
 const progressPercent = Math.round((lesson.lesson_number / totalRouteLessons) * 100);
 const lessonStepLabel = `Lección ${lesson.lesson_number} de ${totalRouteLessons}`;
+
+const relatedCount =
+  topics.length +
+  people.length +
+  places.length +
+  glossary.length +
+  events.length +
+  books.length +
+  passages.length;
+
+const hasStudyGuide =
+  Boolean(lesson.main_idea) ||
+  points.length > 0 ||
+  passages.length > 0 ||
+  bibleRefs.length > 0 ||
+  Boolean(lesson.explanation) ||
+  relatedCount > 0 ||
+  questions.length > 0 ||
+  Boolean(lesson.remember) ||
+  Boolean(lesson.application);
 ---
 
 <BaseLayout
@@ -120,7 +140,7 @@ const lessonStepLabel = `Lección ${lesson.lesson_number} de ${totalRouteLessons
 
         <p>
           Has avanzado hasta el {progressPercent}% de la ruta
-          <strong>Panorama Visual de la Biblia</strong>.
+          <strong> Panorama Visual de la Biblia</strong>.
         </p>
       </div>
 
@@ -151,8 +171,42 @@ const lessonStepLabel = `Lección ${lesson.lesson_number} de ${totalRouteLessons
       </nav>
     </section>
 
+    {hasStudyGuide && (
+      <section class="lesson-study-panel" aria-label="Resumen de estudio de la lección">
+        <div class="study-card">
+          <span>Tiempo estimado</span>
+          <strong>{lesson.estimated_time ?? "7–10 minutos"}</strong>
+        </div>
+
+        <div class="study-card">
+          <span>Pasajes</span>
+          <strong>{passages.length > 0 ? passages.length : bibleRefs.length}</strong>
+        </div>
+
+        <div class="study-card">
+          <span>Conexiones</span>
+          <strong>{relatedCount}</strong>
+        </div>
+
+        <div class="study-card">
+          <span>Estado</span>
+          <strong>{lesson.status}</strong>
+        </div>
+
+        <nav class="lesson-toc" aria-label="Índice de la lección">
+          {lesson.main_idea && <a href="#idea-principal">Idea principal</a>}
+          {points.length > 0 && <a href="#resumen">Resumen</a>}
+          {(passages.length > 0 || bibleRefs.length > 0) && <a href="#pasajes">Pasajes</a>}
+          {lesson.explanation && <a href="#explicacion">Explicación</a>}
+          {relatedCount > 0 && <a href="#conexiones">Conexiones</a>}
+          {questions.length > 0 && <a href="#preguntas">Preguntas</a>}
+          {(lesson.remember || lesson.application) && <a href="#recordar-aplicar">Recordar y aplicar</a>}
+        </nav>
+      </section>
+    )}
+
     {lesson.main_idea && (
-      <section class="section">
+      <section class="section" id="idea-principal">
         <h2>Idea principal</h2>
 
         <div class="content">
@@ -162,7 +216,7 @@ const lessonStepLabel = `Lección ${lesson.lesson_number} de ${totalRouteLessons
     )}
 
     {points.length > 0 && (
-      <section class="section">
+      <section class="section" id="resumen">
         <h2>Resumen en 5 ideas</h2>
 
         <ol class="list">
@@ -174,7 +228,7 @@ const lessonStepLabel = `Lección ${lesson.lesson_number} de ${totalRouteLessons
     )}
 
     {passages.length > 0 ? (
-      <section class="section">
+      <section class="section" id="pasajes">
         <h2>Pasajes bíblicos principales</h2>
 
         <ul class="pill-list">
@@ -187,7 +241,7 @@ const lessonStepLabel = `Lección ${lesson.lesson_number} de ${totalRouteLessons
       </section>
     ) : (
       bibleRefs.length > 0 && (
-        <section class="section">
+        <section class="section" id="pasajes">
           <h2>Pasajes bíblicos principales</h2>
 
           <ul class="pill-list">
@@ -216,7 +270,7 @@ const lessonStepLabel = `Lección ${lesson.lesson_number} de ${totalRouteLessons
     )}
 
     {lesson.explanation && (
-      <section class="section">
+      <section class="section" id="explicacion">
         <h2>Explicación sencilla</h2>
 
         <div class="content">
@@ -239,88 +293,125 @@ const lessonStepLabel = `Lección ${lesson.lesson_number} de ${totalRouteLessons
       </ul>
     </section>
 
-  {events.length > 0 && (
-    <section class="section">
-      <h2>Eventos relacionados</h2>
-
-      <ul class="pill-list">
-        {events.map((event) => (
-          <li>
-            <a href={sitePath(`/eventos/${event.slug}/`)}>{event.title}</a>
-          </li>
-        ))}
-      </ul>
-    </section>
-)}
-
-    <section class="grid">
-      {people.length > 0 && (
-        <article class="card">
-          <h2>Personajes</h2>
-          <ul class="list">
-            {people.map((person) => (
-                <li>
-                    <a href={sitePath(`/personajes/${person.slug}/`)}>{person.title}</a>
-                </li>
-            ))}
-          </ul>
-        </article>
-      )}
-
-      {topics.length > 0 && (
-        <article class="card">
-          <h2>Temas</h2>
-          <ul class="list">
-            {topics.map((topic) => (
-                <li>
-                    <a href={sitePath(`/temas/${topic.slug}/`)}>{topic.title}</a>
-                </li>
-            ))}
-          </ul>
-        </article>
-      )}
-
-      {glossary.length > 0 && (
-        <article class="card">
-          <h2>Glosario</h2>
-          <ul class="list">
-            {glossary.map((term) => (
-                <li>
-                    <a href={sitePath(`/glosario/${term.slug}/`)}>{term.title}</a>
-                </li>
-            ))}
-          </ul>
-        </article>
-      )}
-    </section>
-
-    {places.length > 0 && (
+    {events.length > 0 && (
       <section class="section">
-        <h2>Lugares relacionados</h2>
+        <h2>Eventos relacionados</h2>
 
         <ul class="pill-list">
-            {places.map((place) => (
-                <li>
-                    <a href={sitePath(`/lugares/${place.slug}/`)}>{place.title}</a>
-                </li>
-            ))}
+          {events.map((event) => (
+            <li>
+              <a href={sitePath(`/eventos/${event.slug}/`)}>{event.title}</a>
+            </li>
+          ))}
         </ul>
       </section>
     )}
 
-    {lesson.remember && (
-      <section class="section">
-        <h2>Qué debo recordar</h2>
+    {relatedCount > 0 && (
+      <section class="grid" id="conexiones">
+        {people.length > 0 && (
+          <article class="card">
+            <h2>Personajes</h2>
 
-        <div class="content">
-          <p>{lesson.remember}</p>
-        </div>
+            <ul class="list">
+              {people.map((person) => (
+                <li>
+                  <a href={sitePath(`/personajes/${person.slug}/`)}>{person.title}</a>
+                </li>
+              ))}
+            </ul>
+          </article>
+        )}
+
+        {topics.length > 0 && (
+          <article class="card">
+            <h2>Temas</h2>
+
+            <ul class="list">
+              {topics.map((topic) => (
+                <li>
+                  <a href={sitePath(`/temas/${topic.slug}/`)}>{topic.title}</a>
+                </li>
+              ))}
+            </ul>
+          </article>
+        )}
+
+        {glossary.length > 0 && (
+          <article class="card">
+            <h2>Glosario</h2>
+
+            <ul class="list">
+              {glossary.map((term) => (
+                <li>
+                  <a href={sitePath(`/glosario/${term.slug}/`)}>{term.title}</a>
+                </li>
+              ))}
+            </ul>
+          </article>
+        )}
+
+        {places.length > 0 && (
+          <article class="card">
+            <h2>Lugares</h2>
+
+            <ul class="list">
+              {places.map((place) => (
+                <li>
+                  <a href={sitePath(`/lugares/${place.slug}/`)}>{place.title}</a>
+                </li>
+              ))}
+            </ul>
+          </article>
+        )}
+
+        {books.length > 0 && (
+          <article class="card">
+            <h2>Libros</h2>
+
+            <ul class="list">
+              {books.map((book) => (
+                <li>
+                  <a href={sitePath(`/libros/${book.slug}/`)}>{book.name}</a>
+                </li>
+              ))}
+            </ul>
+          </article>
+        )}
+
+        {events.length > 0 && (
+          <article class="card">
+            <h2>Eventos</h2>
+
+            <ul class="list">
+              {events.map((event) => (
+                <li>
+                  <a href={sitePath(`/eventos/${event.slug}/`)}>{event.title}</a>
+                </li>
+              ))}
+            </ul>
+          </article>
+        )}
+
+        {passages.length > 0 && (
+          <article class="card">
+            <h2>Pasajes</h2>
+
+            <ul class="list">
+              {passages.map((passage) => (
+                <li>
+                  <a href={sitePath(`/pasajes/${passage.slug}/`)}>{passage.display_reference}</a>
+                </li>
+              ))}
+            </ul>
+          </article>
+        )}
       </section>
     )}
 
     {questions.length > 0 && (
-      <section class="section">
-        <h2>Preguntas de estudio</h2>
+      <section class="section" id="preguntas">
+        <h2>Preguntas para pensar</h2>
 
         <ol class="list">
           {questions.map((question) => (
@@ -330,7 +421,31 @@ const lessonStepLabel = `Lección ${lesson.lesson_number} de ${totalRouteLessons
       </section>
     )}
 
-        <section class="section continue-section">
+    {(lesson.remember || lesson.application) && (
+      <section class="grid" id="recordar-aplicar">
+        {lesson.remember && (
+          <article class="card">
+            <h2>Para recordar</h2>
+
+            <div class="content">
+              <p>{lesson.remember}</p>
+            </div>
+          </article>
+        )}
+
+        {lesson.application && (
+          <article class="card">
+            <h2>Para aplicar</h2>
+
+            <div class="content">
+              <p>{lesson.application}</p>
+            </div>
+          </article>
+        )}
+      </section>
+    )}
+
+    <section class="section continue-section">
       <div class="section-header">
         <div>
           <p class="eyebrow">Recorrido guiado</p>
