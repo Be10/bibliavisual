@@ -3,11 +3,20 @@ import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllPeople,
+  getEventsByPersonId,
+  getLessonsByPersonId,
+  getPlacesByPersonId,
+  type Event,
+  type EventRelatedPlace,
+  type Lesson,
   type Person,
 } from "../../lib/queries";
 
 type Props = {
   person: Person;
+  events: Event[];
+  lessons: Lesson[];
+  places: EventRelatedPlace[];
 };
 
 export function getStaticPaths() {
@@ -17,11 +26,21 @@ export function getStaticPaths() {
     .filter((person) => person.status !== "Borrador")
     .map((person) => ({
       params: { slug: person.slug },
-      props: { person },
+      props: {
+        person,
+        events: getEventsByPersonId(person.id),
+        lessons: getLessonsByPersonId(person.id),
+        places: getPlacesByPersonId(person.id),
+      },
     }));
 }
 
-const { person } = Astro.props;
+const { person, events, lessons, places } = Astro.props as Props;
+
+const summaryLabel = person.summary ?? "Resumen pendiente.";
+const firstMappablePlace = places.find(
+  (place) => place.latitude !== null && place.longitude !== null
+);
 ---
 
 <BaseLayout
@@ -30,35 +49,505 @@ const { person } = Astro.props;
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href={sitePath("/")}>Inicio</a> → Personajes → {person.name}
+      <a href={sitePath("/")}>Inicio</a> →
+      <a href={sitePath("/personajes/")}>Personajes</a> →
+      {person.name}
     </div>
 
-    <section class="hero">
-      <p class="eyebrow">Personaje bíblico</p>
+    <section class="hero person-hero">
+      <div class="person-hero-content">
+        <p class="eyebrow">Personaje bíblico</p>
 
-      <h1>{person.name}</h1>
+        <h1>{person.name}</h1>
 
-      {person.summary && (
         <p class="subtitle">
-          {person.summary}
+          {summaryLabel}
         </p>
-      )}
+
+        <div class="actions">
+          <a href={sitePath("/personajes/")} class="button secondary">
+            Todos los personajes
+          </a>
+
+          {events.length > 0 && (
+            <a href="#eventos-relacionados" class="button">
+              Ver eventos relacionados
+            </a>
+          )}
+
+          {firstMappablePlace && (
+            <a href={sitePath(`/mapa/?lugar=${firstMappablePlace.slug}`)} class="button secondary">
+              Ver lugar en mapa
+            </a>
+          )}
+        </div>
+      </div>
+
+      <aside class="person-hero-card" aria-label="Resumen rápido del personaje">
+        <span>Conexiones</span>
+        <strong>{events.length + lessons.length + places.length}</strong>
+        <p>
+          {events.length} eventos · {lessons.length} lecciones · {places.length} lugares
+        </p>
+      </aside>
     </section>
 
-    <section class="section">
-      <h2>Biografía breve</h2>
+    <section class="person-meta-grid" aria-label="Resumen de conexiones del personaje">
+      <article class="person-meta-card">
+        <span>Eventos</span>
+        <strong>{events.length}</strong>
+      </article>
 
-      <div class="content">
-        <p>{person.summary ?? "Biografía pendiente."}</p>
+      <article class="person-meta-card">
+        <span>Lecciones</span>
+        <strong>{lessons.length}</strong>
+      </article>
+
+      <article class="person-meta-card">
+        <span>Lugares</span>
+        <strong>{places.length}</strong>
+      </article>
+
+      <article class="person-meta-card">
+        <span>Contenido</span>
+        <strong>{person.status}</strong>
+      </article>
+    </section>
+
+    <section class="section person-bio-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Biografía breve</p>
+          <h2>Quién es {person.name}</h2>
+        </div>
+      </div>
+
+      <div class="person-bio-card">
+        <p>{summaryLabel}</p>
       </div>
     </section>
 
-    <section class="section">
-      <h2>Estado del contenido</h2>
+    {events.length > 0 ? (
+      <section class="section person-events-section" id="eventos-relacionados">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Narrativa bíblica</p>
+            <h2>Eventos relacionados</h2>
+          </div>
 
-      <div class="content">
-        <p>{person.status}</p>
-      </div>
+          <span class="section-count">
+            {events.length} {events.length === 1 ? "evento" : "eventos"}
+          </span>
+        </div>
+
+        <div class="person-events-grid">
+          {events.map((event) => (
+            <a href={sitePath(`/eventos/${event.slug}/`)} class="person-event-card">
+              <span>{event.biblical_period ?? event.event_type ?? "Evento bíblico"}</span>
+              <strong>{event.title}</strong>
+
+              {event.summary && (
+                <small>{event.summary}</small>
+              )}
+
+              <div class="person-card-badges">
+                {event.approximate_date && <em>{event.approximate_date}</em>}
+                {event.appears_on_timeline ? <em>Línea de tiempo</em> : null}
+                {event.appears_on_map ? <em>Mapa</em> : null}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    ) : (
+      <section class="section person-empty-section">
+        <p class="eyebrow">Narrativa bíblica</p>
+        <h2>Eventos relacionados</h2>
+        <p>Todavía no hay eventos relacionados registrados para este personaje.</p>
+      </section>
+    )}
+
+    {places.length > 0 ? (
+      <section class="section person-places-section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Geografía bíblica</p>
+            <h2>Lugares relacionados</h2>
+          </div>
+
+          <span class="section-count">
+            {places.length} {places.length === 1 ? "lugar" : "lugares"}
+          </span>
+        </div>
+
+        <div class="person-places-grid">
+          {places.map((place) => {
+            const hasCoordinates = place.latitude !== null && place.longitude !== null;
+
+            return (
+              <article class="person-place-card">
+                <span>{place.place_type ?? "Lugar"}</span>
+                <strong>{place.title}</strong>
+
+                {place.summary && (
+                  <p>{place.summary}</p>
+                )}
+
+                {place.geographical_certainty && (
+                  <small>Certeza: {place.geographical_certainty}</small>
+                )}
+
+                <div class="person-card-actions">
+                  <a href={sitePath(`/lugares/${place.slug}/`)}>
+                    Ver lugar
+                  </a>
+
+                  {hasCoordinates && (
+                    <a href={sitePath(`/mapa/?lugar=${place.slug}`)}>
+                      Ver en mapa
+                    </a>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+    ) : (
+      <section class="section person-empty-section">
+        <p class="eyebrow">Geografía bíblica</p>
+        <h2>Lugares relacionados</h2>
+        <p>Todavía no hay lugares relacionados registrados para este personaje.</p>
+      </section>
+    )}
+
+    {lessons.length > 0 ? (
+      <section class="section person-lessons-section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Recorrido guiado</p>
+            <h2>Lecciones relacionadas</h2>
+          </div>
+
+          <span class="section-count">
+            {lessons.length} {lessons.length === 1 ? "lección" : "lecciones"}
+          </span>
+        </div>
+
+        <div class="person-lessons-grid">
+          {lessons.map((lesson) => (
+            <a href={sitePath(`/lecciones/${lesson.slug}/`)} class="person-lesson-card">
+              <span>Lección {lesson.lesson_number}</span>
+              <strong>{lesson.title}</strong>
+
+              {lesson.main_idea && (
+                <small>{lesson.main_idea}</small>
+              )}
+            </a>
+          ))}
+        </div>
+      </section>
+    ) : (
+      <section class="section person-empty-section">
+        <p class="eyebrow">Recorrido guiado</p>
+        <h2>Lecciones relacionadas</h2>
+        <p>Todavía no hay lecciones relacionadas registradas para este personaje.</p>
+      </section>
+    )}
+
+    <section class="section person-footer-nav">
+      <a href={sitePath("/personajes/")} class="button secondary">
+        Volver a personajes
+      </a>
+
+      <a href={sitePath("/eventos/")} class="button secondary">
+        Explorar eventos
+      </a>
+
+      <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button">
+        Ir a la ruta principal
+      </a>
     </section>
   </main>
 </BaseLayout>
+
+<style>
+  .person-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 320px);
+    gap: 28px;
+    align-items: end;
+    overflow: hidden;
+  }
+
+  .person-hero::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -120px;
+    width: 320px;
+    height: 320px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
+    pointer-events: none;
+  }
+
+  .person-hero-content,
+  .person-hero-card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .person-hero-card,
+  .person-meta-card,
+  .person-bio-card,
+  .person-event-card,
+  .person-place-card,
+  .person-lesson-card {
+    border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
+  }
+
+  .person-hero-card {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .person-hero-card span,
+  .person-meta-card span,
+  .person-event-card span,
+  .person-place-card span,
+  .person-lesson-card span {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .person-hero-card strong {
+    color: #2d2418;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .person-hero-card p,
+  .person-bio-card p,
+  .person-place-card p,
+  .person-empty-section p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .person-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .person-meta-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+  }
+
+  .person-meta-card span {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .person-meta-card strong {
+    display: block;
+    color: #2d2418;
+    font-size: 2rem;
+    line-height: 1;
+    overflow-wrap: anywhere;
+  }
+
+  .person-bio-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+  }
+
+  .person-events-grid,
+  .person-places-grid,
+  .person-lessons-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .person-event-card,
+  .person-place-card,
+  .person-lesson-card {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    min-height: 190px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .person-event-card:hover,
+  .person-lesson-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .person-event-card strong,
+  .person-place-card strong,
+  .person-lesson-card strong {
+    color: #2d2418;
+    font-size: 1.12rem;
+    line-height: 1.35;
+  }
+
+  .person-event-card small,
+  .person-place-card small,
+  .person-lesson-card small {
+    color: #6a5c4d;
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .person-card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .person-card-badges em {
+    display: inline-flex;
+    width: fit-content;
+    padding: 6px 9px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #eadcc4;
+    color: #5d3212;
+    font-size: 0.76rem;
+    font-style: normal;
+    font-weight: 900;
+  }
+
+  .person-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .person-card-actions a {
+    color: #5d3212;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
+  .person-card-actions a:hover {
+    text-decoration: underline;
+  }
+
+  .person-footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  :global(html[data-theme="dark"]) .person-hero-card,
+  :global(html[data-theme="dark"]) .person-meta-card,
+  :global(html[data-theme="dark"]) .person-bio-section,
+  :global(html[data-theme="dark"]) .person-events-section,
+  :global(html[data-theme="dark"]) .person-places-section,
+  :global(html[data-theme="dark"]) .person-lessons-section,
+  :global(html[data-theme="dark"]) .person-empty-section,
+  :global(html[data-theme="dark"]) .person-footer-nav {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(html[data-theme="dark"]) .person-bio-card,
+  :global(html[data-theme="dark"]) .person-event-card,
+  :global(html[data-theme="dark"]) .person-place-card,
+  :global(html[data-theme="dark"]) .person-lesson-card {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .person-hero-card span,
+  :global(html[data-theme="dark"]) .person-meta-card span,
+  :global(html[data-theme="dark"]) .person-event-card span,
+  :global(html[data-theme="dark"]) .person-place-card span,
+  :global(html[data-theme="dark"]) .person-lesson-card span,
+  :global(html[data-theme="dark"]) .person-card-actions a {
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"]) .person-hero-card strong,
+  :global(html[data-theme="dark"]) .person-meta-card strong,
+  :global(html[data-theme="dark"]) .person-event-card strong,
+  :global(html[data-theme="dark"]) .person-place-card strong,
+  :global(html[data-theme="dark"]) .person-lesson-card strong {
+    color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"]) .person-hero-card p,
+  :global(html[data-theme="dark"]) .person-bio-card p,
+  :global(html[data-theme="dark"]) .person-place-card p,
+  :global(html[data-theme="dark"]) .person-empty-section p,
+  :global(html[data-theme="dark"]) .person-event-card small,
+  :global(html[data-theme="dark"]) .person-place-card small,
+  :global(html[data-theme="dark"]) .person-lesson-card small {
+    color: #d8c8b6;
+  }
+
+  :global(html[data-theme="dark"]) .person-card-badges em {
+    background: #18110c;
+    border-color: #3a2a1d;
+    color: #f3d6ad;
+  }
+
+  @media (max-width: 860px) {
+    .person-hero {
+      grid-template-columns: 1fr;
+    }
+
+    .person-meta-grid,
+    .person-events-grid,
+    .person-places-grid,
+    .person-lessons-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .person-meta-grid,
+    .person-events-grid,
+    .person-places-grid,
+    .person-lessons-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .person-event-card,
+    .person-place-card,
+    .person-lesson-card {
+      min-height: auto;
+    }
+  }
+</style>

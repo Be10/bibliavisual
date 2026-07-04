@@ -21,6 +21,46 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     <meta name="description" content={description} />
     <title>{pageTitle}</title>
 
+    <style is:inline>
+      html[data-theme="dark"] .lesson-progress-panel,
+      html[data-theme="dark"] .lesson-toc a,
+      html[data-theme="dark"] .mini-nav-link {
+        background: #18110c !important;
+        border-color: #3a2a1d !important;
+        color: #fff5e8 !important;
+      }
+
+      html[data-theme="dark"] .lesson-progress-panel *,
+      html[data-theme="dark"] .lesson-toc a,
+      html[data-theme="dark"] .mini-nav-link span,
+      html[data-theme="dark"] .mini-nav-link strong {
+        color: inherit;
+      }
+
+      html[data-theme="dark"] .lesson-toc a,
+      html[data-theme="dark"] .mini-nav-link span {
+        color: #e9b872 !important;
+      }
+
+      html[data-theme="dark"] .mini-nav-link strong,
+      html[data-theme="dark"] .lesson-progress-main h2,
+      html[data-theme="dark"] .lesson-progress-main strong {
+        color: #fff5e8 !important;
+      }
+
+      html[data-theme="dark"] .lesson-progress-main p {
+        color: #d8c8b6 !important;
+      }
+
+      html[data-theme="dark"] .lesson-progress-bar {
+        background: #4a3523 !important;
+      }
+
+      html[data-theme="dark"] .lesson-progress-bar span {
+        background: #e9b872 !important;
+      }
+    </style>
+
     <script is:inline>
       function getPreferredTheme() {
         const storedTheme = localStorage.getItem("ebv-theme");
@@ -2733,6 +2773,138 @@ box-shadow: 0 0 0 6px #100c08;
 
   html[data-theme="dark"] .leaflet-tile-pane {
     filter: brightness(0.86) contrast(1.08) saturate(0.92);
+  }
+
+  /* Ajustes finales de contraste para modo oscuro */
+  html[data-theme="dark"] .lesson-progress-panel {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  html[data-theme="dark"] .lesson-progress-main strong,
+  html[data-theme="dark"] .route-progress-header,
+  html[data-theme="dark"] .route-progress-header strong {
+    color: #fff5e8;
+  }
+
+  html[data-theme="dark"] .route-progress {
+    background: #21160e;
+    border-color: #4a3523;
+  }
+
+  html[data-theme="dark"] .route-progress-bar,
+  html[data-theme="dark"] .lesson-progress-bar {
+    background: #4a3523;
+  }
+
+  html[data-theme="dark"] .route-progress-bar span,
+  html[data-theme="dark"] .lesson-progress-bar span {
+    background: #e9b872;
+  }
+
+  html[data-theme="dark"] .copyright-box {
+    background: #21160e;
+    border-color: #4a3523;
+    color: #d8c8b6;
+  }
+
+  html[data-theme="dark"] .search-empty {
+    background: #21160e;
+    border-color: #4a3523;
+    color: #d8c8b6;
+  }
+
+  html[data-theme="dark"] .search-input {
+    background: #18110c;
+    border-color: #4a3523;
+    color: #fff5e8;
+  }
+
+  html[data-theme="dark"] .search-input:focus {
+    border-color: #e9b872;
+    box-shadow: 0 0 0 4px rgba(233, 184, 114, 0.18);
+  }
+
+  html[data-theme="dark"] .search-input::placeholder {
+    color: #b9a894;
+    opacity: 1;
+  }
+
+  html[data-theme="dark"] .chapter-link {
+    background: #21160e;
+    border-color: #4a3523;
+    color: #e9b872;
+  }
+
+  html[data-theme="dark"] .chapter-link:hover {
+    background: #312113;
+    border-color: #6c4c2f;
+    color: #fff5e8;
+  }
+
+  html[data-theme="dark"] .chapter-nav .button.secondary {
+    background: #e9b872;
+    border-color: #e9b872;
+    color: #1b120b;
+  }
+
+  html[data-theme="dark"] .content p {
+    color: #d8c8b6;
+  }
+
+  html[data-theme="dark"] .section .content p strong,
+  html[data-theme="dark"] .content strong {
+    color: #fff5e8;
+  }
+
+  html[data-theme="dark"] .section,
+  html[data-theme="dark"] .hero,
+  html[data-theme="dark"] .card,
+  html[data-theme="dark"] .entity-card,
+  html[data-theme="dark"] .timeline-card,
+  html[data-theme="dark"] .search-result {
+    border-color: #3a2a1d;
+  }
+
+    html[data-theme="dark"] .lesson-toc a {
+    background: #21160e;
+    border-color: #4a3523;
+    color: #e9b872;
+  }
+
+  html[data-theme="dark"] .lesson-toc a:hover {
+    background: #312113;
+    border-color: #6c4c2f;
+    color: #fff5e8;
+  }
+
+  html[data-theme="dark"] .mini-nav-link {
+    background: #21160e;
+    border-color: #4a3523;
+  }
+
+  html[data-theme="dark"] .mini-nav-link:hover {
+    background: #2b1d13;
+    border-color: #6c4c2f;
+  }
+
+  html[data-theme="dark"] .mini-nav-link span {
+    color: #e9b872;
+  }
+
+  html[data-theme="dark"] .mini-nav-link strong {
+    color: #fff5e8;
+  }
+
+  html[data-theme="dark"] .lesson-progress-panel {
+    background: #18110c;
+    border-color: #3a2a1d;
+  }
+
+  html[data-theme="dark"] .lesson-progress-panel .section-count,
+  html[data-theme="dark"] .lesson-progress-panel .lesson-toc a {
+    color: #e9b872;
   }
 
   @media (max-width: 760px) {

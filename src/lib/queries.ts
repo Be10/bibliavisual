@@ -462,6 +462,62 @@ export function getPeopleByEventId(eventId: string): RelatedItem[] {
     .all(eventId) as RelatedItem[];
 }
 
+export function getEventsByPersonId(personId: string): Event[] {
+  return db
+    .prepare(
+      `
+      SELECT events.*
+      FROM event_people
+      JOIN events ON events.id = event_people.event_id
+      WHERE
+        event_people.person_id = ?
+        AND events.status != 'Borrador'
+      ORDER BY events.chronological_order ASC, events.title ASC
+      `
+    )
+    .all(personId) as Event[];
+}
+
+export function getLessonsByPersonId(personId: string): Lesson[] {
+  return db
+    .prepare(
+      `
+      SELECT lessons.*
+      FROM lesson_people
+      JOIN lessons ON lessons.id = lesson_people.lesson_id
+      WHERE
+        lesson_people.person_id = ?
+        AND lessons.status != 'Borrador'
+      ORDER BY lessons.lesson_number ASC
+      `
+    )
+    .all(personId) as Lesson[];
+}
+
+export function getPlacesByPersonId(personId: string): EventRelatedPlace[] {
+  return db
+    .prepare(
+      `
+      SELECT DISTINCT
+        places.name AS title,
+        places.slug,
+        places.place_type,
+        places.summary,
+        places.latitude,
+        places.longitude,
+        places.geographical_certainty
+      FROM event_people
+      JOIN event_places ON event_places.event_id = event_people.event_id
+      JOIN places ON places.id = event_places.place_id
+      WHERE
+        event_people.person_id = ?
+        AND places.status != 'Borrador'
+      ORDER BY places.name ASC
+      `
+    )
+    .all(personId) as EventRelatedPlace[];
+}
+
 export function getPlacesByEventId(eventId: string): EventRelatedPlace[] {
   return db
     .prepare(
