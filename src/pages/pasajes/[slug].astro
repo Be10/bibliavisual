@@ -36,7 +36,7 @@ export function getStaticPaths() {
     }));
 }
 
-const { passage, lessons, events, verses } = Astro.props;
+const { passage, lessons, events, verses } = Astro.props as Props;
 
 const version = getBibleVersionById("rvr1960");
 
@@ -56,6 +56,18 @@ const versesByChapter = verses.reduce<Record<number, BibleVerse[]>>(
 const chapterNumbers = Object.keys(versesByChapter)
   .map(Number)
   .sort((a, b) => a - b);
+
+const summaryLabel = passage.summary ?? "Resumen pendiente.";
+
+const startReference = `Capítulo ${passage.start_chapter}${
+  passage.start_verse ? `:${passage.start_verse}` : ""
+}`;
+
+const endReference = `Capítulo ${passage.end_chapter}${
+  passage.end_verse ? `:${passage.end_verse}` : ""
+}`;
+
+const versionLabel = version?.abbreviation ?? "RVR1960";
 ---
 
 <BaseLayout
@@ -69,58 +81,78 @@ const chapterNumbers = Object.keys(versesByChapter)
       {passage.display_reference}
     </div>
 
-    <section class="hero">
-      <p class="eyebrow">
-        Pasaje bíblico · {passage.book_name} · {version?.abbreviation ?? "RVR1960"}
-      </p>
+    <section class="hero passage-hero">
+      <div class="passage-hero-content">
+        <p class="eyebrow">
+          Pasaje bíblico · {passage.book_name} · {versionLabel}
+        </p>
 
-      <h1>{passage.display_reference}</h1>
+        <h1>{passage.display_reference}</h1>
 
-      {passage.summary && (
         <p class="subtitle">
-          {passage.summary}
+          {summaryLabel}
         </p>
-      )}
 
-      <div class="actions">
-        <a href={sitePath(`/libros/${passage.book_slug}/`)} class="button secondary">
-          Ver ficha del libro
-        </a>
+        <div class="actions">
+          <a href={sitePath(`/biblia/${passage.book_slug}/${passage.start_chapter}/`)} class="button">
+            Leer capítulo completo
+          </a>
 
-        <a href={sitePath(`/biblia/${passage.book_slug}/${passage.start_chapter}/`)} class="button secondary">
-          Leer capítulo
-        </a>
+          <a href={sitePath(`/libros/${passage.book_slug}/`)} class="button secondary">
+            Ver ficha del libro
+          </a>
+
+          <a href={sitePath("/pasajes/")} class="button secondary">
+            Todos los pasajes
+          </a>
+        </div>
       </div>
+
+      <aside class="passage-hero-card" aria-label="Resumen rápido del pasaje">
+        <span>{passage.book_name}</span>
+        <strong>{versionLabel}</strong>
+        <p>
+          {verses.length} {verses.length === 1 ? "versículo" : "versículos"} · {chapterNumbers.length} {chapterNumbers.length === 1 ? "capítulo" : "capítulos"}
+        </p>
+      </aside>
     </section>
 
-    <section class="grid">
-      <article class="card">
-        <h2>Libro</h2>
-        <p>{passage.book_name}</p>
+    <section class="passage-meta-grid" aria-label="Datos rápidos del pasaje">
+      <article class="passage-meta-card">
+        <span>Libro</span>
+        <strong>{passage.book_name}</strong>
       </article>
 
-      <article class="card">
-        <h2>Inicio</h2>
-        <p>
-          Capítulo {passage.start_chapter}
-          {passage.start_verse ? `:${passage.start_verse}` : ""}
-        </p>
+      <article class="passage-meta-card">
+        <span>Inicio</span>
+        <strong>{startReference}</strong>
       </article>
 
-      <article class="card">
-        <h2>Fin</h2>
-        <p>
-          Capítulo {passage.end_chapter}
-          {passage.end_verse ? `:${passage.end_verse}` : ""}
-        </p>
+      <article class="passage-meta-card">
+        <span>Fin</span>
+        <strong>{endReference}</strong>
+      </article>
+
+      <article class="passage-meta-card">
+        <span>Versión</span>
+        <strong>{versionLabel}</strong>
       </article>
     </section>
 
-    <section class="section">
-      <h2>Texto bíblico</h2>
+    <section class="section passage-reader-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Lectura bíblica</p>
+          <h2>Texto bíblico</h2>
+        </div>
+
+        <span class="section-count">
+          {verses.length} {verses.length === 1 ? "versículo" : "versículos"}
+        </span>
+      </div>
 
       {verses.length > 0 ? (
-        <div class="passage-reader">
+        <div class="passage-reader passage-reader-card">
           {chapterNumbers.map((chapterNumber) => (
             <section class="passage-chapter">
               {chapterNumbers.length > 1 && (
@@ -129,7 +161,7 @@ const chapterNumbers = Object.keys(versesByChapter)
 
               <div class="bible-reader">
                 {versesByChapter[chapterNumber].map((verse) => (
-                  <article class="verse" id={`v${verse.verse_number}`}>
+                  <article class="verse passage-verse" id={`v${verse.verse_number}`}>
                     <span class="verse-number">
                       <a
                         href={sitePath(`/biblia/${passage.book_slug}/${verse.chapter_number}/#v${verse.verse_number}`)}
@@ -147,7 +179,8 @@ const chapterNumbers = Object.keys(versesByChapter)
           ))}
         </div>
       ) : (
-        <div class="content">
+        <div class="passage-empty-card">
+          <strong>Texto pendiente</strong>
           <p>
             Todavía no hay texto bíblico importado para este pasaje. Cuando ejecutes
             el importador con el CSV autorizado de RVR1960, el texto aparecerá aquí.
@@ -156,54 +189,409 @@ const chapterNumbers = Object.keys(versesByChapter)
       )}
     </section>
 
-    <section class="section">
-      <h2>Resumen del pasaje</h2>
+    <section class="section passage-summary-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Resumen editorial</p>
+          <h2>Resumen del pasaje</h2>
+        </div>
+      </div>
 
-      <div class="content">
-        <p>{passage.summary ?? "Resumen pendiente."}</p>
+      <div class="passage-summary-card">
+        <p>{summaryLabel}</p>
       </div>
     </section>
 
-    {lessons.length > 0 && (
-      <section class="section">
-        <h2>Lecciones relacionadas</h2>
+    {lessons.length > 0 ? (
+      <section class="section passage-lessons-section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Recorrido guiado</p>
+            <h2>Lecciones relacionadas</h2>
+          </div>
 
-        <ul class="pill-list">
+          <span class="section-count">
+            {lessons.length} {lessons.length === 1 ? "lección" : "lecciones"}
+          </span>
+        </div>
+
+        <div class="passage-lessons-grid">
           {lessons.map((lesson) => (
-            <li>
-              <a href={sitePath(`/lecciones/${lesson.slug}/`)}>{lesson.title}</a>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
+            <a href={sitePath(`/lecciones/${lesson.slug}/`)} class="passage-lesson-card">
+              <span>Lección {lesson.lesson_number}</span>
+              <strong>{lesson.title}</strong>
 
-    {events.length > 0 && (
-      <section class="section">
-        <h2>Eventos relacionados</h2>
-
-        <div class="entity-list">
-          {events.map((event) => (
-            <a href={sitePath(`/eventos/${event.slug}/`)} class="entity-card">
-              <span class="meta">{event.biblical_period ?? "Evento"}</span>
-              <h2>{event.title}</h2>
-              <p>{event.summary ?? "Resumen pendiente."}</p>
+              {lesson.main_idea && (
+                <small>{lesson.main_idea}</small>
+              )}
             </a>
           ))}
         </div>
       </section>
+    ) : (
+      <section class="section passage-empty-section">
+        <p class="eyebrow">Recorrido guiado</p>
+        <h2>Lecciones relacionadas</h2>
+        <p>Todavía no hay lecciones relacionadas registradas para este pasaje.</p>
+      </section>
+    )}
+
+    {events.length > 0 ? (
+      <section class="section passage-events-section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Narrativa bíblica</p>
+            <h2>Eventos relacionados</h2>
+          </div>
+
+          <span class="section-count">
+            {events.length} {events.length === 1 ? "evento" : "eventos"}
+          </span>
+        </div>
+
+        <div class="passage-events-grid">
+          {events.map((event) => (
+            <a href={sitePath(`/eventos/${event.slug}/`)} class="passage-event-card">
+              <span>{event.biblical_period ?? event.event_type ?? "Evento bíblico"}</span>
+              <strong>{event.title}</strong>
+
+              {event.summary && (
+                <small>{event.summary}</small>
+              )}
+
+              <div class="passage-card-badges">
+                {event.approximate_date && <em>{event.approximate_date}</em>}
+                {event.appears_on_timeline ? <em>Línea de tiempo</em> : null}
+                {event.appears_on_map ? <em>Mapa</em> : null}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    ) : (
+      <section class="section passage-empty-section">
+        <p class="eyebrow">Narrativa bíblica</p>
+        <h2>Eventos relacionados</h2>
+        <p>Todavía no hay eventos relacionados registrados para este pasaje.</p>
+      </section>
     )}
 
     {version?.copyright_notice && (
-      <section class="copyright-box">
+      <section class="copyright-box passage-copyright-box">
         {version.copyright_notice}
       </section>
     )}
 
-    <section class="section">
+    <section class="section passage-footer-nav">
       <a href={sitePath("/pasajes/")} class="button secondary">
         Volver a pasajes
+      </a>
+
+      <a href={sitePath(`/biblia/${passage.book_slug}/${passage.start_chapter}/`)} class="button">
+        Leer capítulo completo
+      </a>
+
+      <a href={sitePath(`/libros/${passage.book_slug}/`)} class="button secondary">
+        Ver libro
       </a>
     </section>
   </main>
 </BaseLayout>
+
+<style>
+  .passage-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 320px);
+    gap: 28px;
+    align-items: end;
+    overflow: hidden;
+  }
+
+  .passage-hero::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -120px;
+    width: 320px;
+    height: 320px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
+    pointer-events: none;
+  }
+
+  .passage-hero-content,
+  .passage-hero-card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .passage-hero-card,
+  .passage-meta-card,
+  .passage-reader-card,
+  .passage-empty-card,
+  .passage-summary-card,
+  .passage-lesson-card,
+  .passage-event-card {
+    border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
+  }
+
+  .passage-hero-card {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .passage-hero-card span,
+  .passage-meta-card span,
+  .passage-lesson-card span,
+  .passage-event-card span {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .passage-hero-card strong {
+    color: #2d2418;
+    font-size: 2.2rem;
+    line-height: 1;
+  }
+
+  .passage-hero-card p,
+  .passage-summary-card p,
+  .passage-empty-card p,
+  .passage-empty-section p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .passage-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .passage-meta-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+  }
+
+  .passage-meta-card span {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .passage-meta-card strong {
+    display: block;
+    color: #2d2418;
+    font-size: 1.12rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .passage-reader-card,
+  .passage-summary-card,
+  .passage-empty-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+  }
+
+  .passage-reader-card {
+    gap: 28px;
+  }
+
+  .passage-empty-card {
+    display: grid;
+    gap: 8px;
+  }
+
+  .passage-empty-card strong {
+    color: #2d2418;
+    font-size: 1.1rem;
+  }
+
+  .passage-summary-card p {
+    max-width: 860px;
+    font-size: 1.08rem;
+  }
+
+  .passage-verse {
+    border-color: #eadcc4;
+  }
+
+  .passage-lessons-grid,
+  .passage-events-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .passage-lesson-card,
+  .passage-event-card {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    min-height: 190px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .passage-lesson-card:hover,
+  .passage-event-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .passage-lesson-card strong,
+  .passage-event-card strong {
+    color: #2d2418;
+    font-size: 1.12rem;
+    line-height: 1.35;
+  }
+
+  .passage-lesson-card small,
+  .passage-event-card small {
+    color: #6a5c4d;
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .passage-card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .passage-card-badges em {
+    display: inline-flex;
+    width: fit-content;
+    padding: 6px 9px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #eadcc4;
+    color: #5d3212;
+    font-size: 0.76rem;
+    font-style: normal;
+    font-weight: 900;
+  }
+
+  .passage-copyright-box {
+    margin-top: 32px;
+  }
+
+  .passage-footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  :global(html[data-theme="dark"]) .passage-hero-card,
+  :global(html[data-theme="dark"]) .passage-meta-card,
+  :global(html[data-theme="dark"]) .passage-reader-section,
+  :global(html[data-theme="dark"]) .passage-summary-section,
+  :global(html[data-theme="dark"]) .passage-lessons-section,
+  :global(html[data-theme="dark"]) .passage-events-section,
+  :global(html[data-theme="dark"]) .passage-empty-section,
+  :global(html[data-theme="dark"]) .passage-footer-nav {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(html[data-theme="dark"]) .passage-reader-card,
+  :global(html[data-theme="dark"]) .passage-empty-card,
+  :global(html[data-theme="dark"]) .passage-summary-card,
+  :global(html[data-theme="dark"]) .passage-lesson-card,
+  :global(html[data-theme="dark"]) .passage-event-card {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .passage-hero-card span,
+  :global(html[data-theme="dark"]) .passage-meta-card span,
+  :global(html[data-theme="dark"]) .passage-lesson-card span,
+  :global(html[data-theme="dark"]) .passage-event-card span,
+  :global(html[data-theme="dark"]) .verse-number,
+  :global(html[data-theme="dark"]) .verse-ref-link,
+  :global(html[data-theme="dark"]) .passage-chapter h3 {
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"]) .passage-hero-card strong,
+  :global(html[data-theme="dark"]) .passage-meta-card strong,
+  :global(html[data-theme="dark"]) .passage-empty-card strong,
+  :global(html[data-theme="dark"]) .passage-lesson-card strong,
+  :global(html[data-theme="dark"]) .passage-event-card strong {
+    color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"]) .passage-hero-card p,
+  :global(html[data-theme="dark"]) .passage-summary-card p,
+  :global(html[data-theme="dark"]) .passage-empty-card p,
+  :global(html[data-theme="dark"]) .passage-empty-section p,
+  :global(html[data-theme="dark"]) .passage-lesson-card small,
+  :global(html[data-theme="dark"]) .passage-event-card small,
+  :global(html[data-theme="dark"]) .verse-text {
+    color: #d8c8b6;
+  }
+
+  :global(html[data-theme="dark"]) .passage-verse {
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .passage-card-badges em {
+    background: #18110c;
+    border-color: #3a2a1d;
+    color: #f3d6ad;
+  }
+
+  @media (max-width: 860px) {
+    .passage-hero {
+      grid-template-columns: 1fr;
+    }
+
+    .passage-meta-grid,
+    .passage-lessons-grid,
+    .passage-events-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .passage-meta-grid,
+    .passage-lessons-grid,
+    .passage-events-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .passage-lesson-card,
+    .passage-event-card {
+      min-height: auto;
+    }
+
+    .passage-reader-card,
+    .passage-summary-card,
+    .passage-empty-card {
+      padding: 18px;
+    }
+  }
+</style>
