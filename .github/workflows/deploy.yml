@@ -24,10 +24,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
       - name: Install, reset database, build, and upload site
         uses: withastro/action@v6
         with:
-          node-version: 24
+          node-version: 22
           build-cmd: npm run db:reset && npm run build
 
   deploy:
