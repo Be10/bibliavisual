@@ -31,12 +31,16 @@ export function getStaticPaths() {
     }));
 }
 
-const { place, events, lessons } = Astro.props;
+const { place, events, lessons } = Astro.props as Props;
 
 const hasCoordinates = place.latitude !== null && place.longitude !== null;
 const coordinatesLabel = hasCoordinates
   ? `${place.latitude}, ${place.longitude}`
   : "Pendiente";
+
+const certaintyLabel = place.geographical_certainty ?? "Pendiente";
+const placeTypeLabel = place.place_type ?? "Lugar bíblico";
+const summaryLabel = place.summary ?? "Descripción pendiente.";
 ---
 
 <BaseLayout
@@ -51,42 +55,48 @@ const coordinatesLabel = hasCoordinates
     </div>
 
     <section class="hero place-hero">
-      <p class="eyebrow">{place.place_type ?? "Lugar bíblico"}</p>
+      <div class="place-hero-content">
+        <p class="eyebrow">{placeTypeLabel}</p>
 
-      <h1>{place.name}</h1>
+        <h1>{place.name}</h1>
 
-      {place.summary && (
         <p class="subtitle">
-          {place.summary}
+          {summaryLabel}
         </p>
-      )}
 
-      <div class="actions">
-        {hasCoordinates ? (
-          <a href={sitePath(`/mapa/?lugar=${place.slug}`)} class="button">
-            Ver en el mapa
-          </a>
-        ) : (
-          <a href={sitePath("/mapa/")} class="button secondary">
-            Ver mapa general
-          </a>
-        )}
+        <div class="actions">
+          {hasCoordinates ? (
+            <a href={sitePath(`/mapa/?lugar=${place.slug}`)} class="button">
+              Ver en el mapa
+            </a>
+          ) : (
+            <a href={sitePath("/mapa/")} class="button secondary">
+              Ver mapa general
+            </a>
+          )}
 
-        <a href={sitePath("/lugares/")} class="button secondary">
-          Todos los lugares
-        </a>
+          <a href={sitePath("/lugares/")} class="button secondary">
+            Todos los lugares
+          </a>
+        </div>
       </div>
+
+      <aside class="place-hero-card" aria-label="Resumen rápido del lugar">
+        <span>{placeTypeLabel}</span>
+        <strong>{place.name}</strong>
+        <p>{certaintyLabel}</p>
+      </aside>
     </section>
 
     <section class="place-meta-grid" aria-label="Datos rápidos del lugar">
       <article class="place-meta-card">
         <span>Tipo</span>
-        <strong>{place.place_type ?? "Lugar bíblico"}</strong>
+        <strong>{placeTypeLabel}</strong>
       </article>
 
       <article class="place-meta-card">
         <span>Certeza geográfica</span>
-        <strong>{place.geographical_certainty ?? "Pendiente"}</strong>
+        <strong>{certaintyLabel}</strong>
       </article>
 
       <article class="place-meta-card">
@@ -95,7 +105,7 @@ const coordinatesLabel = hasCoordinates
       </article>
 
       <article class="place-meta-card">
-        <span>Estado</span>
+        <span>Estado editorial</span>
         <strong>{place.status}</strong>
       </article>
     </section>
@@ -116,10 +126,13 @@ const coordinatesLabel = hasCoordinates
 
       {hasCoordinates ? (
         <div class="place-map-preview">
-          <p>
-            Este lugar tiene coordenadas registradas. Puedes abrirlo en el mapa
-            bíblico para verlo centrado y sin saturación de otros marcadores.
-          </p>
+          <div>
+            <strong>{place.name} en el mapa bíblico</strong>
+            <p>
+              Este lugar tiene coordenadas registradas. Puedes abrirlo en el mapa
+              bíblico con el marcador centrado y el popup enfocado en este lugar.
+            </p>
+          </div>
 
           <a href={sitePath(`/mapa/?lugar=${place.slug}`)} class="place-map-link">
             Ver {place.name} en el mapa →
@@ -136,7 +149,20 @@ const coordinatesLabel = hasCoordinates
       )}
     </section>
 
-    {events.length > 0 && (
+    <section class="section place-importance-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Síntesis</p>
+          <h2>Importancia bíblica</h2>
+        </div>
+      </div>
+
+      <div class="place-importance-card">
+        <p>{summaryLabel}</p>
+      </div>
+    </section>
+
+    {events.length > 0 ? (
       <section class="section place-events-section">
         <div class="section-header">
           <div>
@@ -145,7 +171,7 @@ const coordinatesLabel = hasCoordinates
           </div>
 
           <span class="section-count">
-            {events.length} eventos
+            {events.length} {events.length === 1 ? "evento" : "eventos"}
           </span>
         </div>
 
@@ -162,9 +188,17 @@ const coordinatesLabel = hasCoordinates
           ))}
         </div>
       </section>
+    ) : (
+      <section class="section place-empty-section">
+        <p class="eyebrow">Historia bíblica</p>
+        <h2>Eventos relacionados</h2>
+        <p>
+          Todavía no hay eventos relacionados registrados para este lugar.
+        </p>
+      </section>
     )}
 
-    {lessons.length > 0 && (
+    {lessons.length > 0 ? (
       <section class="section place-lessons-section">
         <div class="section-header">
           <div>
@@ -173,7 +207,7 @@ const coordinatesLabel = hasCoordinates
           </div>
 
           <span class="section-count">
-            {lessons.length} lecciones
+            {lessons.length} {lessons.length === 1 ? "lección" : "lecciones"}
           </span>
         </div>
 
@@ -190,19 +224,14 @@ const coordinatesLabel = hasCoordinates
           ))}
         </div>
       </section>
+    ) : (
+      <section class="section place-empty-section">
+        <p class="eyebrow">Recorrido guiado</p>
+        <h2>Lecciones relacionadas</h2>
+        <p>
+          Todavía no hay lecciones relacionadas registradas para este lugar.
+        </p>
+      </section>
     )}
-
-    <section class="section">
-      <div class="section-header">
-        <div>
-          <p class="eyebrow">Síntesis</p>
-          <h2>Importancia bíblica</h2>
-        </div>
-      </div>
-
-      <div class="content">
-        <p>{place.summary ?? "Descripción pendiente."}</p>
-      </div>
-    </section>
   </main>
 </BaseLayout>

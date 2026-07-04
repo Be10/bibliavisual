@@ -461,9 +461,62 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     font-weight: 700;
   }
 
-    .place-hero {
+  .place-hero {
     position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 320px);
+    gap: 28px;
+    align-items: end;
     overflow: hidden;
+  }
+
+  .place-hero::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -120px;
+    width: 320px;
+    height: 320px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
+    pointer-events: none;
+  }
+
+  .place-hero-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .place-hero-card {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    border: 1px solid #eadcc4;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .place-hero-card span {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .place-hero-card strong {
+    color: #2d2418;
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+
+  .place-hero-card p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.6;
   }
 
   .place-meta-grid {
@@ -478,6 +531,7 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     border-radius: 22px;
     background: white;
     border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
   }
 
   .place-meta-card span {
@@ -495,38 +549,49 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     color: #2d2418;
     font-size: 1.02rem;
     line-height: 1.4;
+    overflow-wrap: anywhere;
   }
 
-  .place-map-panel {
+  .place-map-panel,
+  .place-importance-section,
+  .place-events-section,
+  .place-lessons-section,
+  .place-empty-section {
     background: white;
   }
 
   .place-map-preview,
-  .place-empty-map {
+  .place-empty-map,
+  .place-importance-card {
+    display: grid;
+    gap: 14px;
     padding: 22px;
     border-radius: 22px;
     background: #fffaf0;
     border: 1px solid #eadcc4;
   }
 
+  .place-map-preview strong,
+  .place-empty-map strong {
+    display: block;
+    color: #2d2418;
+    font-size: 1.1rem;
+    line-height: 1.35;
+  }
+
   .place-map-preview p,
-  .place-empty-map p {
+  .place-empty-map p,
+  .place-importance-card p,
+  .place-empty-section p {
     max-width: 760px;
     margin: 0;
     color: #6a5c4d;
     line-height: 1.7;
   }
 
-  .place-empty-map strong {
-    display: block;
-    margin-bottom: 8px;
-    color: #2d2418;
-    font-size: 1.1rem;
-  }
-
   .place-map-link {
     display: inline-flex;
-    margin-top: 16px;
+    width: fit-content;
     color: #5d3212;
     font-weight: 900;
     text-decoration: none;
@@ -2202,6 +2267,54 @@ background: #e9b872;
 box-shadow: 0 0 0 6px #100c08;
   }
 
+  html[data-theme="dark"] .place-hero-card,
+  html[data-theme="dark"] .place-meta-card,
+  html[data-theme="dark"] .place-map-panel,
+  html[data-theme="dark"] .place-importance-section,
+  html[data-theme="dark"] .place-events-section,
+  html[data-theme="dark"] .place-lessons-section,
+  html[data-theme="dark"] .place-empty-section {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  html[data-theme="dark"] .place-map-preview,
+  html[data-theme="dark"] .place-empty-map,
+  html[data-theme="dark"] .place-importance-card,
+  html[data-theme="dark"] .place-event-card,
+  html[data-theme="dark"] .place-lesson-card {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  html[data-theme="dark"] .place-hero-card span,
+  html[data-theme="dark"] .place-meta-card span,
+  html[data-theme="dark"] .place-event-card span,
+  html[data-theme="dark"] .place-lesson-card span,
+  html[data-theme="dark"] .place-map-link {
+    color: #e9b872;
+  }
+
+  html[data-theme="dark"] .place-hero-card strong,
+  html[data-theme="dark"] .place-meta-card strong,
+  html[data-theme="dark"] .place-map-preview strong,
+  html[data-theme="dark"] .place-empty-map strong,
+  html[data-theme="dark"] .place-event-card strong,
+  html[data-theme="dark"] .place-lesson-card strong {
+    color: #fff5e8;
+  }
+
+  html[data-theme="dark"] .place-hero-card p,
+  html[data-theme="dark"] .place-map-preview p,
+  html[data-theme="dark"] .place-empty-map p,
+  html[data-theme="dark"] .place-importance-card p,
+  html[data-theme="dark"] .place-empty-section p,
+  html[data-theme="dark"] .place-event-card small,
+  html[data-theme="dark"] .place-lesson-card small {
+    color: #d8c8b6;
+  }
+
   html[data-theme="dark"] .map-layer-switcher {
     background: rgba(24, 17, 12, 0.94);
     border-color: rgba(58, 42, 29, 0.95);
@@ -2577,6 +2690,14 @@ box-shadow: 0 0 0 6px #100c08;
     .leaflet-container a.leaflet-popup-close-button {
       top: 8px;
       right: 8px;
+    }
+
+    .place-hero {
+      grid-template-columns: 1fr;
+    }
+
+    .place-hero-card {
+      padding: 20px;
     }
 
     .place-meta-grid {
