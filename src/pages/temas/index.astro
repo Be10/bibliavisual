@@ -1,9 +1,29 @@
 ---
 import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getAllTopics } from "../../lib/queries";
+import { getAllTopics, type Topic } from "../../lib/queries";
 
 const topics = getAllTopics().filter((topic) => topic.status !== "Borrador");
+
+const topicsWithDefinition = topics.filter((topic) => topic.definition);
+const topicsWithoutDefinition = topics.filter((topic) => !topic.definition);
+
+const initials = Array.from(
+  new Set(
+    topics.map((topic) => topic.title.trim().charAt(0).toUpperCase())
+  )
+).sort((a, b) => a.localeCompare(b, "es"));
+
+const topicsByInitial = initials.map((initial) => ({
+  initial,
+  topics: topics.filter(
+    (topic) => topic.title.trim().charAt(0).toUpperCase() === initial
+  ),
+}));
+
+function getTopicInitial(topic: Topic) {
+  return topic.title.trim().charAt(0).toUpperCase();
+}
 ---
 
 <BaseLayout
@@ -15,25 +35,460 @@ const topics = getAllTopics().filter((topic) => topic.status !== "Borrador");
       <a href={sitePath("/")}>Inicio</a> → Temas
     </div>
 
-    <section class="hero">
-      <p class="eyebrow">Exploración libre</p>
+    <section class="hero topics-hero">
+      <div class="topics-hero-content">
+        <p class="eyebrow">Exploración teológica</p>
 
-      <h1>Temas bíblicos</h1>
+        <h1>Temas bíblicos</h1>
 
-      <p class="subtitle">
-        Conceptos importantes para estudiar la Biblia de forma conectada:
-        redención, Mesías, evangelio, creación, nueva creación y más.
-      </p>
+        <p class="subtitle">
+          Explora conceptos importantes para estudiar la Biblia de forma conectada:
+          creación, pecado, pacto, redención, Mesías, evangelio, reino de Dios,
+          nueva creación y más.
+        </p>
+
+        <div class="actions">
+          <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button">
+            Ruta principal
+          </a>
+
+          <a href={sitePath("/eventos/")} class="button secondary">
+            Explorar eventos
+          </a>
+
+          <a href={sitePath("/lecciones/")} class="button secondary">
+            Explorar lecciones
+          </a>
+        </div>
+      </div>
+
+      <aside class="topics-hero-card" aria-label="Resumen de temas bíblicos">
+        <span>Total de temas</span>
+        <strong>{topics.length}</strong>
+        <p>
+          {topicsWithDefinition.length} con definición · {topicsWithoutDefinition.length} pendientes
+        </p>
+      </aside>
     </section>
 
-    <section class="entity-list">
-      {topics.map((topic) => (
-        <a href={sitePath(`/temas/${topic.slug}/`)} class="entity-card">
-          <span class="meta">Tema</span>
-          <h2>{topic.title}</h2>
-          <p>{topic.definition ?? "Definición pendiente."}</p>
-        </a>
-      ))}
+    <section class="topics-stats" aria-label="Resumen visual de temas">
+      <article class="topics-stat-card">
+        <span>Temas publicados</span>
+        <strong>{topics.length}</strong>
+      </article>
+
+      <article class="topics-stat-card">
+        <span>Con definición</span>
+        <strong>{topicsWithDefinition.length}</strong>
+      </article>
+
+      <article class="topics-stat-card">
+        <span>Pendientes de ampliar</span>
+        <strong>{topicsWithoutDefinition.length}</strong>
+      </article>
+
+      <article class="topics-stat-card">
+        <span>Iniciales disponibles</span>
+        <strong>{initials.length}</strong>
+      </article>
+    </section>
+
+    <section class="section topics-index-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Índice alfabético</p>
+          <h2>Explorar por inicial</h2>
+        </div>
+
+        <span class="section-count">
+          {initials.length} {initials.length === 1 ? "inicial" : "iniciales"}
+        </span>
+      </div>
+
+      <nav class="topics-initial-nav" aria-label="Índice de temas por inicial">
+        {topicsByInitial.map((group) => (
+          <a href={`#inicial-${group.initial}`}>
+            <span>{group.initial}</span>
+            <strong>{group.topics.length}</strong>
+          </a>
+        ))}
+      </nav>
+    </section>
+
+    <section class="section topics-directory-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Directorio</p>
+          <h2>Todos los temas</h2>
+        </div>
+
+        <span class="section-count">
+          {topics.length} {topics.length === 1 ? "tema" : "temas"}
+        </span>
+      </div>
+
+      <div class="topics-groups">
+        {topicsByInitial.map((group) => (
+          <section class="topics-group" id={`inicial-${group.initial}`}>
+            <div class="topics-group-heading">
+              <span>Inicial</span>
+              <h3>{group.initial}</h3>
+              <p>
+                {group.topics.length} {group.topics.length === 1 ? "tema" : "temas"}
+              </p>
+            </div>
+
+            <div class="topics-directory-grid">
+              {group.topics.map((topic) => (
+                <a href={sitePath(`/temas/${topic.slug}/`)} class="topic-directory-card">
+                  <div class="topic-directory-avatar" aria-hidden="true">
+                    {getTopicInitial(topic)}
+                  </div>
+
+                  <div class="topic-directory-content">
+                    <span>Tema bíblico</span>
+                    <h2>{topic.title}</h2>
+                    <p>{topic.definition ?? "Definición pendiente."}</p>
+                  </div>
+
+                  <div class="topic-directory-footer">
+                    <small>{topic.definition ? "Definición iniciada" : "Pendiente de ampliar"}</small>
+                    <strong>Ver tema →</strong>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
     </section>
   </main>
 </BaseLayout>
+
+<style>
+  .topics-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 320px);
+    gap: 28px;
+    align-items: end;
+    overflow: hidden;
+  }
+
+  .topics-hero::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -120px;
+    width: 320px;
+    height: 320px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
+    pointer-events: none;
+  }
+
+  .topics-hero-content,
+  .topics-hero-card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .topics-hero-card,
+  .topics-stat-card,
+  .topics-initial-nav a,
+  .topics-group-heading,
+  .topic-directory-card {
+    border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
+  }
+
+  .topics-hero-card {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .topics-hero-card span,
+  .topics-stat-card span,
+  .topics-initial-nav span,
+  .topics-group-heading span,
+  .topic-directory-content span {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .topics-hero-card strong {
+    color: #2d2418;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .topics-hero-card p,
+  .topics-group-heading p,
+  .topic-directory-content p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .topics-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .topics-stat-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+  }
+
+  .topics-stat-card span {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .topics-stat-card strong {
+    display: block;
+    color: #2d2418;
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .topics-initial-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .topics-initial-nav a {
+    display: inline-grid;
+    grid-template-columns: auto auto;
+    gap: 10px;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .topics-initial-nav a:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .topics-initial-nav strong {
+    display: inline-flex;
+    min-width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: white;
+    color: #5d3212;
+    font-size: 0.86rem;
+    font-weight: 900;
+  }
+
+  .topics-groups {
+    display: grid;
+    gap: 34px;
+  }
+
+  .topics-group {
+    display: grid;
+    grid-template-columns: minmax(150px, 220px) 1fr;
+    gap: 22px;
+    scroll-margin-top: 120px;
+  }
+
+  .topics-group-heading {
+    position: sticky;
+    top: 100px;
+    align-self: start;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+  }
+
+  .topics-group-heading h3 {
+    margin: 8px 0;
+    color: #2d2418;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .topics-directory-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .topic-directory-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    min-height: 220px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .topic-directory-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .topic-directory-avatar {
+    display: inline-flex;
+    width: 54px;
+    height: 54px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: #5d3212;
+    color: #fffaf0;
+    font-size: 1.35rem;
+    font-weight: 900;
+  }
+
+  .topic-directory-content {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .topic-directory-content h2 {
+    margin: 0;
+    color: #2d2418;
+    font-size: 1.2rem;
+    line-height: 1.3;
+  }
+
+  .topic-directory-footer {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid #eadcc4;
+  }
+
+  .topic-directory-footer small {
+    color: #6a5c4d;
+    font-size: 0.88rem;
+    font-weight: 800;
+  }
+
+  .topic-directory-footer strong {
+    color: #5d3212;
+    font-size: 0.92rem;
+  }
+
+  :global(html[data-theme="dark"]) .topics-hero-card,
+  :global(html[data-theme="dark"]) .topics-stat-card,
+  :global(html[data-theme="dark"]) .topics-index-section,
+  :global(html[data-theme="dark"]) .topics-directory-section {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(html[data-theme="dark"]) .topics-initial-nav a,
+  :global(html[data-theme="dark"]) .topics-group-heading,
+  :global(html[data-theme="dark"]) .topic-directory-card {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .topics-hero-card span,
+  :global(html[data-theme="dark"]) .topics-stat-card span,
+  :global(html[data-theme="dark"]) .topics-initial-nav span,
+  :global(html[data-theme="dark"]) .topics-group-heading span,
+  :global(html[data-theme="dark"]) .topic-directory-content span,
+  :global(html[data-theme="dark"]) .topic-directory-footer strong {
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"]) .topics-hero-card strong,
+  :global(html[data-theme="dark"]) .topics-stat-card strong,
+  :global(html[data-theme="dark"]) .topics-group-heading h3,
+  :global(html[data-theme="dark"]) .topic-directory-content h2 {
+    color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"]) .topics-hero-card p,
+  :global(html[data-theme="dark"]) .topics-group-heading p,
+  :global(html[data-theme="dark"]) .topic-directory-content p,
+  :global(html[data-theme="dark"]) .topic-directory-footer small {
+    color: #d8c8b6;
+  }
+
+  :global(html[data-theme="dark"]) .topics-initial-nav strong {
+    background: #18110c;
+    color: #f3d6ad;
+  }
+
+  :global(html[data-theme="dark"]) .topic-directory-avatar {
+    background: #e9b872;
+    color: #1b120b;
+  }
+
+  :global(html[data-theme="dark"]) .topic-directory-footer {
+    border-color: #3a2a1d;
+  }
+
+  @media (max-width: 920px) {
+    .topics-hero,
+    .topics-group {
+      grid-template-columns: 1fr;
+    }
+
+    .topics-group-heading {
+      position: static;
+    }
+
+    .topics-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 700px) {
+    .topics-stats,
+    .topics-directory-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .topic-directory-card {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+
+    .topic-directory-footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+</style>
