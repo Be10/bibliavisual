@@ -4,6 +4,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllEvents,
   getBooksByEventId,
+  getLessonsByEventId,
   getPeopleByEventId,
   getPlacesByEventId,
   getTopicsByEventId,
@@ -11,6 +12,7 @@ import {
   type Event,
   type Book,
   type EventRelatedPlace,
+  type Lesson,
   type RelatedItem,
   type Passage,
 } from "../../lib/queries";
@@ -18,6 +20,7 @@ import {
 type Props = {
   event: Event;
   books: Book[];
+  lessons: Lesson[];
   people: RelatedItem[];
   places: EventRelatedPlace[];
   topics: RelatedItem[];
@@ -34,6 +37,7 @@ export function getStaticPaths() {
       props: {
         event,
         books: getBooksByEventId(event.id),
+        lessons: getLessonsByEventId(event.id),
         people: getPeopleByEventId(event.id),
         places: getPlacesByEventId(event.id),
         topics: getTopicsByEventId(event.id),
@@ -42,11 +46,21 @@ export function getStaticPaths() {
     }));
 }
 
-const { event, people, places, topics, books, passages } = Astro.props;
+const { event, people, places, topics, books, passages, lessons } = Astro.props as Props;
 
 const firstMappablePlace = places.find(
   (place) => place.latitude !== null && place.longitude !== null
 );
+
+const eventTypeLabel = event.event_type ?? "Evento bíblico";
+const periodLabel = event.biblical_period ?? "Pendiente";
+const dateLabel = event.approximate_date ?? "Pendiente";
+const temporalCertaintyLabel = event.temporal_certainty ?? "Pendiente";
+const geographicalCertaintyLabel = event.geographical_certainty ?? "Pendiente";
+const summaryLabel = event.summary ?? "Resumen pendiente.";
+const descriptionLabel = event.description ?? "Descripción pendiente.";
+const appearsOnTimelineLabel = event.appears_on_timeline ? "Sí" : "No";
+const appearsOnMapLabel = event.appears_on_map ? "Sí" : "No";
 ---
 
 <BaseLayout
@@ -55,161 +69,617 @@ const firstMappablePlace = places.find(
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href={sitePath("/")}>Inicio</a> → Eventos → {event.title}
+      <a href={sitePath("/")}>Inicio</a> →
+      <a href={sitePath("/eventos/")}>Eventos</a> →
+      {event.title}
     </div>
 
-    <section class="hero">
-      <p class="eyebrow">{event.event_type ?? "Evento bíblico"}</p>
+    <section class="hero event-hero">
+      <div class="event-hero-content">
+        <p class="eyebrow">{eventTypeLabel}</p>
 
-      <h1>{event.title}</h1>
+        <h1>{event.title}</h1>
 
-      {event.summary && (
         <p class="subtitle">
-          {event.summary}
+          {summaryLabel}
         </p>
-      )}
 
-      {firstMappablePlace && (
         <div class="actions">
-          <a href={sitePath(`/mapa/?lugar=${firstMappablePlace.slug}`)} class="button">
-            Ver en el mapa bíblico
+          {firstMappablePlace ? (
+            <a href={sitePath(`/mapa/?lugar=${firstMappablePlace.slug}`)} class="button">
+              Ver en el mapa bíblico
+            </a>
+          ) : (
+            <a href={sitePath("/mapa/")} class="button secondary">
+              Ver mapa general
+            </a>
+          )}
+
+          <a href={sitePath("/linea-de-tiempo/")} class="button secondary">
+            Ver línea de tiempo
+          </a>
+
+          <a href={sitePath("/eventos/")} class="button secondary">
+            Todos los eventos
           </a>
         </div>
-      )}
+      </div>
+
+      <aside class="event-hero-card" aria-label="Resumen rápido del evento">
+        <span>{periodLabel}</span>
+        <strong>{dateLabel}</strong>
+        <p>{temporalCertaintyLabel}</p>
+      </aside>
     </section>
 
-    <section class="grid">
-      <article class="card">
-        <h2>Período</h2>
-        <p>{event.biblical_period ?? "Pendiente"}</p>
+    <section class="event-meta-grid" aria-label="Datos rápidos del evento">
+      <article class="event-meta-card">
+        <span>Período</span>
+        <strong>{periodLabel}</strong>
       </article>
 
-      <article class="card">
-        <h2>Fecha aproximada</h2>
-        <p>{event.approximate_date ?? "Pendiente"}</p>
+      <article class="event-meta-card">
+        <span>Fecha aproximada</span>
+        <strong>{dateLabel}</strong>
       </article>
 
-      <article class="card">
-        <h2>Certeza temporal</h2>
-        <p>{event.temporal_certainty ?? "Pendiente"}</p>
+      <article class="event-meta-card">
+        <span>Certeza temporal</span>
+        <strong>{temporalCertaintyLabel}</strong>
+      </article>
+
+      <article class="event-meta-card">
+        <span>Certeza geográfica</span>
+        <strong>{geographicalCertaintyLabel}</strong>
       </article>
     </section>
 
-    <section class="section">
-      <h2>Descripción</h2>
+    <section class="section event-story-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Narrativa bíblica</p>
+          <h2>Descripción del evento</h2>
+        </div>
+      </div>
 
-      <div class="content">
-        <p>{event.description ?? "Descripción pendiente."}</p>
+      <div class="event-story-card">
+        <p>{descriptionLabel}</p>
       </div>
     </section>
 
-    {books.length > 0 && (
-      <section class="section">
-        <h2>Libros relacionados</h2>
+    <section class="section event-visibility-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Uso visual</p>
+          <h2>Mapa y línea de tiempo</h2>
+        </div>
+      </div>
 
-        <ul class="pill-list">
-          {books.map((book) => (
-            <li>
-              <a href={sitePath(`/libros/${book.slug}/`)}>{book.name}</a>
-            </li>
-          ))}
-        </ul>
+      <div class="event-visibility-grid">
+        <article class="event-visibility-card">
+          <span>Línea de tiempo</span>
+          <strong>{appearsOnTimelineLabel}</strong>
+          <p>
+            {event.appears_on_timeline
+              ? "Este evento está marcado para aparecer en la línea narrativa visual."
+              : "Este evento no está marcado para aparecer en la línea narrativa visual."}
+          </p>
+        </article>
+
+        <article class="event-visibility-card">
+          <span>Mapa</span>
+          <strong>{appearsOnMapLabel}</strong>
+          <p>
+            {event.appears_on_map
+              ? "Este evento está marcado para aparecer en vistas relacionadas con el mapa."
+              : "Este evento no está marcado para aparecer directamente en el mapa."}
+          </p>
+        </article>
+
+        <article class="event-visibility-card">
+          <span>Lugar principal enlazable</span>
+          <strong>{firstMappablePlace ? firstMappablePlace.title : "Pendiente"}</strong>
+          <p>
+            {firstMappablePlace
+              ? "Hay al menos un lugar relacionado con coordenadas registradas."
+              : "Todavía no hay lugares relacionados con coordenadas registradas."}
+          </p>
+        </article>
+      </div>
+    </section>
+
+    {(books.length > 0 || passages.length > 0) && (
+      <section class="section event-scripture-section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Base bíblica</p>
+            <h2>Libros y pasajes relacionados</h2>
+          </div>
+        </div>
+
+        <div class="event-scripture-grid">
+          {books.length > 0 && (
+            <article class="event-link-panel">
+              <h3>Libros relacionados</h3>
+
+              <ul class="pill-list">
+                {books.map((book) => (
+                  <li>
+                    <a href={sitePath(`/libros/${book.slug}/`)}>{book.name}</a>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          )}
+
+          {passages.length > 0 && (
+            <article class="event-link-panel">
+              <h3>Pasajes relacionados</h3>
+
+              <ul class="pill-list">
+                {passages.map((passage) => (
+                  <li>
+                    <a href={sitePath(`/pasajes/${passage.slug}/`)}>
+                      {passage.display_reference}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          )}
+        </div>
       </section>
     )}
 
-    {passages.length > 0 && (
-      <section class="section">
-        <h2>Pasajes relacionados</h2>
+    {places.length > 0 ? (
+      <section class="section event-places-section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Geografía bíblica</p>
+            <h2>Lugares relacionados</h2>
+          </div>
 
-        <ul class="pill-list">
-          {passages.map((passage) => (
-            <li>
-              <a href={sitePath(`/pasajes/${passage.slug}/`)}>{passage.display_reference}</a>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
+          <span class="section-count">
+            {places.length} {places.length === 1 ? "lugar" : "lugares"}
+          </span>
+        </div>
 
-    {(places.length > 0 || people.length > 0 || topics.length > 0) && (
-      <section class="grid">
-        {places.length > 0 && (
-          <article class="card">
-            <h2>Lugares</h2>
+        <div class="event-places-grid">
+          {places.map((place) => {
+            const hasCoordinates = place.latitude !== null && place.longitude !== null;
 
-            <ul class="list">
-              {places.map((place) => (
-                <li>
-                  <a href={sitePath(`/lugares/${place.slug}/`)}>{place.title}</a>
-                  {place.geographical_certainty && (
-                    <span> · certeza: {place.geographical_certainty}</span>
+            return (
+              <article class="event-place-card">
+                <span>{place.place_type ?? "Lugar"}</span>
+                <strong>{place.title}</strong>
+
+                <p>{place.summary ?? "Descripción pendiente."}</p>
+
+                {place.geographical_certainty && (
+                  <small>Certeza: {place.geographical_certainty}</small>
+                )}
+
+                <div class="event-card-actions">
+                  <a href={sitePath(`/lugares/${place.slug}/`)}>Ver lugar</a>
+
+                  {hasCoordinates && (
+                    <a href={sitePath(`/mapa/?lugar=${place.slug}`)}>Ver en mapa</a>
                   )}
-                </li>
-              ))}
-            </ul>
-          </article>
-        )}
-
-        {people.length > 0 && (
-          <article class="card">
-            <h2>Personajes</h2>
-
-            <ul class="list">
-              {people.map((person) => (
-                <li>
-                  <a href={sitePath(`/personajes/${person.slug}/`)}>{person.title}</a>
-                </li>
-              ))}
-            </ul>
-          </article>
-        )}
-
-        {topics.length > 0 && (
-          <article class="card">
-            <h2>Temas</h2>
-
-            <ul class="list">
-              {topics.map((topic) => (
-                <li>
-                  <a href={sitePath(`/temas/${topic.slug}/`)}>{topic.title}</a>
-                </li>
-              ))}
-            </ul>
-          </article>
-        )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+    ) : (
+      <section class="section event-empty-section">
+        <p class="eyebrow">Geografía bíblica</p>
+        <h2>Lugares relacionados</h2>
+        <p>Todavía no hay lugares relacionados registrados para este evento.</p>
       </section>
     )}
 
-    {places.length > 0 && (
-      <section class="section">
-        <h2>Lugares relacionados</h2>
+    {(people.length > 0 || topics.length > 0) && (
+      <section class="section event-connections-section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Conexiones</p>
+            <h2>Personajes y temas</h2>
+          </div>
+        </div>
 
-        <div class="entity-list">
-          {places.map((place) => (
-            <a href={sitePath(`/lugares/${place.slug}/`)} class="entity-card">
-              <span class="meta">{place.place_type ?? "Lugar"}</span>
-              <h2>{place.title}</h2>
-              <p>{place.summary ?? "Descripción pendiente."}</p>
+        <div class="event-connections-grid">
+          {people.length > 0 && (
+            <article class="event-link-panel">
+              <h3>Personajes</h3>
+
+              <ul class="event-list">
+                {people.map((person) => (
+                  <li>
+                    <a href={sitePath(`/personajes/${person.slug}/`)}>{person.title}</a>
+                    {person.summary && <span>{person.summary}</span>}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          )}
+
+          {topics.length > 0 && (
+            <article class="event-link-panel">
+              <h3>Temas</h3>
+
+              <ul class="event-list">
+                {topics.map((topic) => (
+                  <li>
+                    <a href={sitePath(`/temas/${topic.slug}/`)}>{topic.title}</a>
+                    {topic.definition && <span>{topic.definition}</span>}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          )}
+        </div>
+      </section>
+    )}
+
+    {lessons.length > 0 ? (
+      <section class="section event-lessons-section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Recorrido guiado</p>
+            <h2>Lecciones relacionadas</h2>
+          </div>
+
+          <span class="section-count">
+            {lessons.length} {lessons.length === 1 ? "lección" : "lecciones"}
+          </span>
+        </div>
+
+        <div class="event-lessons-grid">
+          {lessons.map((lesson) => (
+            <a href={sitePath(`/lecciones/${lesson.slug}/`)} class="event-lesson-card">
+              <span>Lección {lesson.lesson_number}</span>
+              <strong>{lesson.title}</strong>
+
+              {lesson.main_idea && (
+                <small>{lesson.main_idea}</small>
+              )}
             </a>
           ))}
         </div>
       </section>
+    ) : (
+      <section class="section event-empty-section">
+        <p class="eyebrow">Recorrido guiado</p>
+        <h2>Lecciones relacionadas</h2>
+        <p>Todavía no hay lecciones relacionadas registradas para este evento.</p>
+      </section>
     )}
 
-    <section class="section">
-      <h2>Uso en la enciclopedia</h2>
-
-      <ul class="list">
-        <li>Línea de tiempo: {event.appears_on_timeline ? "Sí" : "No"}</li>
-        <li>Mapa: {event.appears_on_map ? "Sí" : "No"}</li>
-        <li>Certeza geográfica: {event.geographical_certainty ?? "Pendiente"}</li>
-      </ul>
-    </section>
-
-    <section class="section">
+    <section class="section event-footer-nav">
       <a href={sitePath("/eventos/")} class="button secondary">
         Volver a eventos
       </a>
+
+      {firstMappablePlace && (
+        <a href={sitePath(`/mapa/?lugar=${firstMappablePlace.slug}`)} class="button">
+          Ver ubicación relacionada
+        </a>
+      )}
     </section>
   </main>
 </BaseLayout>
+
+<style>
+  .event-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 320px);
+    gap: 28px;
+    align-items: end;
+    overflow: hidden;
+  }
+
+  .event-hero::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -120px;
+    width: 320px;
+    height: 320px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
+    pointer-events: none;
+  }
+
+  .event-hero-content,
+  .event-hero-card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .event-hero-card,
+  .event-meta-card,
+  .event-visibility-card,
+  .event-link-panel,
+  .event-place-card,
+  .event-lesson-card {
+    border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
+  }
+
+  .event-hero-card {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .event-hero-card span,
+  .event-meta-card span,
+  .event-visibility-card span,
+  .event-place-card span,
+  .event-lesson-card span {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .event-hero-card strong {
+    color: #2d2418;
+    font-size: 1.45rem;
+    line-height: 1.2;
+  }
+
+  .event-hero-card p,
+  .event-story-card p,
+  .event-visibility-card p,
+  .event-place-card p,
+  .event-empty-section p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .event-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .event-meta-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+  }
+
+  .event-meta-card span {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .event-meta-card strong {
+    display: block;
+    color: #2d2418;
+    font-size: 1.02rem;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+
+  .event-story-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    border: 1px solid #eadcc4;
+  }
+
+  .event-visibility-grid,
+  .event-places-grid,
+  .event-lessons-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .event-scripture-grid,
+  .event-connections-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .event-visibility-card,
+  .event-link-panel,
+  .event-place-card,
+  .event-lesson-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+  }
+
+  .event-visibility-card {
+    display: grid;
+    gap: 8px;
+  }
+
+  .event-visibility-card strong,
+  .event-place-card strong,
+  .event-lesson-card strong {
+    color: #2d2418;
+    font-size: 1.12rem;
+    line-height: 1.35;
+  }
+
+  .event-link-panel h3 {
+    margin: 0 0 16px;
+    color: #2d2418;
+  }
+
+  .event-places-grid {
+    align-items: stretch;
+  }
+
+  .event-place-card {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+  }
+
+  .event-place-card small,
+  .event-lesson-card small,
+  .event-list span {
+    color: #6a5c4d;
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .event-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .event-card-actions a {
+    display: inline-flex;
+    width: fit-content;
+    color: #5d3212;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
+  .event-card-actions a:hover {
+    text-decoration: underline;
+  }
+
+  .event-list {
+    display: grid;
+    gap: 14px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .event-list li {
+    display: grid;
+    gap: 4px;
+  }
+
+  .event-list a {
+    color: #5d3212;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
+  .event-list a:hover {
+    text-decoration: underline;
+  }
+
+  .event-lesson-card {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-height: 176px;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .event-lesson-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .event-footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  :global(html[data-theme="dark"]) .event-hero-card,
+  :global(html[data-theme="dark"]) .event-meta-card,
+  :global(html[data-theme="dark"]) .event-story-section,
+  :global(html[data-theme="dark"]) .event-visibility-section,
+  :global(html[data-theme="dark"]) .event-scripture-section,
+  :global(html[data-theme="dark"]) .event-places-section,
+  :global(html[data-theme="dark"]) .event-connections-section,
+  :global(html[data-theme="dark"]) .event-lessons-section,
+  :global(html[data-theme="dark"]) .event-empty-section,
+  :global(html[data-theme="dark"]) .event-footer-nav {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(html[data-theme="dark"]) .event-story-card,
+  :global(html[data-theme="dark"]) .event-visibility-card,
+  :global(html[data-theme="dark"]) .event-link-panel,
+  :global(html[data-theme="dark"]) .event-place-card,
+  :global(html[data-theme="dark"]) .event-lesson-card {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .event-hero-card span,
+  :global(html[data-theme="dark"]) .event-meta-card span,
+  :global(html[data-theme="dark"]) .event-visibility-card span,
+  :global(html[data-theme="dark"]) .event-place-card span,
+  :global(html[data-theme="dark"]) .event-lesson-card span,
+  :global(html[data-theme="dark"]) .event-card-actions a,
+  :global(html[data-theme="dark"]) .event-list a {
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"]) .event-hero-card strong,
+  :global(html[data-theme="dark"]) .event-meta-card strong,
+  :global(html[data-theme="dark"]) .event-visibility-card strong,
+  :global(html[data-theme="dark"]) .event-place-card strong,
+  :global(html[data-theme="dark"]) .event-lesson-card strong,
+  :global(html[data-theme="dark"]) .event-link-panel h3 {
+    color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"]) .event-hero-card p,
+  :global(html[data-theme="dark"]) .event-story-card p,
+  :global(html[data-theme="dark"]) .event-visibility-card p,
+  :global(html[data-theme="dark"]) .event-place-card p,
+  :global(html[data-theme="dark"]) .event-place-card small,
+  :global(html[data-theme="dark"]) .event-lesson-card small,
+  :global(html[data-theme="dark"]) .event-list span,
+  :global(html[data-theme="dark"]) .event-empty-section p {
+    color: #d8c8b6;
+  }
+
+  @media (max-width: 860px) {
+    .event-hero,
+    .event-scripture-grid,
+    .event-connections-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .event-meta-grid,
+    .event-visibility-grid,
+    .event-places-grid,
+    .event-lessons-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .event-meta-grid,
+    .event-visibility-grid,
+    .event-places-grid,
+    .event-lessons-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

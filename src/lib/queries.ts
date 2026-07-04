@@ -369,6 +369,22 @@ export function getEventsByLessonId(lessonId: string): Event[] {
     .all(lessonId) as Event[];
 }
 
+export function getLessonsByEventId(eventId: string): Lesson[] {
+  return db
+    .prepare(
+      `
+      SELECT lessons.*
+      FROM lesson_events
+      JOIN lessons ON lessons.id = lesson_events.lesson_id
+      WHERE
+        lesson_events.event_id = ?
+        AND lessons.status != 'Borrador'
+      ORDER BY lessons.lesson_number ASC
+      `
+    )
+    .all(eventId) as Lesson[];
+}
+
 export type MapPlace = {
   id: string;
   name: string;
