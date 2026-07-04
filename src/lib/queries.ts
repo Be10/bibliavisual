@@ -135,6 +135,22 @@ export function getTopicsByLessonId(lessonId: string): RelatedItem[] {
     .all(lessonId) as RelatedItem[];
 }
 
+export function getLessonsByTopicId(topicId: string): Lesson[] {
+  return db
+    .prepare(
+      `
+      SELECT lessons.*
+      FROM lesson_topics
+      JOIN lessons ON lessons.id = lesson_topics.lesson_id
+      WHERE
+        lesson_topics.topic_id = ?
+        AND lessons.status != 'Borrador'
+      ORDER BY lessons.lesson_number ASC
+      `
+    )
+    .all(topicId) as Lesson[];
+}
+
 export function getPeopleByLessonId(lessonId: string): RelatedItem[] {
   return db
     .prepare(
@@ -551,6 +567,22 @@ export function getTopicsByEventId(eventId: string): RelatedItem[] {
       `
     )
     .all(eventId) as RelatedItem[];
+}
+
+export function getEventsByTopicId(topicId: string): Event[] {
+  return db
+    .prepare(
+      `
+      SELECT events.*
+      FROM event_topics
+      JOIN events ON events.id = event_topics.event_id
+      WHERE
+        event_topics.topic_id = ?
+        AND events.status != 'Borrador'
+      ORDER BY events.chronological_order ASC, events.title ASC
+      `
+    )
+    .all(topicId) as Event[];
 }
 
 export type Book = {

@@ -3,12 +3,17 @@ import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllTopics,
-  getTopicBySlug,
+  getEventsByTopicId,
+  getLessonsByTopicId,
+  type Event,
+  type Lesson,
   type Topic,
 } from "../../lib/queries";
 
 type Props = {
   topic: Topic;
+  events: Event[];
+  lessons: Lesson[];
 };
 
 export function getStaticPaths() {
@@ -18,11 +23,17 @@ export function getStaticPaths() {
     .filter((topic) => topic.status !== "Borrador")
     .map((topic) => ({
       params: { slug: topic.slug },
-      props: { topic },
+      props: {
+        topic,
+        events: getEventsByTopicId(topic.id),
+        lessons: getLessonsByTopicId(topic.id),
+      },
     }));
 }
 
-const { topic } = Astro.props;
+const { topic, events, lessons } = Astro.props as Props;
+
+const definitionLabel = topic.definition ?? "Definición pendiente.";
 ---
 
 <BaseLayout
@@ -31,35 +42,422 @@ const { topic } = Astro.props;
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href={sitePath("/")}>Inicio</a> → Temas → {topic.title}
+      <a href={sitePath("/")}>Inicio</a> →
+      <a href={sitePath("/temas/")}>Temas</a> →
+      {topic.title}
     </div>
 
-    <section class="hero">
-      <p class="eyebrow">Tema bíblico</p>
+    <section class="hero topic-hero">
+      <div class="topic-hero-content">
+        <p class="eyebrow">Tema bíblico</p>
 
-      <h1>{topic.title}</h1>
+        <h1>{topic.title}</h1>
 
-      {topic.definition && (
         <p class="subtitle">
-          {topic.definition}
+          {definitionLabel}
         </p>
-      )}
+
+        <div class="actions">
+          <a href={sitePath("/temas/")} class="button secondary">
+            Todos los temas
+          </a>
+
+          {lessons.length > 0 && (
+            <a href="#lecciones-relacionadas" class="button">
+              Ver lecciones relacionadas
+            </a>
+          )}
+
+          {events.length > 0 && (
+            <a href="#eventos-relacionados" class="button secondary">
+              Ver eventos relacionados
+            </a>
+          )}
+        </div>
+      </div>
+
+      <aside class="topic-hero-card" aria-label="Resumen rápido del tema">
+        <span>Conexiones</span>
+        <strong>{events.length + lessons.length}</strong>
+        <p>
+          {lessons.length} lecciones · {events.length} eventos
+        </p>
+      </aside>
     </section>
 
-    <section class="section">
-      <h2>Definición simple</h2>
+    <section class="topic-meta-grid" aria-label="Resumen de conexiones del tema">
+      <article class="topic-meta-card">
+        <span>Lecciones</span>
+        <strong>{lessons.length}</strong>
+      </article>
 
-      <div class="content">
-        <p>{topic.definition ?? "Definición pendiente."}</p>
+      <article class="topic-meta-card">
+        <span>Eventos</span>
+        <strong>{events.length}</strong>
+      </article>
+
+      <article class="topic-meta-card">
+        <span>Tipo</span>
+        <strong>Tema bíblico</strong>
+      </article>
+
+      <article class="topic-meta-card">
+        <span>Contenido</span>
+        <strong>{topic.status}</strong>
+      </article>
+    </section>
+
+    <section class="section topic-definition-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Definición simple</p>
+          <h2>Qué significa {topic.title}</h2>
+        </div>
+      </div>
+
+      <div class="topic-definition-card">
+        <p>{definitionLabel}</p>
       </div>
     </section>
 
-    <section class="section">
-      <h2>Estado del contenido</h2>
+    {lessons.length > 0 ? (
+      <section class="section topic-lessons-section" id="lecciones-relacionadas">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Recorrido guiado</p>
+            <h2>Lecciones relacionadas</h2>
+          </div>
 
-      <div class="content">
-        <p>{topic.status}</p>
-      </div>
+          <span class="section-count">
+            {lessons.length} {lessons.length === 1 ? "lección" : "lecciones"}
+          </span>
+        </div>
+
+        <div class="topic-lessons-grid">
+          {lessons.map((lesson) => (
+            <a href={sitePath(`/lecciones/${lesson.slug}/`)} class="topic-lesson-card">
+              <span>Lección {lesson.lesson_number}</span>
+              <strong>{lesson.title}</strong>
+
+              {lesson.main_idea && (
+                <small>{lesson.main_idea}</small>
+              )}
+            </a>
+          ))}
+        </div>
+      </section>
+    ) : (
+      <section class="section topic-empty-section">
+        <p class="eyebrow">Recorrido guiado</p>
+        <h2>Lecciones relacionadas</h2>
+        <p>Todavía no hay lecciones relacionadas registradas para este tema.</p>
+      </section>
+    )}
+
+    {events.length > 0 ? (
+      <section class="section topic-events-section" id="eventos-relacionados">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Narrativa bíblica</p>
+            <h2>Eventos relacionados</h2>
+          </div>
+
+          <span class="section-count">
+            {events.length} {events.length === 1 ? "evento" : "eventos"}
+          </span>
+        </div>
+
+        <div class="topic-events-grid">
+          {events.map((event) => (
+            <a href={sitePath(`/eventos/${event.slug}/`)} class="topic-event-card">
+              <span>{event.biblical_period ?? event.event_type ?? "Evento bíblico"}</span>
+              <strong>{event.title}</strong>
+
+              {event.summary && (
+                <small>{event.summary}</small>
+              )}
+
+              <div class="topic-card-badges">
+                {event.approximate_date && <em>{event.approximate_date}</em>}
+                {event.appears_on_timeline ? <em>Línea de tiempo</em> : null}
+                {event.appears_on_map ? <em>Mapa</em> : null}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    ) : (
+      <section class="section topic-empty-section">
+        <p class="eyebrow">Narrativa bíblica</p>
+        <h2>Eventos relacionados</h2>
+        <p>Todavía no hay eventos relacionados registrados para este tema.</p>
+      </section>
+    )}
+
+    <section class="section topic-footer-nav">
+      <a href={sitePath("/temas/")} class="button secondary">
+        Volver a temas
+      </a>
+
+      <a href={sitePath("/eventos/")} class="button secondary">
+        Explorar eventos
+      </a>
+
+      <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button">
+        Ir a la ruta principal
+      </a>
     </section>
   </main>
 </BaseLayout>
+
+<style>
+  .topic-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 320px);
+    gap: 28px;
+    align-items: end;
+    overflow: hidden;
+  }
+
+  .topic-hero::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -120px;
+    width: 320px;
+    height: 320px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
+    pointer-events: none;
+  }
+
+  .topic-hero-content,
+  .topic-hero-card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .topic-hero-card,
+  .topic-meta-card,
+  .topic-definition-card,
+  .topic-lesson-card,
+  .topic-event-card {
+    border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
+  }
+
+  .topic-hero-card {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .topic-hero-card span,
+  .topic-meta-card span,
+  .topic-lesson-card span,
+  .topic-event-card span {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .topic-hero-card strong {
+    color: #2d2418;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .topic-hero-card p,
+  .topic-definition-card p,
+  .topic-empty-section p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .topic-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .topic-meta-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+  }
+
+  .topic-meta-card span {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .topic-meta-card strong {
+    display: block;
+    color: #2d2418;
+    font-size: 1.35rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .topic-definition-card {
+    padding: 26px;
+    border-radius: 22px;
+    background: #fffaf0;
+  }
+
+  .topic-definition-card p {
+    max-width: 920px;
+    font-size: 1.18rem;
+  }
+
+  .topic-lessons-grid,
+  .topic-events-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .topic-lesson-card,
+  .topic-event-card {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    min-height: 190px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .topic-lesson-card:hover,
+  .topic-event-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .topic-lesson-card strong,
+  .topic-event-card strong {
+    color: #2d2418;
+    font-size: 1.12rem;
+    line-height: 1.35;
+  }
+
+  .topic-lesson-card small,
+  .topic-event-card small {
+    color: #6a5c4d;
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .topic-card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .topic-card-badges em {
+    display: inline-flex;
+    width: fit-content;
+    padding: 6px 9px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #eadcc4;
+    color: #5d3212;
+    font-size: 0.76rem;
+    font-style: normal;
+    font-weight: 900;
+  }
+
+  .topic-footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  :global(html[data-theme="dark"]) .topic-hero-card,
+  :global(html[data-theme="dark"]) .topic-meta-card,
+  :global(html[data-theme="dark"]) .topic-definition-section,
+  :global(html[data-theme="dark"]) .topic-lessons-section,
+  :global(html[data-theme="dark"]) .topic-events-section,
+  :global(html[data-theme="dark"]) .topic-empty-section,
+  :global(html[data-theme="dark"]) .topic-footer-nav {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(html[data-theme="dark"]) .topic-definition-card,
+  :global(html[data-theme="dark"]) .topic-lesson-card,
+  :global(html[data-theme="dark"]) .topic-event-card {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .topic-hero-card span,
+  :global(html[data-theme="dark"]) .topic-meta-card span,
+  :global(html[data-theme="dark"]) .topic-lesson-card span,
+  :global(html[data-theme="dark"]) .topic-event-card span {
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"]) .topic-hero-card strong,
+  :global(html[data-theme="dark"]) .topic-meta-card strong,
+  :global(html[data-theme="dark"]) .topic-lesson-card strong,
+  :global(html[data-theme="dark"]) .topic-event-card strong {
+    color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"]) .topic-hero-card p,
+  :global(html[data-theme="dark"]) .topic-definition-card p,
+  :global(html[data-theme="dark"]) .topic-empty-section p,
+  :global(html[data-theme="dark"]) .topic-lesson-card small,
+  :global(html[data-theme="dark"]) .topic-event-card small {
+    color: #d8c8b6;
+  }
+
+  :global(html[data-theme="dark"]) .topic-card-badges em {
+    background: #18110c;
+    border-color: #3a2a1d;
+    color: #f3d6ad;
+  }
+
+  @media (max-width: 860px) {
+    .topic-hero {
+      grid-template-columns: 1fr;
+    }
+
+    .topic-meta-grid,
+    .topic-lessons-grid,
+    .topic-events-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .topic-meta-grid,
+    .topic-lessons-grid,
+    .topic-events-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .topic-lesson-card,
+    .topic-event-card {
+      min-height: auto;
+    }
+  }
+</style>
