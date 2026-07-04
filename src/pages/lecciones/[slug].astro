@@ -79,6 +79,10 @@ const {
   books,
   passages,
 } = Astro.props;
+
+const totalRouteLessons = 20;
+const progressPercent = Math.round((lesson.lesson_number / totalRouteLessons) * 100);
+const lessonStepLabel = `Lección ${lesson.lesson_number} de ${totalRouteLessons}`;
 ---
 
 <BaseLayout
@@ -102,6 +106,49 @@ const {
           {lesson.summary}
         </p>
       )}
+    </section>
+
+    <section class="lesson-progress-panel" aria-label={`Progreso del recorrido: ${lessonStepLabel}`}>
+      <div class="lesson-progress-main">
+        <p class="eyebrow">Recorrido guiado</p>
+
+        <h2>{lessonStepLabel}</h2>
+
+        <div class="lesson-progress-bar" aria-hidden="true">
+          <span style={`width: ${progressPercent}%`}></span>
+        </div>
+
+        <p>
+          Has avanzado hasta el {progressPercent}% de la ruta
+          <strong>Panorama Visual de la Biblia</strong>.
+        </p>
+      </div>
+
+      <nav class="lesson-progress-actions" aria-label="Navegación rápida de la lección">
+        {previousLesson ? (
+          <a href={sitePath(`/lecciones/${previousLesson.slug}/`)} class="mini-nav-link">
+            <span>← Anterior</span>
+            <strong>{previousLesson.title}</strong>
+          </a>
+        ) : (
+          <div class="mini-nav-link disabled">
+            <span>Inicio</span>
+            <strong>Primera lección</strong>
+          </div>
+        )}
+
+        {nextLesson ? (
+          <a href={sitePath(`/lecciones/${nextLesson.slug}/`)} class="mini-nav-link next">
+            <span>Siguiente →</span>
+            <strong>{nextLesson.title}</strong>
+          </a>
+        ) : (
+          <div class="mini-nav-link disabled next">
+            <span>Final</span>
+            <strong>Última lección</strong>
+          </div>
+        )}
+      </nav>
     </section>
 
     {lesson.main_idea && (

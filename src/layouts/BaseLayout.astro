@@ -909,6 +909,100 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     background: #c8a982;
   }
 
+  .lesson-progress-panel {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 18px;
+    margin-top: 24px;
+    padding: 22px;
+    border-radius: 26px;
+    background: #fff7e8;
+    border: 1px solid #eadcc4;
+  }
+
+  .lesson-progress-main h2 {
+    margin: 0 0 14px;
+    color: #2d2418;
+    font-size: 1.45rem;
+  }
+
+  .lesson-progress-main p {
+    margin: 14px 0 0;
+    color: #5e5143;
+    line-height: 1.7;
+  }
+
+  .lesson-progress-main strong {
+    color: #2d2418;
+  }
+
+  .lesson-progress-bar {
+    height: 12px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #eadcc4;
+  }
+
+  .lesson-progress-bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #5d3212;
+  }
+
+  .lesson-progress-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .mini-nav-link {
+    display: block;
+    padding: 18px;
+    border-radius: 20px;
+    background: white;
+    border: 1px solid #eadcc4;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  a.mini-nav-link:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .mini-nav-link span {
+    display: block;
+    margin-bottom: 6px;
+    color: #8a5a2b;
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .mini-nav-link strong {
+    display: block;
+    color: #2d2418;
+    line-height: 1.35;
+  }
+
+  .mini-nav-link.next {
+    text-align: right;
+  }
+
+  .mini-nav-link.disabled {
+    background: #f7efe2;
+  }
+
+  .mini-nav-link.disabled strong {
+    color: #7a6a58;
+  }
+
   .continue-section {
     background: #fffaf0;
   }
@@ -1028,6 +1122,15 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
 
     .route-overview {
       grid-template-columns: 1fr;
+    }
+
+    .lesson-progress-panel {
+      grid-template-columns: 1fr;
+      padding: 20px;
+    }
+
+    .mini-nav-link.next {
+      text-align: left;
     }
 
     .lesson-track-card {
