@@ -358,104 +358,143 @@ const storylineStages = [
     )}
 
     {relatedCount > 0 && (
-      <section class="grid" id="conexiones">
-        {people.length > 0 && (
-          <article class="card">
-            <h2>Personajes</h2>
+      <section class="section connections-section" id="conexiones">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Exploración relacionada</p>
+            <h2>Conexiones de esta lección</h2>
+          </div>
 
-            <ul class="list">
-              {people.map((person) => (
-                <li>
-                  <a href={sitePath(`/personajes/${person.slug}/`)}>{person.title}</a>
-                </li>
-              ))}
-            </ul>
-          </article>
-        )}
+          <span class="section-count">
+            {relatedCount} conexiones
+          </span>
+        </div>
 
-        {topics.length > 0 && (
-          <article class="card">
-            <h2>Temas</h2>
+        <p class="section-intro">
+          Usa estas conexiones para ampliar la lección: personajes, lugares, temas,
+          libros, eventos y pasajes relacionados dentro de la Enciclopedia Bíblica Visual.
+        </p>
 
-            <ul class="list">
-              {topics.map((topic) => (
-                <li>
-                  <a href={sitePath(`/temas/${topic.slug}/`)}>{topic.title}</a>
-                </li>
-              ))}
-            </ul>
-          </article>
-        )}
+        <div class="connections-grid">
+          {people.length > 0 && (
+            <article class="connection-card">
+              <div class="connection-card-header">
+                <h3>Personajes</h3>
+                <span>{people.length}</span>
+              </div>
 
-        {glossary.length > 0 && (
-          <article class="card">
-            <h2>Glosario</h2>
+              <ul class="connection-list">
+                {people.map((person) => (
+                  <li>
+                    <a href={sitePath(`/personajes/${person.slug}/`)}>{person.title}</a>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          )}
 
-            <ul class="list">
-              {glossary.map((term) => (
-                <li>
-                  <a href={sitePath(`/glosario/${term.slug}/`)}>{term.title}</a>
-                </li>
-              ))}
-            </ul>
-          </article>
-        )}
+          {places.length > 0 && (
+            <article class="connection-card">
+              <div class="connection-card-header">
+                <h3>Lugares</h3>
+                <span>{places.length}</span>
+              </div>
 
-        {places.length > 0 && (
-          <article class="card">
-            <h2>Lugares</h2>
+              <ul class="connection-list">
+                {places.map((place) => (
+                  <li>
+                    <a href={sitePath(`/lugares/${place.slug}/`)}>{place.title}</a>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          )}
 
-            <ul class="list">
-              {places.map((place) => (
-                <li>
-                  <a href={sitePath(`/lugares/${place.slug}/`)}>{place.title}</a>
-                </li>
-              ))}
-            </ul>
-          </article>
-        )}
+          {topics.length > 0 && (
+            <article class="connection-card">
+              <div class="connection-card-header">
+                <h3>Temas</h3>
+                <span>{topics.length}</span>
+              </div>
 
-        {books.length > 0 && (
-          <article class="card">
-            <h2>Libros</h2>
+              <ul class="connection-list">
+                {topics.map((topic) => (
+                  <li>
+                    <a href={sitePath(`/temas/${topic.slug}/`)}>{topic.title}</a>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          )}
 
-            <ul class="list">
-              {books.map((book) => (
-                <li>
-                  <a href={sitePath(`/libros/${book.slug}/`)}>{book.name}</a>
-                </li>
-              ))}
-            </ul>
-          </article>
-        )}
+          {books.length > 0 && (
+            <article class="connection-card">
+              <div class="connection-card-header">
+                <h3>Libros</h3>
+                <span>{books.length}</span>
+              </div>
 
-        {events.length > 0 && (
-          <article class="card">
-            <h2>Eventos</h2>
+              <ul class="connection-list">
+                {books.map((book) => (
+                  <li>
+                    <a href={sitePath(`/libros/${book.slug}/`)}>{book.name}</a>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          )}
 
-            <ul class="list">
-              {events.map((event) => (
-                <li>
-                  <a href={sitePath(`/eventos/${event.slug}/`)}>{event.title}</a>
-                </li>
-              ))}
-            </ul>
-          </article>
-        )}
+          {events.length > 0 && (
+            <article class="connection-card">
+              <div class="connection-card-header">
+                <h3>Eventos</h3>
+                <span>{events.length}</span>
+              </div>
 
-        {passages.length > 0 && (
-          <article class="card">
-            <h2>Pasajes</h2>
+              <ul class="connection-list">
+                {events.map((event) => (
+                  <li>
+                    <a href={sitePath(`/eventos/${event.slug}/`)}>{event.title}</a>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          )}
 
-            <ul class="list">
-              {passages.map((passage) => (
-                <li>
-                  <a href={sitePath(`/pasajes/${passage.slug}/`)}>{passage.display_reference}</a>
-                </li>
-              ))}
-            </ul>
-          </article>
-        )}
+          {passages.length > 0 && (
+            <article class="connection-card">
+              <div class="connection-card-header">
+                <h3>Pasajes</h3>
+                <span>{passages.length}</span>
+              </div>
+
+              <ul class="connection-list">
+                {passages.map((passage) => (
+                  <li>
+                    <a href={sitePath(`/pasajes/${passage.slug}/`)}>{passage.display_reference}</a>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          )}
+
+          {glossary.length > 0 && (
+            <article class="connection-card">
+              <div class="connection-card-header">
+                <h3>Glosario</h3>
+                <span>{glossary.length}</span>
+              </div>
+
+              <ul class="connection-list">
+                {glossary.map((term) => (
+                  <li>
+                    <a href={sitePath(`/glosario/${term.slug}/`)}>{term.title}</a>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          )}
+        </div>
       </section>
     )}
 
