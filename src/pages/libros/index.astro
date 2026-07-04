@@ -1,7 +1,7 @@
 ---
 import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getAllBooks } from "../../lib/queries";
+import { getAllBooks, type Book } from "../../lib/queries";
 
 const books = getAllBooks().filter((book) => book.status !== "Borrador");
 
@@ -12,6 +12,43 @@ const oldTestamentBooks = books.filter(
 const newTestamentBooks = books.filter(
   (book) => book.testament === "Nuevo Testamento"
 );
+
+const categories = Array.from(
+  new Set(books.map((book) => book.category ?? "Sin categoría"))
+);
+
+const genres = Array.from(
+  new Set(books.map((book) => book.genre ?? "Sin género"))
+);
+
+const booksWithSummary = books.filter((book) => book.summary);
+const booksWithoutSummary = books.filter((book) => !book.summary);
+
+const testamentGroups = [
+  {
+    title: "Antiguo Testamento",
+    subtitle: "Preparación, promesa, pacto, reino, exilio y esperanza mesiánica.",
+    books: oldTestamentBooks,
+  },
+  {
+    title: "Nuevo Testamento",
+    subtitle: "Cumplimiento en Jesús, formación de la iglesia y esperanza de nueva creación.",
+    books: newTestamentBooks,
+  },
+];
+
+function getBookLabel(book: Book) {
+  return book.category ?? book.genre ?? book.testament;
+}
+
+function getBookMeta(book: Book) {
+  const parts = [
+    book.abbreviation ? `Abrev. ${book.abbreviation}` : null,
+    book.genre,
+  ].filter(Boolean);
+
+  return parts.length > 0 ? parts.join(" · ") : "Datos pendientes";
+}
 ---
 
 <BaseLayout
@@ -23,43 +60,518 @@ const newTestamentBooks = books.filter(
       <a href={sitePath("/")}>Inicio</a> → Libros
     </div>
 
-    <section class="hero">
-      <p class="eyebrow">66 libros bíblicos</p>
+    <section class="hero books-hero">
+      <div class="books-hero-content">
+        <p class="eyebrow">Biblioteca bíblica</p>
 
-      <h1>Libros bíblicos</h1>
+        <h1>Libros bíblicos</h1>
 
-      <p class="subtitle">
-        Explora los libros de la Biblia como parte de una historia conectada:
-        creación, promesa, redención, cumplimiento en Jesús y nueva creación.
-      </p>
+        <p class="subtitle">
+          Explora los libros de la Biblia como parte de una sola historia:
+          creación, promesa, pacto, redención, cumplimiento en Jesús y nueva creación.
+        </p>
+
+        <div class="actions">
+          <a href={sitePath("/biblia/")} class="button">
+            Abrir Biblia
+          </a>
+
+          <a href={sitePath("/pasajes/")} class="button secondary">
+            Explorar pasajes
+          </a>
+
+          <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button secondary">
+            Ruta principal
+          </a>
+        </div>
+      </div>
+
+      <aside class="books-hero-card" aria-label="Resumen de libros bíblicos">
+        <span>Total de libros</span>
+        <strong>{books.length}</strong>
+        <p>
+          {oldTestamentBooks.length} AT · {newTestamentBooks.length} NT
+        </p>
+      </aside>
     </section>
 
-    <section class="section">
-      <h2>Antiguo Testamento</h2>
+    <section class="books-stats" aria-label="Resumen visual de libros bíblicos">
+      <article class="books-stat-card">
+        <span>Libros publicados</span>
+        <strong>{books.length}</strong>
+      </article>
 
-      <div class="entity-list">
-        {oldTestamentBooks.map((book) => (
-          <a href={sitePath(`/libros/${book.slug}/`)} class="entity-card">
-            <span class="meta">{book.category ?? book.testament}</span>
-            <h2>{book.name}</h2>
-            <p>{book.summary ?? "Resumen pendiente."}</p>
-          </a>
-        ))}
+      <article class="books-stat-card">
+        <span>Antiguo Testamento</span>
+        <strong>{oldTestamentBooks.length}</strong>
+      </article>
+
+      <article class="books-stat-card">
+        <span>Nuevo Testamento</span>
+        <strong>{newTestamentBooks.length}</strong>
+      </article>
+
+      <article class="books-stat-card">
+        <span>Categorías</span>
+        <strong>{categories.length}</strong>
+      </article>
+    </section>
+
+    <section class="section books-overview-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Vista general</p>
+          <h2>Una biblioteca en dos testamentos</h2>
+        </div>
+
+        <span class="section-count">
+          {genres.length} {genres.length === 1 ? "género" : "géneros"}
+        </span>
+      </div>
+
+      <div class="books-overview-grid">
+        <a href="#antiguo-testamento" class="books-overview-card">
+          <span>Antiguo Testamento</span>
+          <strong>{oldTestamentBooks.length} libros</strong>
+          <p>
+            Desde la creación hasta la esperanza profética del Mesías y la restauración.
+          </p>
+        </a>
+
+        <a href="#nuevo-testamento" class="books-overview-card">
+          <span>Nuevo Testamento</span>
+          <strong>{newTestamentBooks.length} libros</strong>
+          <p>
+            La venida de Jesús, la expansión del evangelio y la esperanza final.
+          </p>
+        </a>
+
+        <article class="books-overview-card">
+          <span>Resumen editorial</span>
+          <strong>{booksWithSummary.length} iniciados</strong>
+          <p>
+            {booksWithoutSummary.length} libros todavía pueden ampliarse con más contenido.
+          </p>
+        </article>
       </div>
     </section>
 
-    <section class="section">
-      <h2>Nuevo Testamento</h2>
+    <section class="section books-directory-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Directorio</p>
+          <h2>Todos los libros</h2>
+        </div>
 
-      <div class="entity-list">
-        {newTestamentBooks.map((book) => (
-          <a href={sitePath(`/libros/${book.slug}/`)} class="entity-card">
-            <span class="meta">{book.category ?? book.testament}</span>
-            <h2>{book.name}</h2>
-            <p>{book.summary ?? "Resumen pendiente."}</p>
-          </a>
+        <span class="section-count">
+          {books.length} {books.length === 1 ? "libro" : "libros"}
+        </span>
+      </div>
+
+      <div class="books-testament-groups">
+        {testamentGroups.map((group) => (
+          <section
+            class="books-testament-group"
+            id={group.title === "Antiguo Testamento" ? "antiguo-testamento" : "nuevo-testamento"}
+          >
+            <div class="books-testament-heading">
+              <span>Testamento</span>
+              <h3>{group.title}</h3>
+              <p>{group.subtitle}</p>
+              <strong>
+                {group.books.length} {group.books.length === 1 ? "libro" : "libros"}
+              </strong>
+            </div>
+
+            <div class="books-directory-grid">
+              {group.books.map((book) => (
+                <a href={sitePath(`/libros/${book.slug}/`)} class="book-directory-card">
+                  <div class="book-directory-order" aria-hidden="true">
+                    {book.order_number}
+                  </div>
+
+                  <div class="book-directory-main">
+                    <span>{getBookLabel(book)}</span>
+                    <h2>{book.name}</h2>
+                    <p>{book.summary ?? "Resumen pendiente."}</p>
+                  </div>
+
+                  <div class="book-directory-meta">
+                    <span>{getBookMeta(book)}</span>
+                  </div>
+
+                  <div class="book-directory-footer">
+                    <small>{book.summary ? "Resumen iniciado" : "Pendiente de ampliar"}</small>
+                    <strong>Ver libro →</strong>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </section>
         ))}
       </div>
     </section>
   </main>
 </BaseLayout>
+
+<style>
+  .books-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 320px);
+    gap: 28px;
+    align-items: end;
+    overflow: hidden;
+  }
+
+  .books-hero::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -120px;
+    width: 320px;
+    height: 320px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
+    pointer-events: none;
+  }
+
+  .books-hero-content,
+  .books-hero-card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .books-hero-card,
+  .books-stat-card,
+  .books-overview-card,
+  .books-testament-heading,
+  .book-directory-card {
+    border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
+  }
+
+  .books-hero-card {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .books-hero-card span,
+  .books-stat-card span,
+  .books-overview-card span,
+  .books-testament-heading span,
+  .book-directory-main span {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .books-hero-card strong {
+    color: #2d2418;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .books-hero-card p,
+  .books-overview-card p,
+  .books-testament-heading p,
+  .book-directory-main p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .books-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .books-stat-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+  }
+
+  .books-stat-card span {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .books-stat-card strong {
+    display: block;
+    color: #2d2418;
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .books-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .books-overview-card {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    min-height: 180px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  a.books-overview-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .books-overview-card strong {
+    color: #2d2418;
+    font-size: 1.25rem;
+    line-height: 1.35;
+  }
+
+  .books-testament-groups {
+    display: grid;
+    gap: 34px;
+  }
+
+  .books-testament-group {
+    display: grid;
+    grid-template-columns: minmax(210px, 280px) 1fr;
+    gap: 22px;
+    scroll-margin-top: 120px;
+  }
+
+  .books-testament-heading {
+    position: sticky;
+    top: 100px;
+    align-self: start;
+    display: grid;
+    gap: 8px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+  }
+
+  .books-testament-heading h3 {
+    margin: 0;
+    color: #2d2418;
+    font-size: 1.65rem;
+    line-height: 1.15;
+  }
+
+  .books-testament-heading strong {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 32px;
+    align-items: center;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #eadcc4;
+    color: #5d3212;
+    font-size: 0.88rem;
+  }
+
+  .books-directory-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .book-directory-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    min-height: 250px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .book-directory-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .book-directory-order {
+    display: inline-flex;
+    width: 54px;
+    height: 54px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: #5d3212;
+    color: #fffaf0;
+    font-size: 1.25rem;
+    font-weight: 900;
+  }
+
+  .book-directory-main {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .book-directory-main h2 {
+    margin: 0;
+    color: #2d2418;
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+
+  .book-directory-meta {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .book-directory-meta span {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #eadcc4;
+    color: #5d3212;
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+
+  .book-directory-footer {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid #eadcc4;
+  }
+
+  .book-directory-footer small {
+    color: #6a5c4d;
+    font-size: 0.88rem;
+    font-weight: 800;
+  }
+
+  .book-directory-footer strong {
+    color: #5d3212;
+    font-size: 0.92rem;
+  }
+
+  :global(html[data-theme="dark"]) .books-hero-card,
+  :global(html[data-theme="dark"]) .books-stat-card,
+  :global(html[data-theme="dark"]) .books-overview-section,
+  :global(html[data-theme="dark"]) .books-directory-section {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(html[data-theme="dark"]) .books-overview-card,
+  :global(html[data-theme="dark"]) .books-testament-heading,
+  :global(html[data-theme="dark"]) .book-directory-card {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .books-hero-card span,
+  :global(html[data-theme="dark"]) .books-stat-card span,
+  :global(html[data-theme="dark"]) .books-overview-card span,
+  :global(html[data-theme="dark"]) .books-testament-heading span,
+  :global(html[data-theme="dark"]) .book-directory-main span,
+  :global(html[data-theme="dark"]) .book-directory-footer strong {
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"]) .books-hero-card strong,
+  :global(html[data-theme="dark"]) .books-stat-card strong,
+  :global(html[data-theme="dark"]) .books-overview-card strong,
+  :global(html[data-theme="dark"]) .books-testament-heading h3,
+  :global(html[data-theme="dark"]) .book-directory-main h2 {
+    color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"]) .books-hero-card p,
+  :global(html[data-theme="dark"]) .books-overview-card p,
+  :global(html[data-theme="dark"]) .books-testament-heading p,
+  :global(html[data-theme="dark"]) .book-directory-main p,
+  :global(html[data-theme="dark"]) .book-directory-footer small {
+    color: #d8c8b6;
+  }
+
+  :global(html[data-theme="dark"]) .book-directory-order {
+    background: #e9b872;
+    color: #1b120b;
+  }
+
+  :global(html[data-theme="dark"]) .books-testament-heading strong,
+  :global(html[data-theme="dark"]) .book-directory-meta span {
+    background: #18110c;
+    border-color: #3a2a1d;
+    color: #f3d6ad;
+  }
+
+  :global(html[data-theme="dark"]) .book-directory-footer {
+    border-color: #3a2a1d;
+  }
+
+  @media (max-width: 920px) {
+    .books-hero,
+    .books-testament-group {
+      grid-template-columns: 1fr;
+    }
+
+    .books-testament-heading {
+      position: static;
+    }
+
+    .books-stats,
+    .books-overview-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 700px) {
+    .books-stats,
+    .books-overview-grid,
+    .books-directory-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .book-directory-card {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+
+    .book-directory-footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+</style>
