@@ -697,6 +697,25 @@ export function getAllPassages(): Passage[] {
     .all() as Passage[];
 }
 
+export function getPassagesByBookId(bookId: string): Passage[] {
+  return db
+    .prepare(
+      `
+      SELECT
+        passages.*,
+        books.name AS book_name,
+        books.slug AS book_slug
+      FROM passages
+      JOIN books ON books.id = passages.book_id
+      WHERE
+        passages.book_id = ?
+        AND passages.status != 'Borrador'
+      ORDER BY passages.start_chapter ASC, passages.start_verse ASC
+      `
+    )
+    .all(bookId) as Passage[];
+}
+
 export function getPassagesByLessonId(lessonId: string): Passage[] {
   return db
     .prepare(
