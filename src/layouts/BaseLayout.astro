@@ -908,12 +908,95 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
   .lesson-track-item.is-draft .lesson-track-number {
     background: #c8a982;
   }
-
-    html {
+  html {
     scroll-behavior: smooth;
   }
 
-  .lesson-study-panel {
+  .storyline-section {
+    overflow: hidden;
+  }
+
+  .storyline {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 14px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .storyline::before {
+    content: "";
+    position: absolute;
+    top: 17px;
+    left: 24px;
+    right: 24px;
+    height: 3px;
+    border-radius: 999px;
+    background: #eadcc4;
+  }
+
+  .storyline-item {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .storyline-dot {
+    position: relative;
+    z-index: 1;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    background: #fffaf0;
+    border: 3px solid #eadcc4;
+    box-shadow: 0 0 0 6px white;
+  }
+
+  .storyline-content {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-height: 198px;
+    padding: 20px;
+    border-radius: 18px;
+    background: #fffaf0;
+    border: 1px solid #eadcc4;
+  }
+
+  .storyline-content strong {
+    color: #2d2418;
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+
+  .storyline-content small {
+    color: #5e5143;
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .storyline-item.is-active .storyline-dot {
+    background: #5d3212;
+    border-color: #5d3212;
+  }
+
+  .storyline-item.is-active .storyline-content {
+    background: #5d3212;
+    border-color: #5d3212;
+    box-shadow: 0 18px 34px rgba(45, 36, 24, 0.16);
+  }
+
+  .storyline-item.is-active .storyline-content strong,
+  .storyline-item.is-active .storyline-content small {
+    color: #fffaf0;
+  }
+
+.lesson-study-panel {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
@@ -1235,6 +1318,36 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
 
     .lesson-toc a {
       justify-content: center;
+    }
+
+    .storyline {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .storyline::before {
+      top: 18px;
+      bottom: 18px;
+      left: 17px;
+      right: auto;
+      width: 3px;
+      height: auto;
+    }
+
+    .storyline-item {
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto;
+      align-items: stretch;
+      gap: 14px;
+    }
+
+    .storyline-dot {
+      width: 36px;
+      height: 36px;
+    }
+
+    .storyline-content {
+      min-height: auto;
     }
   }
 </style>

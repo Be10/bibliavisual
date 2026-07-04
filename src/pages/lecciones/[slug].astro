@@ -103,6 +103,44 @@ const hasStudyGuide =
   questions.length > 0 ||
   Boolean(lesson.remember) ||
   Boolean(lesson.application);
+
+const storylineStages = [
+  {
+    label: "Creación",
+    description: "Dios crea todas las cosas buenas.",
+    active: lesson.lesson_number >= 1 && lesson.lesson_number <= 2,
+  },
+  {
+    label: "Caída",
+    description: "El pecado rompe la comunión con Dios.",
+    active: lesson.lesson_number === 3,
+  },
+  {
+    label: "Promesa",
+    description: "Dios anuncia y desarrolla su plan de redención.",
+    active: lesson.lesson_number >= 4 && lesson.lesson_number <= 10,
+  },
+  {
+    label: "Israel",
+    description: "Dios forma un pueblo y revela su pacto.",
+    active: lesson.lesson_number >= 11 && lesson.lesson_number <= 18,
+  },
+  {
+    label: "Jesús",
+    description: "El Mesías cumple la promesa de Dios.",
+    active: lesson.lesson_number === 19,
+  },
+  {
+    label: "Iglesia",
+    description: "El evangelio se anuncia a las naciones.",
+    active: lesson.lesson_number === 20,
+  },
+  {
+    label: "Nueva creación",
+    description: "Dios consumará su reino para siempre.",
+    active: lesson.lesson_number === 20,
+  },
+];
 ---
 
 <BaseLayout
@@ -279,18 +317,30 @@ const hasStudyGuide =
       </section>
     )}
 
-    <section class="section">
-      <h2>La Biblia en una línea</h2>
+    <section class="section storyline-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Panorama bíblico</p>
+          <h2>La Biblia en una línea</h2>
+        </div>
 
-      <ul class="pill-list">
-        <li>Creación</li>
-        <li>Caída</li>
-        <li>Promesa</li>
-        <li>Israel</li>
-        <li>Jesús</li>
-        <li>Iglesia</li>
-        <li>Nueva creación</li>
-      </ul>
+        <a href={sitePath("/linea-de-tiempo/")} class="button secondary">
+          Ver línea de tiempo
+        </a>
+      </div>
+
+      <ol class="storyline">
+        {storylineStages.map((stage) => (
+          <li class:list={["storyline-item", stage.active && "is-active"]}>
+            <span class="storyline-dot" aria-hidden="true"></span>
+
+            <div class="storyline-content">
+              <strong>{stage.label}</strong>
+              <small>{stage.description}</small>
+            </div>
+          </li>
+        ))}
+      </ol>
     </section>
 
     {events.length > 0 && (
