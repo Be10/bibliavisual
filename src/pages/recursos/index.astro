@@ -1,0 +1,490 @@
+---
+import { sitePath } from "../../lib/site-paths";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import {
+  getAllEvents,
+  getAllGlossaryTerms,
+  getAllPassages,
+  getAllPeople,
+  getAllPlaces,
+  getAllTopics,
+} from "../../lib/queries";
+
+const eventsCount = getAllEvents().filter((item) => item.status !== "Borrador").length;
+const placesCount = getAllPlaces().filter((item) => item.status !== "Borrador").length;
+const peopleCount = getAllPeople().filter((item) => item.status !== "Borrador").length;
+const topicsCount = getAllTopics().filter((item) => item.status !== "Borrador").length;
+const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Borrador").length;
+const passagesCount = getAllPassages().filter((item) => item.status !== "Borrador").length;
+
+const visualResources = [
+  {
+    title: "Mapa bíblico",
+    eyebrow: "Geografía",
+    description:
+      "Explora lugares bíblicos ubicados visualmente, con conexiones a eventos, pasajes y fichas individuales.",
+    count: `${placesCount} lugares`,
+    url: sitePath("/mapa/"),
+    featured: true,
+  },
+  {
+    title: "Línea de tiempo",
+    eyebrow: "Cronología",
+    description:
+      "Recorre los eventos bíblicos en una secuencia narrativa para visualizar el desarrollo de la historia bíblica.",
+    count: `${eventsCount} eventos`,
+    url: sitePath("/linea-de-tiempo/"),
+    featured: true,
+  },
+  {
+    title: "Lugares bíblicos",
+    eyebrow: "Ubicaciones",
+    description:
+      "Consulta ciudades, regiones, montes, ríos y espacios vinculados con la narrativa bíblica.",
+    count: `${placesCount} lugares`,
+    url: sitePath("/lugares/"),
+    featured: false,
+  },
+  {
+    title: "Eventos bíblicos",
+    eyebrow: "Narrativa",
+    description:
+      "Conecta acontecimientos bíblicos con personas, lugares, temas, libros y pasajes relacionados.",
+    count: `${eventsCount} eventos`,
+    url: sitePath("/eventos/"),
+    featured: false,
+  },
+];
+
+const editorialResources = [
+  {
+    title: "Personajes",
+    eyebrow: "Biografías",
+    description:
+      "Explora personas bíblicas y sus conexiones con eventos, lugares, temas y lecciones.",
+    count: `${peopleCount} personajes`,
+    url: sitePath("/personajes/"),
+  },
+  {
+    title: "Temas",
+    eyebrow: "Conceptos",
+    description:
+      "Revisa temas bíblicos principales y su relación con pasajes, eventos y lecciones.",
+    count: `${topicsCount} temas`,
+    url: sitePath("/temas/"),
+  },
+  {
+    title: "Glosario",
+    eyebrow: "Términos",
+    description:
+      "Consulta definiciones claras de palabras importantes para comprender mejor el contenido bíblico.",
+    count: `${glossaryCount} términos`,
+    url: sitePath("/glosario/"),
+  },
+  {
+    title: "Pasajes conectados",
+    eyebrow: "Referencias",
+    description:
+      "Accede a pasajes bíblicos destacados y sus conexiones con libros, temas, eventos y lecciones.",
+    count: `${passagesCount} pasajes`,
+    url: sitePath("/pasajes/"),
+  },
+];
+
+const futureResources = [
+  {
+    title: "Infografías bíblicas",
+    description:
+      "Espacio preparado para futuras infografías sobre libros, temas, eventos, rutas y panoramas bíblicos.",
+  },
+  {
+    title: "Recursos descargables",
+    description:
+      "Área futura para materiales de estudio, guías visuales y recursos complementarios.",
+  },
+  {
+    title: "Colecciones visuales",
+    description:
+      "Sección futura para agrupar mapas, líneas de tiempo, esquemas y visualizaciones por tema.",
+  },
+];
+---
+
+<BaseLayout
+  title="Recursos visuales"
+  description="Explora recursos visuales y editoriales de la Enciclopedia Bíblica Visual: mapa bíblico, línea de tiempo, lugares, eventos, personajes, temas, glosario y pasajes."
+>
+  <main class="page resources-page">
+    <div class="breadcrumb">
+      <a href={sitePath("/")}>Inicio</a> → Recursos visuales
+    </div>
+
+    <section class="hero resources-hero">
+      <div class="resources-hero-content">
+        <p class="eyebrow">Recursos visuales</p>
+
+        <h1>Ver la Biblia con claridad</h1>
+
+        <p class="subtitle">
+          Explora mapas, líneas de tiempo, lugares, eventos y conexiones visuales
+          que ayudan a estudiar la Biblia como una historia unificada.
+        </p>
+
+        <div class="actions">
+          <a href={sitePath("/mapa/")} class="button">
+            Abrir mapa bíblico
+          </a>
+
+          <a href={sitePath("/linea-de-tiempo/")} class="button secondary">
+            Ver línea de tiempo
+          </a>
+
+          <a href={sitePath("/buscar/")} class="button secondary">
+            Búsqueda avanzada
+          </a>
+        </div>
+      </div>
+
+      <aside class="resources-hero-card" aria-label="Resumen de recursos visuales">
+        <span>Recursos activos</span>
+        <strong>{visualResources.length + editorialResources.length}</strong>
+        <p>
+          Módulos visuales y editoriales conectados
+        </p>
+      </aside>
+    </section>
+
+    <section class="resources-stats" aria-label="Resumen de recursos disponibles">
+      <article class="resources-stat-card">
+        <span>Lugares</span>
+        <strong>{placesCount}</strong>
+      </article>
+
+      <article class="resources-stat-card">
+        <span>Eventos</span>
+        <strong>{eventsCount}</strong>
+      </article>
+
+      <article class="resources-stat-card">
+        <span>Personajes</span>
+        <strong>{peopleCount}</strong>
+      </article>
+
+      <article class="resources-stat-card">
+        <span>Temas</span>
+        <strong>{topicsCount}</strong>
+      </article>
+    </section>
+
+    <section class="section resources-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Visualización principal</p>
+          <h2>Mapas y cronología</h2>
+        </div>
+
+        <span class="section-count">
+          {visualResources.length} recursos
+        </span>
+      </div>
+
+      <div class="resources-feature-grid">
+        {visualResources.map((resource) => (
+          <a
+            href={resource.url}
+            class:list={[
+              "resources-card",
+              resource.featured ? "is-featured" : "",
+            ]}
+          >
+            <span>{resource.eyebrow}</span>
+            <strong>{resource.title}</strong>
+            <p>{resource.description}</p>
+            <small>{resource.count}</small>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="section resources-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Conexiones editoriales</p>
+          <h2>Recursos para explorar la red bíblica</h2>
+        </div>
+
+        <span class="section-count">
+          {editorialResources.length} módulos
+        </span>
+      </div>
+
+      <div class="resources-grid">
+        {editorialResources.map((resource) => (
+          <a href={resource.url} class="resources-card">
+            <span>{resource.eyebrow}</span>
+            <strong>{resource.title}</strong>
+            <p>{resource.description}</p>
+            <small>{resource.count}</small>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="section resources-section resources-future-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Próximamente</p>
+          <h2>Recursos visuales futuros</h2>
+        </div>
+
+        <span class="section-count">
+          En planificación
+        </span>
+      </div>
+
+      <div class="resources-future-grid">
+        {futureResources.map((resource) => (
+          <article class="resources-future-card">
+            <span>Futuro</span>
+            <strong>{resource.title}</strong>
+            <p>{resource.description}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="section resources-footer-nav">
+      <a href={sitePath("/explorar/")} class="button secondary">
+        Ver centro de navegación
+      </a>
+
+      <a href={sitePath("/biblia/")} class="button secondary">
+        Leer la Biblia
+      </a>
+
+      <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button">
+        Ruta principal
+      </a>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .resources-hero {
+    display: grid;
+    grid-template-columns: 1fr minmax(230px, 320px);
+    gap: 32px;
+    align-items: end;
+  }
+
+  .resources-hero-content,
+  .resources-hero-card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .resources-hero-card,
+  .resources-stat-card,
+  .resources-card,
+  .resources-future-card {
+    border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
+  }
+
+  .resources-hero-card {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .resources-hero-card span,
+  .resources-stat-card span,
+  .resources-card span,
+  .resources-future-card span {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .resources-hero-card strong {
+    color: #2d2418;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .resources-hero-card p,
+  .resources-card p,
+  .resources-future-card p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .resources-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .resources-stat-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+  }
+
+  .resources-stat-card span {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .resources-stat-card strong {
+    display: block;
+    color: #2d2418;
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .resources-feature-grid,
+  .resources-grid,
+  .resources-future-grid {
+    display: grid;
+    gap: 16px;
+  }
+
+  .resources-feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .resources-grid,
+  .resources-future-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .resources-card,
+  .resources-future-card {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    min-height: 210px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .resources-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .resources-card strong,
+  .resources-future-card strong {
+    color: #2d2418;
+    font-size: 1.15rem;
+    line-height: 1.3;
+  }
+
+  .resources-card small {
+    align-self: end;
+    color: #5d3212;
+    font-size: 0.84rem;
+    font-weight: 900;
+  }
+
+  .resources-card.is-featured {
+    min-height: 240px;
+    background: white;
+  }
+
+  .resources-future-card {
+    background: #fff7e8;
+  }
+
+  .resources-footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  :global(html[data-theme="dark"]) .resources-hero-card,
+  :global(html[data-theme="dark"]) .resources-stat-card,
+  :global(html[data-theme="dark"]) .resources-section,
+  :global(html[data-theme="dark"]) .resources-footer-nav {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(html[data-theme="dark"]) .resources-card,
+  :global(html[data-theme="dark"]) .resources-future-card {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .resources-card.is-featured {
+    background: #18110c;
+  }
+
+  :global(html[data-theme="dark"]) .resources-hero-card span,
+  :global(html[data-theme="dark"]) .resources-stat-card span,
+  :global(html[data-theme="dark"]) .resources-card span,
+  :global(html[data-theme="dark"]) .resources-card small,
+  :global(html[data-theme="dark"]) .resources-future-card span {
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"]) .resources-hero-card strong,
+  :global(html[data-theme="dark"]) .resources-stat-card strong,
+  :global(html[data-theme="dark"]) .resources-card strong,
+  :global(html[data-theme="dark"]) .resources-future-card strong {
+    color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"]) .resources-hero-card p,
+  :global(html[data-theme="dark"]) .resources-card p,
+  :global(html[data-theme="dark"]) .resources-future-card p {
+    color: #d8c8b6;
+  }
+
+  @media (max-width: 960px) {
+    .resources-hero,
+    .resources-feature-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .resources-stats,
+    .resources-grid,
+    .resources-future-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .resources-stats,
+    .resources-grid,
+    .resources-future-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .resources-card,
+    .resources-future-card {
+      min-height: auto;
+    }
+
+    .resources-footer-nav {
+      align-items: flex-start;
+    }
+  }
+</style>

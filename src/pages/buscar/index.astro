@@ -1,209 +1,128 @@
 ---
 import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import {
-  getAllBooks,
-  getAllEvents,
-  getAllGlossaryTerms,
-  getAllLessons,
-  getAllPassages,
-  getAllPeople,
-  getAllPlaces,
-  getAllRoutes,
-  getAllTopics,
-  getBibleSearchVerses,
-} from "../../lib/queries";
+import { buildSearchIndex } from "../../lib/search-index";
 
-type SearchItem = {
+const searchItems = buildSearchIndex();
+
+const searchStats = [
+  {
+    label: "Lecciones",
+    count: searchItems.filter((item) => item.type === "Lección").length,
+  },
+  {
+    label: "Libros",
+    count: searchItems.filter((item) => item.type === "Libro").length,
+  },
+  {
+    label: "Pasajes",
+    count: searchItems.filter((item) => item.type === "Pasaje").length,
+  },
+  {
+    label: "Versículos",
+    count: searchItems.filter((item) => item.type === "Versículo").length,
+  },
+];
+
+const searchableTypes = Array.from(
+  new Set(searchItems.map((item) => item.type))
+);
+
+type ExploreItem = {
   title: string;
-  type: string;
+  eyebrow: string;
+  description: string;
   url: string;
-  summary: string;
 };
 
-const books: SearchItem[] = getAllBooks()
-  .filter((book) => book.status !== "Borrador")
-  .map((book) => ({
-    title: book.name,
-    type: "Libro",
-    url: sitePath(`/libros/${book.slug}/`),
-    summary: book.summary ?? book.category ?? "Libro bíblico.",
-  }));
-
-const passages: SearchItem[] = getAllPassages()
-  .filter((passage) => passage.status !== "Borrador")
-  .map((passage) => ({
-    title: passage.display_reference,
-    type: "Pasaje",
-    url: sitePath(`/pasajes/${passage.slug}/`),
-    summary: passage.summary ?? `Pasaje en ${passage.book_name}.`,
-  }));
-
-const lessons: SearchItem[] = getAllLessons()
-  .filter((lesson) => lesson.status !== "Borrador")
-  .map((lesson) => ({
-    title: lesson.title,
-    type: "Lección",
-    url: sitePath(`/lecciones/${lesson.slug}/`),
-    summary: lesson.main_idea ?? lesson.summary ?? "Lección bíblica.",
-  }));
-
-const events: SearchItem[] = getAllEvents()
-  .filter((event) => event.status !== "Borrador")
-  .map((event) => ({
-    title: event.title,
-    type: "Evento",
-    url: sitePath(`/eventos/${event.slug}/`),
-    summary: event.summary ?? event.biblical_period ?? "Evento bíblico.",
-  }));
-
-const topics: SearchItem[] = getAllTopics()
-  .filter((topic) => topic.status !== "Borrador")
-  .map((topic) => ({
-    title: topic.title,
-    type: "Tema",
-    url: sitePath(`/temas/${topic.slug}/`),
-    summary: topic.definition ?? "Tema bíblico.",
-  }));
-
-const people: SearchItem[] = getAllPeople()
-  .filter((person) => person.status !== "Borrador")
-  .map((person) => ({
-    title: person.name,
-    type: "Personaje",
-    url: sitePath(`/personajes/${person.slug}/`),
-    summary: person.summary ?? "Personaje bíblico.",
-  }));
-
-const places: SearchItem[] = getAllPlaces()
-  .filter((place) => place.status !== "Borrador")
-  .map((place) => ({
-    title: place.name,
-    type: "Lugar",
-    url: sitePath(`/lugares/${place.slug}/`),
-    summary: place.summary ?? place.place_type ?? "Lugar bíblico.",
-  }));
-
-const glossary: SearchItem[] = getAllGlossaryTerms()
-  .filter((term) => term.status !== "Borrador")
-  .map((term) => ({
-    title: term.term,
-    type: "Glosario",
-    url: sitePath(`/glosario/${term.slug}/`),
-    summary: term.definition ?? "Término del glosario.",
-  }));
-
-const routes: SearchItem[] = getAllRoutes()
-  .filter((route) => route.status !== "Borrador")
-  .map((route) => ({
-    title: route.title,
-    type: "Ruta",
-    url: sitePath(`/rutas/${route.slug}/`),
-    summary: route.description ?? "Ruta guiada.",
-  }));
-
-const bibleVerses: SearchItem[] = getBibleSearchVerses()
-  .filter((verse) => verse.verse_text)
-  .map((verse) => ({
-    title: `${verse.book_name} ${verse.chapter_number}:${verse.verse_number}`,
-    type: "Versículo",
-    url: sitePath(`/biblia/${verse.book_slug}/${verse.chapter_number}/#v${verse.verse_number}`),
-    summary: verse.verse_text ?? "",
-  }));
-
-const sectionItems: SearchItem[] = [
-  {
-    title: "Lecciones",
-    type: "Sección",
-    url: sitePath("/lecciones/"),
-    summary: "Índice de lecciones publicadas de la Enciclopedia Bíblica Visual.",
-  },
-  {
-    title: "Biblia",
-    type: "Sección",
-    url: sitePath("/biblia/"),
-    summary: "Lectura bíblica por libros, capítulos y versículos.",
-  },
+const exploreItems: ExploreItem[] = [
   {
     title: "Libros",
-    type: "Sección",
+    eyebrow: "Biblioteca bíblica",
+    description: "Explora los libros de la Biblia por testamento, género y resumen editorial.",
     url: sitePath("/libros/"),
-    summary: "Directorio de libros bíblicos.",
-  },
-  {
-    title: "Pasajes",
-    type: "Sección",
-    url: sitePath("/pasajes/"),
-    summary: "Pasajes bíblicos conectados con lecciones y eventos.",
-  },
-  {
-    title: "Eventos",
-    type: "Sección",
-    url: sitePath("/eventos/"),
-    summary: "Línea narrativa de eventos bíblicos.",
   },
   {
     title: "Temas",
-    type: "Sección",
+    eyebrow: "Conceptos",
+    description: "Revisa temas bíblicos conectados con lecciones, eventos y pasajes.",
     url: sitePath("/temas/"),
-    summary: "Conceptos y temas bíblicos principales.",
   },
   {
-    title: "Personajes",
-    type: "Sección",
-    url: sitePath("/personajes/"),
-    summary: "Directorio de personajes bíblicos.",
-  },
-  {
-    title: "Lugares",
-    type: "Sección",
-    url: sitePath("/lugares/"),
-    summary: "Lugares bíblicos conectados con mapa y eventos.",
+    title: "Glosario",
+    eyebrow: "Términos",
+    description: "Consulta definiciones breves de términos bíblicos importantes.",
+    url: sitePath("/glosario/"),
   },
   {
     title: "Mapa",
-    type: "Sección",
+    eyebrow: "Geografía bíblica",
+    description: "Ubica visualmente lugares bíblicos registrados en el mapa.",
     url: sitePath("/mapa/"),
-    summary: "Mapa bíblico visual con lugares registrados.",
+  },
+  {
+    title: "Personajes",
+    eyebrow: "Biografías",
+    description: "Explora personas bíblicas y sus conexiones narrativas.",
+    url: sitePath("/personajes/"),
+  },
+  {
+    title: "Eventos",
+    eyebrow: "Narrativa",
+    description: "Sigue acontecimientos bíblicos en orden narrativo e histórico.",
+    url: sitePath("/eventos/"),
+  },
+  {
+    title: "Lugares",
+    eyebrow: "Ubicaciones",
+    description: "Consulta ciudades, regiones, montes y lugares bíblicos.",
+    url: sitePath("/lugares/"),
+  },
+  {
+    title: "Pasajes",
+    eyebrow: "Referencias",
+    description: "Explora pasajes bíblicos destacados y sus conexiones.",
+    url: sitePath("/pasajes/"),
   },
 ];
 
-const searchItems = [
-  ...sectionItems,
-  ...routes,
-  ...lessons,
-  ...books,
-  ...passages,
-  ...events,
-  ...topics,
-  ...people,
-  ...places,
-  ...glossary,
-  ...bibleVerses,
-];
+function getCountByType(type: string) {
+  return searchItems.filter((item) => item.type === type).length;
+}
 
-const searchStats = [
-  { label: "Lecciones", count: lessons.length },
-  { label: "Libros", count: books.length },
-  { label: "Pasajes", count: passages.length },
-  { label: "Versículos", count: bibleVerses.length },
-];
+function getExploreCount(item: ExploreItem) {
+  const typeByTitle: Record<string, string> = {
+    Libros: "Libro",
+    Temas: "Tema",
+    Glosario: "Glosario",
+    Personajes: "Personaje",
+    Eventos: "Evento",
+    Lugares: "Lugar",
+    Pasajes: "Pasaje",
+  };
 
-const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type)));
+  if (item.title === "Mapa") {
+    return getCountByType("Lugar");
+  }
+
+  const type = typeByTitle[item.title];
+
+  return type ? getCountByType(type) : 0;
+}
 ---
 
 <BaseLayout
-  title="Buscar"
-  description="Busca libros, pasajes, lecciones, eventos, temas, personajes, lugares y términos del glosario."
+  title="Búsqueda avanzada"
+  description="Busca libros, pasajes, lecciones, eventos, temas, personajes, lugares, términos del glosario y versículos bíblicos."
 >
-  <main class="page">
+  <main class="page advanced-search-page">
     <div class="breadcrumb">
-      <a href={sitePath("/")}>Inicio</a> → Buscar
+      <a href={sitePath("/")}>Inicio</a> → Búsqueda avanzada
     </div>
 
-    <section class="hero search-hero">
-      <div class="search-hero-content">
-        <p class="eyebrow">Buscador local</p>
+    <section class="hero advanced-search-hero">
+      <div class="advanced-search-hero-content">
+        <p class="eyebrow">Búsqueda avanzada</p>
 
         <h1>Buscar en la enciclopedia</h1>
 
@@ -212,13 +131,13 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
           términos del glosario y versículos bíblicos desde un solo lugar.
         </p>
 
-        <div class="actions">
-          <a href={sitePath("/explorar/")} class="button">
-            Explorar todo
+        <div class="actions advanced-search-hero-actions">
+          <a href="#busqueda-avanzada" class="button">
+            Buscar contenido
           </a>
 
           <a href={sitePath("/biblia/")} class="button secondary">
-            Abrir Biblia
+            Leer la Biblia
           </a>
 
           <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button secondary">
@@ -227,7 +146,7 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
         </div>
       </div>
 
-      <aside class="search-hero-card" aria-label="Resumen del buscador">
+      <aside class="advanced-search-hero-card" aria-label="Resumen del índice de búsqueda">
         <span>Índice local</span>
         <strong>{searchItems.length}</strong>
         <p>
@@ -236,11 +155,11 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
       </aside>
     </section>
 
-    <section class="section search-section">
+    <section class="section search-section advanced-search-section" id="busqueda-avanzada">
       <div class="section-header">
         <div>
           <p class="eyebrow">Consulta rápida</p>
-          <h2>Buscar contenido</h2>
+          <h2>Búsqueda avanzada</h2>
         </div>
 
         <span class="section-count">
@@ -275,9 +194,34 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
         </div>
       </div>
 
-      <div id="search-empty" class="search-empty enhanced-search-empty">
-        Escribe una palabra para comenzar la búsqueda.
-      </div>
+      <section class="advanced-explore-block" aria-label="Explorar por categoría">
+        <div class="advanced-explore-header">
+          <div>
+            <p class="eyebrow">También puedes explorar</p>
+            <h3>Explorar por categoría</h3>
+          </div>
+
+          <span>
+            Recursos visuales y editoriales
+          </span>
+        </div>
+
+        <div class="advanced-explore-grid">
+          {exploreItems.map((item) => (
+            <a href={item.url} class="advanced-explore-card">
+              <span>{item.eyebrow}</span>
+              <strong>{item.title}</strong>
+              <p>{item.description}</p>
+
+              <small>
+                {getExploreCount(item)} {getExploreCount(item) === 1 ? "elemento" : "elementos"}
+              </small>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <div id="search-empty" class="search-empty enhanced-search-empty" hidden></div>
 
       <div id="search-results-summary" class="search-results-summary" hidden></div>
 
@@ -305,25 +249,25 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
   const resultsSummaryElement = document.getElementById("search-results-summary");
   const suggestionButtons = document.querySelectorAll("[data-search-suggestion]");
 
-  const initialParams = new URLSearchParams(window.location.search);
-  const initialQuery = initialParams.get("q") ?? "";
-
   const items = dataElement?.textContent
     ? JSON.parse(dataElement.textContent)
     : [];
 
+  const initialParams = new URLSearchParams(window.location.search);
+  const initialQuery = initialParams.get("q") ?? "";
+
   const typeOrder = [
-    "Sección",
-    "Ruta",
-    "Lección",
     "Versículo",
-    "Libro",
     "Pasaje",
+    "Lugar",
+    "Glosario",
+    "Libro",
+    "Lección",
     "Evento",
     "Tema",
     "Personaje",
-    "Lugar",
-    "Glosario",
+    "Ruta",
+    "Sección",
   ];
 
   function normalizeText(value) {
@@ -347,24 +291,37 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
     const title = normalizeText(item.title);
     const type = normalizeText(item.type);
     const summary = normalizeText(item.summary);
+    const searchText = normalizeText(item.searchText);
 
     if (title === query) return 120;
     if (title.startsWith(query)) return 100;
     if (title.includes(query)) return 80;
-    if (type.includes(query)) return 55;
-    if (summary.includes(query)) return 35;
+    if (type.includes(query)) return 65;
+    if (summary.includes(query)) return 45;
+    if (searchText.includes(query)) return 35;
 
     const words = query.split(/\s+/).filter(Boolean);
 
     if (words.length > 1 && words.every((word) => title.includes(word))) {
-      return 70;
+      return 75;
     }
 
-    if (words.length > 1 && words.every((word) => summary.includes(word))) {
-      return 30;
+    if (words.length > 1 && words.every((word) => searchText.includes(word))) {
+      return 32;
     }
 
     return 0;
+  }
+
+  function sortSearchResults(a, b) {
+    return (
+      b.score - a.score ||
+      a.typePriority - b.typePriority ||
+      a.bookOrder - b.bookOrder ||
+      a.chapterNumber - b.chapterNumber ||
+      a.verseNumber - b.verseNumber ||
+      a.title.localeCompare(b.title)
+    );
   }
 
   function groupResults(results) {
@@ -389,6 +346,18 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
     `;
   }
 
+  function updateUrl(value) {
+    const url = new URL(window.location.href);
+
+    if (normalizeText(value)) {
+      url.searchParams.set("q", value);
+    } else {
+      url.searchParams.delete("q");
+    }
+
+    window.history.replaceState({}, "", url);
+  }
+
   function renderResults(query) {
     const normalizedQuery = normalizeText(query);
 
@@ -398,8 +367,9 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
       resultsElement.innerHTML = "";
       resultsSummaryElement.hidden = true;
       resultsSummaryElement.textContent = "";
-      emptyElement.textContent = "Escribe una palabra para comenzar la búsqueda.";
-      emptyElement.style.display = "block";
+      emptyElement.hidden = true;
+      emptyElement.textContent = "";
+      emptyElement.style.display = "none";
       return;
     }
 
@@ -409,18 +379,20 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
         score: getScore(item, normalizedQuery),
       }))
       .filter((item) => item.score > 0)
-      .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
-      .slice(0, 60);
+      .sort(sortSearchResults)
+      .slice(0, 120);
 
     if (results.length === 0) {
       resultsElement.innerHTML = "";
       resultsSummaryElement.hidden = true;
       resultsSummaryElement.textContent = "";
+      emptyElement.hidden = false;
       emptyElement.textContent = "No se encontraron resultados para esa búsqueda.";
       emptyElement.style.display = "block";
       return;
     }
 
+    emptyElement.hidden = true;
     emptyElement.style.display = "none";
     resultsSummaryElement.hidden = false;
     resultsSummaryElement.textContent = `${results.length} resultado${results.length === 1 ? "" : "s"} para “${query}”`;
@@ -430,7 +402,7 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
     resultsElement.innerHTML = typeOrder
       .filter((type) => groups[type]?.length)
       .map((type) => {
-        const groupResults = groups[type].slice(0, 12);
+        const groupResults = groups[type].slice(0, 16);
 
         return `
           <section class="search-result-group">
@@ -449,20 +421,11 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
   }
 
   input?.addEventListener("input", (event) => {
-  const value = event.target.value;
+    const value = event.target.value;
 
-  renderResults(value);
-
-  const url = new URL(window.location.href);
-
-  if (normalizeText(value)) {
-    url.searchParams.set("q", value);
-  } else {
-    url.searchParams.delete("q");
-  }
-
-  window.history.replaceState({}, "", url);
-});
+    renderResults(value);
+    updateUrl(value);
+  });
 
   suggestionButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -472,59 +435,64 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
         input.value = value;
         input.focus();
         renderResults(value);
-
-        const url = new URL(window.location.href);
-        url.searchParams.set("q", value);
-        window.history.replaceState({}, "", url);
+        updateUrl(value);
       }
     });
   });
 
   if (input && initialQuery) {
-  input.value = initialQuery;
-  renderResults(initialQuery);
-  input.focus();
-}
-
+    input.value = initialQuery;
+    renderResults(initialQuery);
+    input.focus();
+  }
 </script>
 
 <style>
-  .search-hero {
+  .advanced-search-hero {
     position: relative;
     display: grid;
-    grid-template-columns: 1fr minmax(220px, 320px);
-    gap: 28px;
+    grid-template-columns: 1fr minmax(230px, 320px);
+    gap: 32px;
     align-items: end;
     overflow: hidden;
   }
 
-  .search-hero::after {
-    content: "";
-    position: absolute;
-    right: -90px;
-    bottom: -120px;
-    width: 320px;
-    height: 320px;
-    border-radius: 999px;
-    background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
-    pointer-events: none;
-  }
 
-  .search-hero-content,
-  .search-hero-card {
+  .advanced-search-hero-content,
+  .advanced-search-hero-card {
     position: relative;
     z-index: 1;
   }
 
-  .search-hero-card,
+  .advanced-search-hero-content {
+    align-self: center;
+  }
+
+  .advanced-search-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 32px;
+    max-width: 100%;
+  }
+
+  .advanced-search-hero-actions .button {
+    box-sizing: border-box;
+    flex: 0 1 auto;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .advanced-search-hero-card,
   .search-stat-card,
   .search-result,
-  .search-result-group {
+  .search-result-group,
+  .advanced-explore-card {
     border: 1px solid #eadcc4;
     box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
   }
 
-  .search-hero-card {
+  .advanced-search-hero-card {
     display: grid;
     gap: 10px;
     padding: 24px;
@@ -533,11 +501,13 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
     box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
   }
 
-  .search-hero-card span,
+  .advanced-search-hero-card span,
   .search-stat-card span,
   .search-label,
   .search-result-group-header span,
-  .search-result-type {
+  .search-result-type,
+  .advanced-explore-card span,
+  .advanced-explore-header span {
     color: #8a5a2b;
     font-size: 0.76rem;
     font-weight: 900;
@@ -545,14 +515,15 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
     text-transform: uppercase;
   }
 
-  .search-hero-card strong {
+  .advanced-search-hero-card strong {
     color: #2d2418;
     font-size: 3rem;
     line-height: 1;
   }
 
-  .search-hero-card p,
-  .search-result p {
+  .advanced-search-hero-card p,
+  .search-result p,
+  .advanced-explore-card p {
     margin: 0;
     color: #6a5c4d;
     line-height: 1.7;
@@ -581,6 +552,10 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
     color: #2d2418;
     font-size: 2rem;
     line-height: 1;
+  }
+
+  .advanced-search-section {
+    margin-top: 24px;
   }
 
   .enhanced-search-panel {
@@ -618,6 +593,83 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
   .search-suggestions button:hover {
     border-color: #c8a982;
     background: #fff7e8;
+  }
+
+  .advanced-explore-block {
+    display: grid;
+    gap: 16px;
+    margin-top: 24px;
+    padding: 20px;
+    border-radius: 24px;
+    background: #fffaf0;
+    border: 1px solid #eadcc4;
+  }
+
+  .advanced-explore-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .advanced-explore-header h3 {
+    margin: 0;
+    color: #2d2418;
+    font-size: 1.28rem;
+  }
+
+  .advanced-explore-header .eyebrow {
+    margin-bottom: 6px;
+  }
+
+  .advanced-explore-header span {
+    display: inline-flex;
+    min-height: 34px;
+    align-items: center;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #eadcc4;
+    white-space: nowrap;
+  }
+
+  .advanced-explore-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .advanced-explore-card {
+    display: grid;
+    gap: 8px;
+    min-height: 170px;
+    padding: 18px;
+    border-radius: 20px;
+    background: white;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .advanced-explore-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .advanced-explore-card strong {
+    color: #2d2418;
+    font-size: 1.05rem;
+    line-height: 1.25;
+  }
+
+  .advanced-explore-card small {
+    align-self: end;
+    color: #5d3212;
+    font-size: 0.82rem;
+    font-weight: 900;
   }
 
   .enhanced-search-empty {
@@ -695,7 +747,7 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
     line-height: 1.35;
   }
 
-  :global(html[data-theme="dark"]) .search-hero-card,
+  :global(html[data-theme="dark"]) .advanced-search-hero-card,
   :global(html[data-theme="dark"]) .search-stat-card,
   :global(html[data-theme="dark"]) .search-section {
     background: #18110c;
@@ -704,34 +756,43 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
   }
 
   :global(html[data-theme="dark"]) .enhanced-search-panel,
+  :global(html[data-theme="dark"]) .advanced-explore-block,
   :global(html[data-theme="dark"]) .search-result-group,
-  :global(html[data-theme="dark"]) .search-result {
+  :global(html[data-theme="dark"]) .search-result,
+  :global(html[data-theme="dark"]) .advanced-explore-card {
     background: #21160e;
     border-color: #3a2a1d;
   }
 
-  :global(html[data-theme="dark"]) .search-hero-card span,
+  :global(html[data-theme="dark"]) .advanced-search-hero-card span,
   :global(html[data-theme="dark"]) .search-stat-card span,
   :global(html[data-theme="dark"]) .search-label,
   :global(html[data-theme="dark"]) .search-result-group-header span,
   :global(html[data-theme="dark"]) .search-result-type,
-  :global(html[data-theme="dark"]) .search-results-summary {
+  :global(html[data-theme="dark"]) .search-results-summary,
+  :global(html[data-theme="dark"]) .advanced-explore-card span,
+  :global(html[data-theme="dark"]) .advanced-explore-card small,
+  :global(html[data-theme="dark"]) .advanced-explore-header span {
     color: #e9b872;
   }
 
-  :global(html[data-theme="dark"]) .search-hero-card strong,
+  :global(html[data-theme="dark"]) .advanced-search-hero-card strong,
   :global(html[data-theme="dark"]) .search-stat-card strong,
-  :global(html[data-theme="dark"]) .search-result h3 {
+  :global(html[data-theme="dark"]) .search-result h3,
+  :global(html[data-theme="dark"]) .advanced-explore-header h3,
+  :global(html[data-theme="dark"]) .advanced-explore-card strong {
     color: #fff5e8;
   }
 
-  :global(html[data-theme="dark"]) .search-hero-card p,
-  :global(html[data-theme="dark"]) .search-result p {
+  :global(html[data-theme="dark"]) .advanced-search-hero-card p,
+  :global(html[data-theme="dark"]) .search-result p,
+  :global(html[data-theme="dark"]) .advanced-explore-card p {
     color: #d8c8b6;
   }
 
   :global(html[data-theme="dark"]) .search-suggestions button,
-  :global(html[data-theme="dark"]) .search-result-group-header strong {
+  :global(html[data-theme="dark"]) .search-result-group-header strong,
+  :global(html[data-theme="dark"]) .advanced-explore-header span {
     background: #18110c;
     border-color: #3a2a1d;
     color: #f3d6ad;
@@ -743,12 +804,16 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
     color: #fff5e8;
   }
 
-  @media (max-width: 860px) {
-    .search-hero {
+  @media (max-width: 960px) {
+    .advanced-search-hero {
       grid-template-columns: 1fr;
     }
 
     .search-stats,
+    .advanced-explore-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .search-result-group-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -756,13 +821,55 @@ const searchableTypes = Array.from(new Set(searchItems.map((item) => item.type))
 
   @media (max-width: 640px) {
     .search-stats,
+    .advanced-explore-grid,
     .search-result-group-grid {
       grid-template-columns: 1fr;
     }
 
+    .advanced-search-hero {
+      overflow: hidden;
+    }
+
+    .advanced-search-hero-content {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .advanced-search-hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      width: auto;
+      max-width: 100%;
+    }
+
+    .advanced-search-hero-actions .button {
+      box-sizing: border-box;
+      width: auto;
+      max-width: 100%;
+      min-width: 0;
+      padding-inline: 18px;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    .advanced-search-hero-card,
     .enhanced-search-panel,
+    .advanced-explore-block,
     .search-result-group {
       padding: 18px;
+    }
+
+    .advanced-explore-header {
+      flex-direction: column;
+    }
+
+    .advanced-explore-header span {
+      white-space: normal;
+    }
+
+    .advanced-explore-card {
+      min-height: auto;
     }
   }
 </style>

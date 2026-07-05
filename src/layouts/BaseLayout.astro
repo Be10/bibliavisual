@@ -12,6 +12,8 @@ const {
 
 const siteName = "Enciclopedia Bíblica Visual";
 const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
+
+const searchDataUrl = sitePath("/buscar/datos.json");
 ---
 
 <html lang="es">
@@ -22,6 +24,46 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     <title>{pageTitle}</title>
 
     <style is:inline>
+      html[data-theme="dark"] .button {
+        background: #e9b872 !important;
+        border-color: #e9b872 !important;
+        color: #1b120b !important;
+      }
+
+      html[data-theme="dark"] .button.secondary {
+        background: transparent !important;
+        border-color: #6c4c2f !important;
+        color: #e9b872 !important;
+      }
+
+      html[data-theme="dark"] .button.secondary:hover {
+        background: #312113 !important;
+        border-color: #e9b872 !important;
+        color: #fff5e8 !important;
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        right: -90px;
+        bottom: -120px;
+        width: 320px;
+        height: 320px;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
+        pointer-events: none;
+      }
+
+      .hero > * {
+        position: relative;
+        z-index: 1;
+      }
+
       html[data-theme="dark"] .lesson-progress-panel,
       html[data-theme="dark"] .lesson-toc a,
       html[data-theme="dark"] .mini-nav-link {
@@ -83,28 +125,135 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
   </head>
 
   <body>
-    <header class="site-header">
-      <a href={sitePath("/")} class="logo">Enciclopedia Bíblica Visual</a>
+    <header class="site-header" data-site-header>
+  <a href={sitePath("/")} class="logo">Enciclopedia Bíblica Visual</a>
 
-      <nav class="nav" aria-label="Navegación principal">
-        <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")}>Ruta principal</a>
-        <a href={sitePath("/explorar/")}>Explorar</a>
-        <a href={sitePath("/buscar/")}>Buscar</a>
-        <a href={sitePath("/biblia/")}>Biblia</a>
-        <a href={sitePath("/mapa/")}>Mapa</a>
-        <a href={sitePath("/acerca/")}>Acerca</a>
+  <div class="header-actions">
+    <div
+      class="global-search-shell"
+      data-global-search-shell
+      data-search-url={searchDataUrl}
+    >
+      <button
+        type="button"
+        class="global-search-toggle"
+        data-global-search-toggle
+        aria-label="Abrir búsqueda"
+        aria-expanded="false"
+      >
+        🔍
+      </button>
+
+      <form
+        class="global-search-form"
+        action={sitePath("/buscar/")}
+        method="get"
+        role="search"
+        aria-label="Búsqueda global"
+        data-global-search-form
+      >
+        <label class="sr-only" for="global-search">
+          Buscar en la enciclopedia
+        </label>
+
+        <input
+          id="global-search"
+          name="q"
+          type="search"
+          placeholder="Buscar..."
+          autocomplete="off"
+          data-global-search-input
+        />
 
         <button
           type="button"
-          class="theme-toggle"
-          data-theme-toggle
-          aria-label="Cambiar a modo oscuro"
-          aria-pressed="false"
+          class="global-search-submit"
+          data-global-search-submit
+          aria-label="Icono de búsqueda"
         >
-          <span class="theme-toggle-icon" aria-hidden="true">🌙</span>
+          🔍
         </button>
+      </form>
+
+      <div
+        class="global-search-popover"
+        data-global-search-popover
+        hidden
+      >
+        <div
+          class="global-search-filters"
+          data-global-search-filters
+          aria-label="Filtros de búsqueda"
+        ></div>
+
+        <div
+          class="global-search-results"
+          data-global-search-results
+          aria-label="Resultados de búsqueda"
+        ></div>
+
+        <a
+          href={sitePath("/buscar/")}
+          class="global-search-all"
+          data-global-search-all
+        >
+          Ver todos los resultados →
+        </a>
+      </div>
+    </div>
+
+    <div class="global-menu-shell">
+      <button
+        type="button"
+        class="menu-toggle"
+        data-menu-toggle
+        aria-label="Abrir menú"
+        aria-expanded="false"
+      >
+        ☰
+      </button>
+
+      <nav
+        class="global-menu"
+        data-global-menu
+        aria-label="Menú principal"
+        hidden
+      >
+        <a href={sitePath("/buscar/")}>Búsqueda avanzada</a>
+        <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")}>Ruta principal</a>
+        <a href={sitePath("/biblia/")}>Leer la Biblia</a>
+        <a href={sitePath("/recursos/")}>Recursos visuales</a>
+        <a href={sitePath("/acerca/")}>Acerca de EBV</a>
+
+        <div id="search-empty" class="search-empty enhanced-search-empty" hidden></div>
+
+        <div class="menu-theme-row">
+          <span>Cambiar tema</span>
+
+          <button
+            type="button"
+            class="theme-toggle menu-theme-toggle"
+            data-theme-toggle
+            aria-label="Cambiar a modo oscuro"
+            aria-pressed="false"
+          >
+            <span class="theme-toggle-icon" aria-hidden="true">🌙</span>
+          </button>
+        </div>
       </nav>
-    </header>
+    </div>
+  </div>
+</header>
+
+<button
+  type="button"
+  class="theme-toggle floating-theme-toggle"
+  data-theme-toggle
+  aria-label="Cambiar a modo oscuro"
+  aria-pressed="false"
+>
+  <span class="theme-toggle-icon" aria-hidden="true">🌙</span>
+</button>
 
     <slot />
 
@@ -115,51 +264,58 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
         </p>
 
         <nav class="footer-links" aria-label="Navegación secundaria">
-          <a href={sitePath("/explorar/")}>Explorar</a>
-          <a href={sitePath("/buscar/")}>Buscar</a>
-          <a href={sitePath("/lecciones/")}>Lecciones</a>
-          <a href={sitePath("/biblia/")}>Biblia</a>
-          <a href={sitePath("/libros/")}>Libros</a>
-          <a href={sitePath("/pasajes/")}>Pasajes</a>
-          <a href={sitePath("/linea-de-tiempo/")}>Línea de tiempo</a>
-          <a href={sitePath("/mapa/")}>Mapa</a>
-          <a href={sitePath("/temas/")}>Temas</a>
-          <a href={sitePath("/personajes/")}>Personajes</a>
-          <a href={sitePath("/lugares/")}>Lugares</a>
-          <a href={sitePath("/eventos/")}>Eventos</a>
-          <a href={sitePath("/glosario/")}>Glosario</a>
-          <a href={sitePath("/acerca/")}>Acerca</a>
+          <a href={sitePath("/buscar/")}>Búsqueda avanzada</a>
+          <a href={sitePath("/biblia/")}>Leer la Biblia</a>
+          <a href={sitePath("/acerca/")}>Acerca de EBV</a>
           <a href={sitePath("/legal/")}>Avisos legales</a>
         </nav>
       </div>
     </footer>
     <script is:inline>
-      const themeToggle = document.querySelector("[data-theme-toggle]");
+  (() => {
+    const siteHeader = document.querySelector("[data-site-header]");
+    const themeToggleButtons = document.querySelectorAll("[data-theme-toggle]");
 
-      function getPreferredTheme() {
-        const storedTheme = localStorage.getItem("ebv-theme");
+    const menuToggle = document.querySelector("[data-menu-toggle]");
+    const globalMenu = document.querySelector("[data-global-menu]");
 
-        if (storedTheme === "dark" || storedTheme === "light") {
-          return storedTheme;
-        }
+    const searchShell = document.querySelector("[data-global-search-shell]");
+    const searchToggle = document.querySelector("[data-global-search-toggle]");
+    const searchForm = document.querySelector("[data-global-search-form]");
+    const searchInput = document.querySelector("[data-global-search-input]");
+    const searchSubmit = document.querySelector("[data-global-search-submit]");
+    const searchPopover = document.querySelector("[data-global-search-popover]");
+    const searchFilters = document.querySelector("[data-global-search-filters]");
+    const searchResults = document.querySelector("[data-global-search-results]");
+    const searchAllLink = document.querySelector("[data-global-search-all]");
 
-        return window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light";
+    let searchItems = null;
+    let activeSearchType = "Todos";
+
+    function getPreferredTheme() {
+      const storedTheme = localStorage.getItem("ebv-theme");
+
+      if (storedTheme === "dark" || storedTheme === "light") {
+        return storedTheme;
       }
 
-      function applyTheme(theme) {
-        document.documentElement.dataset.theme = theme;
-      }
+      return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    }
 
-      function syncThemeToggle(theme) {
-        if (!themeToggle) return;
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+    }
 
-        const isDark = theme === "dark";
-        const icon = themeToggle.querySelector(".theme-toggle-icon");
+    function syncThemeToggle(theme) {
+      const isDark = theme === "dark";
 
-        themeToggle.setAttribute("aria-pressed", String(isDark));
-        themeToggle.setAttribute(
+      themeToggleButtons.forEach((button) => {
+        const icon = button.querySelector(".theme-toggle-icon");
+
+        button.setAttribute("aria-pressed", String(isDark));
+        button.setAttribute(
           "aria-label",
           isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"
         );
@@ -167,18 +323,359 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
         if (icon) {
           icon.textContent = isDark ? "☀️" : "🌙";
         }
+      });
+    }
+
+    function syncThemeFromStorage() {
+      const theme = getPreferredTheme();
+
+      applyTheme(theme);
+      syncThemeToggle(theme);
+    }
+
+    function normalizeText(value) {
+      return String(value ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function getScore(item, query) {
+      const title = normalizeText(item.title);
+      const type = normalizeText(item.type);
+      const summary = normalizeText(item.summary);
+      const searchText = normalizeText(item.searchText);
+
+      if (title === query) return 120;
+      if (title.startsWith(query)) return 100;
+      if (title.includes(query)) return 80;
+      if (type.includes(query)) return 65;
+      if (summary.includes(query)) return 45;
+      if (searchText.includes(query)) return 35;
+
+      const words = query.split(/\s+/).filter(Boolean);
+
+      if (words.length > 1 && words.every((word) => title.includes(word))) {
+        return 75;
       }
 
-      function syncThemeFromStorage() {
-        const theme = getPreferredTheme();
-
-        applyTheme(theme);
-        syncThemeToggle(theme);
+      if (words.length > 1 && words.every((word) => searchText.includes(word))) {
+        return 32;
       }
 
-      syncThemeFromStorage();
+      return 0;
+    }
 
-      themeToggle?.addEventListener("click", () => {
+    function sortSearchResults(a, b) {
+      return (
+        b.score - a.score ||
+        a.typePriority - b.typePriority ||
+        a.bookOrder - b.bookOrder ||
+        a.chapterNumber - b.chapterNumber ||
+        a.verseNumber - b.verseNumber ||
+        a.title.localeCompare(b.title)
+      );
+    }
+
+    function getDisplayResults(results) {
+      if (activeSearchType !== "Todos") {
+        return results.filter((item) => item.type === activeSearchType);
+      }
+
+      const verses = results.filter((item) => item.type === "Versículo");
+      const nonVerses = results.filter((item) => item.type !== "Versículo");
+
+      const featuredVerses = verses.slice(0, 3);
+      const featuredNonVerses = [];
+      const usedTypes = new Set();
+
+      nonVerses.forEach((item) => {
+        if (!usedTypes.has(item.type)) {
+          featuredNonVerses.push(item);
+          usedTypes.add(item.type);
+        }
+      });
+
+      const featuredItems = new Set([
+        ...featuredVerses,
+        ...featuredNonVerses,
+      ]);
+
+      const remaining = results.filter((item) => !featuredItems.has(item));
+
+      return [
+        ...featuredVerses,
+        ...featuredNonVerses,
+        ...remaining,
+      ];
+    }
+
+    async function loadSearchItems() {
+      if (searchItems) return searchItems;
+
+      const searchUrl = searchShell?.getAttribute("data-search-url");
+
+      if (!searchUrl) {
+        searchItems = [];
+        return searchItems;
+      }
+
+      try {
+        const response = await fetch(searchUrl);
+        searchItems = await response.json();
+      } catch {
+        searchItems = [];
+      }
+
+      return searchItems;
+    }
+
+    function openMenu() {
+      if (!globalMenu || !menuToggle) return;
+
+      globalMenu.hidden = false;
+      menuToggle.setAttribute("aria-expanded", "true");
+    }
+
+    function closeMenu() {
+      if (!globalMenu || !menuToggle) return;
+
+      globalMenu.hidden = true;
+      menuToggle.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleMenu() {
+      if (!globalMenu) return;
+
+      if (globalMenu.hidden) {
+        openMenu();
+        closeSearchPopover();
+      } else {
+        closeMenu();
+      }
+    }
+
+    function openSearchShell() {
+      if (!searchShell || !searchToggle) return;
+
+      searchShell.classList.add("is-open");
+      siteHeader?.classList.add("search-open");
+      searchToggle.setAttribute("aria-expanded", "true");
+      searchToggle.setAttribute("aria-label", "Cerrar búsqueda");
+      syncSearchSubmitIcon();
+
+      window.requestAnimationFrame(() => {
+        searchInput?.focus();
+      });
+    }
+
+    function closeSearchShell() {
+      if (!searchShell || !searchToggle) return;
+
+      searchShell.classList.remove("is-open");
+      siteHeader?.classList.remove("search-open");
+      searchToggle.setAttribute("aria-expanded", "false");
+      searchToggle.setAttribute("aria-label", "Abrir búsqueda");
+      closeSearchPopover();
+      syncSearchSubmitIcon();
+    }
+
+    function openSearchPopover() {
+      if (!searchPopover) return;
+
+      searchPopover.hidden = false;
+    }
+
+    function closeSearchPopover() {
+      if (!searchPopover) return;
+
+      searchPopover.hidden = true;
+    }
+
+    function isMobileSearch() {
+      return window.matchMedia("(max-width: 760px)").matches;
+    }
+
+    function syncSearchSubmitIcon() {
+      if (!searchSubmit) return;
+
+      const isOpen = Boolean(searchShell?.classList.contains("is-open"));
+
+      if (isMobileSearch() && isOpen) {
+        searchSubmit.textContent = "✕";
+        searchSubmit.setAttribute("aria-label", "Cerrar búsqueda");
+        searchSubmit.classList.add("is-close");
+        return;
+      }
+
+      searchSubmit.textContent = "🔍";
+      searchSubmit.setAttribute("aria-label", "Icono de búsqueda");
+      searchSubmit.classList.remove("is-close");
+    }
+
+    function updateAllResultsLink(query, hasResults = false) {
+      if (!searchAllLink) return;
+
+      const normalizedQuery = normalizeText(query);
+      const url = new URL(searchAllLink.href);
+
+      if (normalizedQuery) {
+        url.searchParams.set("q", query);
+        searchAllLink.textContent = hasResults
+          ? "Ver todos los resultados →"
+          : "Ir al buscador avanzado →";
+      } else {
+        url.searchParams.delete("q");
+        searchAllLink.textContent = "Ir al buscador avanzado →";
+      }
+
+      searchAllLink.href = `${url.pathname}${url.search}`;
+    }
+
+    function renderFilters(results) {
+      if (!searchFilters) return;
+
+      const allowedFilterOrder = [
+        "Versículo",
+        "Glosario",
+        "Lugar",
+        "Personaje",
+        "Evento",
+        "Tema",
+        "Lección",
+      ];
+
+      const counts = results.reduce((acc, item) => {
+        acc[item.type] = (acc[item.type] ?? 0) + 1;
+        return acc;
+      }, {});
+
+      if (
+        activeSearchType !== "Todos" &&
+        !allowedFilterOrder.includes(activeSearchType)
+      ) {
+        activeSearchType = "Todos";
+      }
+
+      const types = allowedFilterOrder
+        .filter((type) => counts[type])
+        .map((type) => [type, counts[type]]);
+
+      searchFilters.innerHTML = [
+        `<button type="button" data-global-search-filter="Todos">Todos <span>${results.length}</span></button>`,
+        ...types.map(
+          ([type, count]) =>
+            `<button type="button" data-global-search-filter="${escapeHtml(type)}">${escapeHtml(type)} <span>${count}</span></button>`
+        ),
+      ].join("");
+
+      searchFilters
+        .querySelectorAll("[data-global-search-filter]")
+        .forEach((button) => {
+          button.classList.toggle(
+            "is-active",
+            button.getAttribute("data-global-search-filter") === activeSearchType
+          );
+
+          button.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            activeSearchType =
+              button.getAttribute("data-global-search-filter") ?? "Todos";
+
+            renderSearchResults(searchInput?.value ?? "");
+            openSearchPopover();
+          });
+        });
+    }
+
+    function renderResultCard(item) {
+      return `
+        <a href="${escapeHtml(item.url)}" class="global-search-result">
+          <span>${escapeHtml(item.type)}</span>
+          <strong>${escapeHtml(item.title)}</strong>
+          <small>${escapeHtml(item.summary)}</small>
+        </a>
+      `;
+    }
+
+    async function renderSearchResults(rawQuery) {
+      if (!searchResults || !searchFilters) return;
+
+      const query = normalizeText(rawQuery);
+
+      updateAllResultsLink(rawQuery, false);
+
+      if (!query) {
+        searchResults.innerHTML = `
+          <div class="global-search-state">
+            Escribe una palabra para comenzar.
+          </div>
+        `;
+        searchFilters.innerHTML = "";
+        openSearchPopover();
+        return;
+      }
+
+      const items = await loadSearchItems();
+
+      const results = items
+        .map((item) => ({
+          ...item,
+          score: getScore(item, query),
+        }))
+        .filter((item) => item.score > 0)
+        .sort(sortSearchResults);
+
+      if (results.length === 0) {
+        searchResults.innerHTML = `
+          <div class="global-search-state">
+            No se encontraron resultados.
+          </div>
+        `;
+        searchFilters.innerHTML = "";
+        openSearchPopover();
+        return;
+      }
+
+      updateAllResultsLink(rawQuery, true);
+
+      renderFilters(results);
+
+      searchFilters
+        .querySelectorAll("[data-global-search-filter]")
+        .forEach((button) => {
+          button.classList.toggle(
+            "is-active",
+            button.getAttribute("data-global-search-filter") === activeSearchType
+          );
+        });
+
+      const filteredResults = getDisplayResults(results);
+
+      searchResults.innerHTML = filteredResults
+        .slice(0, 80)
+        .map(renderResultCard)
+        .join("");
+
+      openSearchPopover();
+    }
+
+    syncThemeFromStorage();
+
+    themeToggleButtons.forEach((button) => {
+      button.addEventListener("click", () => {
         const activeTheme =
           document.documentElement.dataset.theme === "dark" ? "light" : "dark";
 
@@ -186,21 +683,117 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
         applyTheme(activeTheme);
         syncThemeToggle(activeTheme);
       });
+    });
 
-      window.addEventListener("pageshow", () => {
-        syncThemeFromStorage();
+    menuToggle?.addEventListener("click", toggleMenu);
+
+    searchToggle?.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (searchShell?.classList.contains("is-open")) {
+        closeSearchShell();
+        return;
+      }
+
+      openSearchShell();
+      closeMenu();
+    });
+
+    searchSubmit?.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (isMobileSearch() && searchShell?.classList.contains("is-open")) {
+        closeSearchShell();
+        return;
+      }
+
+      openSearchShell();
+      searchInput?.focus();
+    });
+
+    searchInput?.addEventListener("input", () => {
+      activeSearchType = "Todos";
+      renderSearchResults(searchInput.value);
+    });
+
+    searchInput?.addEventListener("focus", () => {
+      openSearchShell();
+      renderSearchResults(searchInput.value);
+    });
+
+    searchPopover?.addEventListener("click", (event) => {
+      event.stopPropagation();
+    });
+
+    searchFilters?.addEventListener("click", (event) => {
+      event.stopPropagation();
+    });
+
+    searchResults?.addEventListener("click", (event) => {
+      event.stopPropagation();
+    });
+
+    searchForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const query = searchInput?.value?.trim() ?? "";
+
+      if (!query) {
+        searchInput?.focus();
+        return;
+      }
+
+      renderSearchResults(query);
+    });
+
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+
+      if (!(target instanceof Node)) return;
+
+      const clickedInsideSearch = Boolean(searchShell?.contains(target));
+      const clickedInsideMenu = Boolean(globalMenu?.contains(target));
+      const clickedMenuToggle = Boolean(menuToggle?.contains(target));
+
+      if (!clickedInsideSearch) {
+        closeSearchPopover();
+
+        if (window.matchMedia("(max-width: 760px)").matches) {
+          closeSearchShell();
+        }
+      }
+
+      if (!clickedInsideMenu && !clickedMenuToggle) {
+        closeMenu();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeMenu();
+        closeSearchShell();
+      }
+    });
+
+    window.addEventListener("pageshow", () => {
+      syncThemeFromStorage();
+    });
+
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", () => {
+        const storedTheme = localStorage.getItem("ebv-theme");
+
+        if (storedTheme !== "dark" && storedTheme !== "light") {
+          syncThemeFromStorage();
+        }
       });
+  })();
+</script>
 
-      window
-        .matchMedia("(prefers-color-scheme: dark)")
-        .addEventListener("change", () => {
-          const storedTheme = localStorage.getItem("ebv-theme");
 
-          if (storedTheme !== "dark" && storedTheme !== "light") {
-            syncThemeFromStorage();
-          }
-        });
-    </script>
   </body>
 </html>
 
@@ -260,6 +853,72 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
     background: #fff7e8;
   }
 
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .header-search {
+    display: inline-flex;
+    align-items: center;
+    width: min(240px, 100%);
+    min-height: 40px;
+    border: 1px solid #eadcc4;
+    border-radius: 999px;
+    background: #fffaf0;
+    overflow: hidden;
+  }
+
+  .header-search input {
+    width: 100%;
+    min-width: 0;
+    height: 40px;
+    padding: 0 4px 0 14px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #2d2418;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .header-search input::placeholder {
+    color: #8a7560;
+    opacity: 1;
+  }
+
+  .header-search button {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-left: 1px solid #eadcc4;
+    background: #fff7e8;
+    color: #5d3212;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .header-search button:hover {
+    background: #f1dfc5;
+  }
+
+  .header-search:focus-within {
+    border-color: #c8a982;
+    box-shadow: 0 0 0 4px rgba(200, 169, 130, 0.22);
+  }
+
   .theme-toggle {
     display: inline-flex;
     width: 40px;
@@ -292,11 +951,30 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
   }
 
   .hero {
+    position: relative;
     padding: 64px 32px;
     border-radius: 28px;
     background: #fffaf0;
     border: 1px solid #eadcc4;
     box-shadow: 0 20px 60px rgba(45, 36, 24, 0.08);
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -120px;
+    width: 320px;
+    height: 320px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
+    pointer-events: none;
+  }
+
+  .hero > * {
+    position: relative;
+    z-index: 1;
   }
 
   .eyebrow {
@@ -1584,10 +2262,8 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
   }
 
   .site-footer-inner {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 18px;
+    display: grid;
+    gap: 14px;
     border-top: 1px solid #eadcc4;
     padding-top: 24px;
   }
@@ -1605,7 +2281,7 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
   .footer-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px 14px;
+    gap: 10px 16px;
     max-width: 760px;
   }
 
@@ -2484,13 +3160,20 @@ border-color: #e9b872;
 color: #1b120b;
   }
 
-  html[data-theme="dark"] .button,
-  html[data-theme="dark"] .button.secondary {
-color: #1b120b;
+  html[data-theme="dark"] .button {
+    color: #1b120b;
   }
 
   html[data-theme="dark"] .button.secondary {
-background: #e9b872;
+    background: transparent;
+    border-color: #6c4c2f;
+    color: #e9b872;
+  }
+
+  html[data-theme="dark"] .button.secondary:hover {
+    background: #312113;
+    border-color: #e9b872;
+    color: #fff5e8;
   }
 
   html[data-theme="dark"] .study-card,
@@ -2844,9 +3527,9 @@ box-shadow: 0 0 0 6px #100c08;
   }
 
   html[data-theme="dark"] .chapter-nav .button.secondary {
-    background: #e9b872;
-    border-color: #e9b872;
-    color: #1b120b;
+    background: transparent;
+    border-color: #6c4c2f;
+    color: #e9b872;
   }
 
   html[data-theme="dark"] .content p {
@@ -2905,6 +3588,35 @@ box-shadow: 0 0 0 6px #100c08;
   html[data-theme="dark"] .lesson-progress-panel .section-count,
   html[data-theme="dark"] .lesson-progress-panel .lesson-toc a {
     color: #e9b872;
+  }
+
+  html[data-theme="dark"] .header-search {
+    background: #18110c;
+    border-color: #4a3523;
+  }
+
+  html[data-theme="dark"] .header-search input {
+    color: #fff5e8;
+  }
+
+  html[data-theme="dark"] .header-search input::placeholder {
+    color: #b9a894;
+  }
+
+  html[data-theme="dark"] .header-search button {
+    background: #21160e;
+    border-left-color: #4a3523;
+    color: #e9b872;
+  }
+
+  html[data-theme="dark"] .header-search button:hover {
+    background: #312113;
+    color: #fff5e8;
+  }
+
+  html[data-theme="dark"] .header-search:focus-within {
+    border-color: #e9b872;
+    box-shadow: 0 0 0 4px rgba(233, 184, 114, 0.18);
   }
 
   @media (max-width: 760px) {
@@ -3202,5 +3914,478 @@ box-shadow: 0 0 0 6px #100c08;
       min-height: auto;
     }
 
+    .site-header {
+      align-items: flex-start;
+    }
+
+    .header-search {
+      order: 10;
+      width: 100%;
+      flex-basis: 100%;
+    }
+
+    .header-search input {
+      font-size: 1rem;
+    }
+
+  }
+
+    /* Header compacto global */
+  .site-header {
+    position: relative;
+    z-index: 50;
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .logo {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .header-actions {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+  }
+
+  .global-search-shell,
+  .global-menu-shell {
+    position: relative;
+  }
+
+  .global-search-form {
+    display: inline-flex;
+    align-items: center;
+    width: min(320px, 36vw);
+    min-height: 42px;
+    border: 1px solid #eadcc4;
+    border-radius: 999px;
+    background: #fffaf0;
+    overflow: hidden;
+    transition:
+      width 180ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .global-search-form:focus-within {
+    border-color: #c8a982;
+    box-shadow: 0 0 0 4px rgba(200, 169, 130, 0.22);
+  }
+
+  .global-search-form input {
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+    padding: 0 6px 0 16px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #2d2418;
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 750;
+  }
+
+  .global-search-form input::-webkit-search-cancel-button,
+  .global-search-form input::-webkit-search-decoration,
+  .global-search-form input::-webkit-search-results-button,
+  .global-search-form input::-webkit-search-results-decoration {
+    display: none;
+    -webkit-appearance: none;
+  }
+
+  .global-search-form input::placeholder {
+    color: #8a7560;
+    opacity: 1;
+  }
+
+  .global-search-submit,
+  .global-search-toggle,
+  .menu-toggle {
+    display: inline-flex;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #eadcc4;
+    border-radius: 999px;
+    background: #fff7e8;
+    color: #5d3212;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .global-search-toggle[aria-expanded="true"] {
+    font-size: 1.15rem;
+  }
+
+  .global-search-submit {
+    pointer-events: auto;
+  }
+
+  .global-search-submit.is-close {
+    font-size: 1.15rem;
+    line-height: 1;
+  }
+
+  .global-search-submit {
+    border-top: 0;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 1px solid #eadcc4;
+    border-radius: 0;
+  }
+
+  .global-search-toggle {
+    display: none;
+  }
+
+  .global-search-submit:hover,
+  .global-search-toggle:hover,
+  .menu-toggle:hover {
+    background: #f1dfc5;
+  }
+
+  .global-search-popover,
+  .global-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    border: 1px solid #eadcc4;
+    border-radius: 22px;
+    background: white;
+    box-shadow: 0 22px 60px rgba(45, 36, 24, 0.18);
+  }
+
+  .global-search-popover {
+    display: grid;
+    gap: 12px;
+    width: min(520px, calc(100vw - 32px));
+    padding: 14px;
+  }
+
+  .global-search-popover[hidden],
+  .global-menu[hidden] {
+    display: none;
+  }
+
+  .global-search-filters {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(93, 50, 18, 0.34) transparent;
+  }
+
+  .global-search-filters::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .global-search-filters::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .global-search-filters::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(93, 50, 18, 0.34);
+  }
+
+  .global-search-filters::-webkit-scrollbar-thumb:hover {
+    background: rgba(93, 50, 18, 0.48);
+  }
+
+  .global-search-filters button {
+    display: inline-flex;
+    flex: 0 0 auto;
+    min-height: 32px;
+    align-items: center;
+    gap: 6px;
+    padding: 0 11px;
+    border: 1px solid #eadcc4;
+    border-radius: 999px;
+    background: #fffaf0;
+    color: #5d3212;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .global-search-filters button.is-active {
+    background: #5d3212;
+    border-color: #5d3212;
+    color: #fffaf0;
+  }
+
+  .global-search-results {
+    display: grid;
+    gap: 8px;
+    max-height: 370px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .global-search-results::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .global-search-results::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(93, 50, 18, 0.34);
+  }
+
+  .global-search-result {
+    display: grid;
+    gap: 4px;
+    padding: 12px 13px;
+    border: 1px solid #eadcc4;
+    border-radius: 16px;
+    background: #fffaf0;
+    text-decoration: none;
+  }
+
+  .global-search-result:hover {
+    border-color: #c8a982;
+    background: #fff7e8;
+  }
+
+  .global-search-result span {
+    color: #8a5a2b;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .global-search-result strong {
+    color: #2d2418;
+    font-size: 0.98rem;
+    line-height: 1.3;
+  }
+
+  .global-search-result small {
+    display: -webkit-box;
+    color: #6a5c4d;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .global-search-state {
+    padding: 18px;
+    border-radius: 16px;
+    background: #fffaf0;
+    color: #6a5c4d;
+    line-height: 1.5;
+  }
+
+  .global-search-all {
+    display: inline-flex;
+    justify-content: center;
+    min-height: 38px;
+    align-items: center;
+    border-radius: 999px;
+    background: #5d3212;
+    color: #fffaf0;
+    font-weight: 900;
+    text-decoration: none;
+  }
+
+  .global-menu {
+    display: grid;
+    width: min(280px, calc(100vw - 32px));
+    padding: 10px;
+  }
+
+  .global-menu a {
+    display: flex;
+    min-height: 40px;
+    align-items: center;
+    padding: 0 12px;
+    border-radius: 14px;
+    color: #5d3212;
+    font-weight: 850;
+    text-decoration: none;
+  }
+
+  .global-menu a:hover {
+    background: #fff7e8;
+  }
+
+  .menu-theme-row {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 6px;
+    padding: 8px 10px 4px 12px;
+    border-top: 1px solid #eadcc4;
+    color: #5d3212;
+    font-weight: 850;
+  }
+
+  .menu-theme-toggle {
+    width: 38px;
+    height: 38px;
+  }
+
+  .floating-theme-toggle {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 60;
+    box-shadow: 0 18px 40px rgba(45, 36, 24, 0.18);
+  }
+
+  html[data-theme="dark"] .global-search-form,
+  html[data-theme="dark"] .global-search-popover,
+  html[data-theme="dark"] .global-menu {
+    background: #18110c;
+    border-color: #4a3523;
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
+  }
+
+  html[data-theme="dark"] .global-search-form input {
+    color: #fff5e8;
+  }
+
+  html[data-theme="dark"] .global-search-form input::placeholder {
+    color: #b9a894;
+  }
+
+  html[data-theme="dark"] .global-search-submit,
+  html[data-theme="dark"] .global-search-toggle,
+  html[data-theme="dark"] .menu-toggle,
+  html[data-theme="dark"] .global-search-filters button,
+  html[data-theme="dark"] .global-search-result,
+  html[data-theme="dark"] .global-search-state {
+    background: #21160e;
+    border-color: #4a3523;
+    color: #e9b872;
+  }
+
+  html[data-theme="dark"] .global-search-form:focus-within {
+    border-color: #e9b872;
+    box-shadow: 0 0 0 4px rgba(233, 184, 114, 0.18);
+  }
+
+  html[data-theme="dark"] .global-search-submit:hover,
+  html[data-theme="dark"] .global-search-toggle:hover,
+  html[data-theme="dark"] .menu-toggle:hover,
+  html[data-theme="dark"] .global-search-result:hover,
+  html[data-theme="dark"] .global-menu a:hover {
+    background: #312113;
+    border-color: #6c4c2f;
+  }
+
+  html[data-theme="dark"] .global-search-filters button.is-active,
+  html[data-theme="dark"] .global-search-all {
+    background: #e9b872;
+    border-color: #e9b872;
+    color: #1b120b;
+  }
+
+  html[data-theme="dark"] .global-search-result span,
+  html[data-theme="dark"] .global-menu a,
+  html[data-theme="dark"] .menu-theme-row {
+    color: #e9b872;
+  }
+
+  html[data-theme="dark"] .global-search-result strong {
+    color: #fff5e8;
+  }
+
+  html[data-theme="dark"] .global-search-result small,
+  html[data-theme="dark"] .global-search-state {
+    color: #d8c8b6;
+  }
+
+  html[data-theme="dark"] .global-search-filters {
+    scrollbar-color: rgba(233, 184, 114, 0.5) transparent;
+  }
+
+  html[data-theme="dark"] .global-search-filters::-webkit-scrollbar-thumb {
+    background: rgba(233, 184, 114, 0.5);
+  }
+
+  html[data-theme="dark"] .global-search-filters::-webkit-scrollbar-thumb:hover {
+    background: rgba(233, 184, 114, 0.68);
+  }
+
+  html[data-theme="dark"] .menu-theme-row {
+    border-top-color: #4a3523;
+  }
+
+  @media (max-width: 760px) {
+    .site-header {
+      align-items: center;
+      flex-direction: row;
+      gap: 10px;
+      padding: 18px 0;
+    }
+
+    .site-header.search-open .logo {
+      display: none;
+    }
+
+    .header-actions {
+      margin-left: auto;
+    }
+
+    .global-search-shell {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .global-search-toggle {
+      display: inline-flex;
+      order: 1;
+    }
+
+    .global-search-form {
+      display: none;
+      order: 1;
+      width: calc(100vw - 96px);
+    }
+
+    .global-search-shell.is-open .global-search-toggle {
+      display: none;
+    }
+
+    .global-search-shell.is-open .global-search-form {
+      display: inline-flex;
+    }
+
+    .global-search-popover {
+      position: fixed;
+      top: 76px;
+      left: 16px;
+      right: 16px;
+      width: auto;
+    }
+
+    .global-menu {
+      position: fixed;
+      top: 76px;
+      right: 16px;
+      width: min(280px, calc(100vw - 32px));
+    }
+
+    .floating-theme-toggle {
+      right: 14px;
+      bottom: 14px;
+    }
   }
 </style>
