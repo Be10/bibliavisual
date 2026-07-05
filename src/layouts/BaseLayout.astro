@@ -225,7 +225,6 @@ const searchDataUrl = sitePath("/buscar/datos.json");
         <a href={sitePath("/recursos/")}>Recursos visuales</a>
         <a href={sitePath("/acerca/")}>Acerca de EBV</a>
 
-        <div id="search-empty" class="search-empty enhanced-search-empty" hidden></div>
 
         <div class="menu-theme-row">
           <span>Cambiar tema</span>
@@ -271,7 +270,16 @@ const searchDataUrl = sitePath("/buscar/datos.json");
         </nav>
       </div>
     </footer>
-    <script is:inline>
+    <script>
+  import {
+    SEARCH_FILTER_ORDER,
+    getAvailableSearchFilters,
+    getDisplaySearchResults,
+    getSearchCounts,
+    getSearchResults,
+    normalizeSearchText,
+  } from "../lib/search-engine";
+
   (() => {
     const siteHeader = document.querySelector("[data-site-header]");
     const themeToggleButtons = document.querySelectorAll("[data-theme-toggle]");
@@ -334,11 +342,7 @@ const searchDataUrl = sitePath("/buscar/datos.json");
     }
 
     function normalizeText(value) {
-      return String(value ?? "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .trim();
+      return normalizeSearchText(value);
     }
 
     function escapeHtml(value) {
@@ -348,76 +352,6 @@ const searchDataUrl = sitePath("/buscar/datos.json");
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
-    }
-
-    function getScore(item, query) {
-      const title = normalizeText(item.title);
-      const type = normalizeText(item.type);
-      const summary = normalizeText(item.summary);
-      const searchText = normalizeText(item.searchText);
-
-      if (title === query) return 120;
-      if (title.startsWith(query)) return 100;
-      if (title.includes(query)) return 80;
-      if (type.includes(query)) return 65;
-      if (summary.includes(query)) return 45;
-      if (searchText.includes(query)) return 35;
-
-      const words = query.split(/\s+/).filter(Boolean);
-
-      if (words.length > 1 && words.every((word) => title.includes(word))) {
-        return 75;
-      }
-
-      if (words.length > 1 && words.every((word) => searchText.includes(word))) {
-        return 32;
-      }
-
-      return 0;
-    }
-
-    function sortSearchResults(a, b) {
-      return (
-        b.score - a.score ||
-        a.typePriority - b.typePriority ||
-        a.bookOrder - b.bookOrder ||
-        a.chapterNumber - b.chapterNumber ||
-        a.verseNumber - b.verseNumber ||
-        a.title.localeCompare(b.title)
-      );
-    }
-
-    function getDisplayResults(results) {
-      if (activeSearchType !== "Todos") {
-        return results.filter((item) => item.type === activeSearchType);
-      }
-
-      const verses = results.filter((item) => item.type === "Versículo");
-      const nonVerses = results.filter((item) => item.type !== "Versículo");
-
-      const featuredVerses = verses.slice(0, 3);
-      const featuredNonVerses = [];
-      const usedTypes = new Set();
-
-      nonVerses.forEach((item) => {
-        if (!usedTypes.has(item.type)) {
-          featuredNonVerses.push(item);
-          usedTypes.add(item.type);
-        }
-      });
-
-      const featuredItems = new Set([
-        ...featuredVerses,
-        ...featuredNonVerses,
-      ]);
-
-      const remaining = results.filter((item) => !featuredItems.has(item));
-
-      return [
-        ...featuredVerses,
-        ...featuredNonVerses,
-        ...remaining,
-      ];
     }
 
     async function loadSearchItems() {
@@ -545,36 +479,25 @@ const searchDataUrl = sitePath("/buscar/datos.json");
     function renderFilters(results) {
       if (!searchFilters) return;
 
-      const allowedFilterOrder = [
-        "Versículo",
-        "Glosario",
-        "Lugar",
-        "Personaje",
-        "Evento",
-        "Tema",
-        "Lección",
-      ];
-
-      const counts = results.reduce((acc, item) => {
-        acc[item.type] = (acc[item.type] ?? 0) + 1;
-        return acc;
-      }, {});
+      const counts = getSearchCounts(results);
 
       if (
         activeSearchType !== "Todos" &&
-        !allowedFilterOrder.includes(activeSearchType)
+        !SEARCH_FILTER_ORDER.includes(activeSearchType)
       ) {
         activeSearchType = "Todos";
       }
 
-      const types = allowedFilterOrder
-        .filter((type) => counts[type])
-        .map((type) => [type, counts[type]]);
+      if (activeSearchType !== "Todos" && !counts[activeSearchType]) {
+        activeSearchType = "Todos";
+      }
+
+      const filters = getAvailableSearchFilters(results);
 
       searchFilters.innerHTML = [
         `<button type="button" data-global-search-filter="Todos">Todos <span>${results.length}</span></button>`,
-        ...types.map(
-          ([type, count]) =>
+        ...filters.map(
+          ({ type, count }) =>
             `<button type="button" data-global-search-filter="${escapeHtml(type)}">${escapeHtml(type)} <span>${count}</span></button>`
         ),
       ].join("");
@@ -630,13 +553,7 @@ const searchDataUrl = sitePath("/buscar/datos.json");
 
       const items = await loadSearchItems();
 
-      const results = items
-        .map((item) => ({
-          ...item,
-          score: getScore(item, query),
-        }))
-        .filter((item) => item.score > 0)
-        .sort(sortSearchResults);
+      const results = getSearchResults(items, rawQuery);
 
       if (results.length === 0) {
         searchResults.innerHTML = `
@@ -662,12 +579,13 @@ const searchDataUrl = sitePath("/buscar/datos.json");
           );
         });
 
-      const filteredResults = getDisplayResults(results);
+      const filteredResults = getDisplaySearchResults(
+        results,
+        activeSearchType,
+        80
+      );
 
-      searchResults.innerHTML = filteredResults
-        .slice(0, 80)
-        .map(renderResultCard)
-        .join("");
+      searchResults.innerHTML = filteredResults.map(renderResultCard).join("");
 
       openSearchPopover();
     }

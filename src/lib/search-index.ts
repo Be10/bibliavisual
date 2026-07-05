@@ -26,14 +26,14 @@ export type SearchIndexItem = {
 
 const typePriority: Record<string, number> = {
   Versículo: 1,
-  Pasaje: 2,
+  Glosario: 2,
   Lugar: 3,
-  Glosario: 4,
-  Libro: 5,
-  Lección: 6,
-  Evento: 7,
-  Tema: 8,
-  Personaje: 9,
+  Personaje: 4,
+  Evento: 5,
+  Tema: 6,
+  Lección: 7,
+  Libro: 8,
+  Pasaje: 9,
   Ruta: 10,
   Sección: 11,
 };

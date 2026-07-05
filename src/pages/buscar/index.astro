@@ -179,20 +179,20 @@ function getExploreCount(item: ExploreItem) {
           placeholder="Busca: Jesús, Génesis, redención, Jerusalén, en el principio..."
           autocomplete="off"
         />
-
-        <p class="search-help">
-          El buscador ignora mayúsculas y tildes. Por ejemplo, puedes escribir
-          “mesias” y encontrará “Mesías”.
-        </p>
-
-        <div class="search-suggestions" aria-label="Sugerencias de búsqueda">
-          <button type="button" data-search-suggestion="Jesús">Jesús</button>
-          <button type="button" data-search-suggestion="Génesis">Génesis</button>
-          <button type="button" data-search-suggestion="redención">redención</button>
-          <button type="button" data-search-suggestion="Jerusalén">Jerusalén</button>
-          <button type="button" data-search-suggestion="en el principio">en el principio</button>
-        </div>
       </div>
+
+      <div id="search-empty" class="search-empty enhanced-search-empty" hidden></div>
+
+      <div
+        id="search-filters"
+        class="search-filters"
+        aria-label="Filtros de búsqueda"
+        hidden
+      ></div>
+
+      <div id="search-results-summary" class="search-results-summary" hidden></div>
+
+      <div id="search-results" class="search-results enhanced-search-results"></div>
 
       <section class="advanced-explore-block" aria-label="Explorar por categoría">
         <div class="advanced-explore-header">
@@ -220,12 +220,6 @@ function getExploreCount(item: ExploreItem) {
           ))}
         </div>
       </section>
-
-      <div id="search-empty" class="search-empty enhanced-search-empty" hidden></div>
-
-      <div id="search-results-summary" class="search-results-summary" hidden></div>
-
-      <div id="search-results" class="search-results enhanced-search-results"></div>
     </section>
 
     <section class="search-stats" aria-label="Resumen del índice de búsqueda">
@@ -242,12 +236,21 @@ function getExploreCount(item: ExploreItem) {
 </BaseLayout>
 
 <script>
+  import {
+    SEARCH_FILTER_ORDER,
+    getAvailableSearchFilters,
+    getDisplaySearchResults,
+    getSearchCounts,
+    getSearchResults,
+    normalizeSearchText,
+  } from "../../lib/search-engine";
+
   const dataElement = document.getElementById("search-data");
   const input = document.getElementById("search-input");
   const resultsElement = document.getElementById("search-results");
   const emptyElement = document.getElementById("search-empty");
   const resultsSummaryElement = document.getElementById("search-results-summary");
-  const suggestionButtons = document.querySelectorAll("[data-search-suggestion]");
+  const filtersElement = document.getElementById("search-filters");
 
   const items = dataElement?.textContent
     ? JSON.parse(dataElement.textContent)
@@ -256,26 +259,11 @@ function getExploreCount(item: ExploreItem) {
   const initialParams = new URLSearchParams(window.location.search);
   const initialQuery = initialParams.get("q") ?? "";
 
-  const typeOrder = [
-    "Versículo",
-    "Pasaje",
-    "Lugar",
-    "Glosario",
-    "Libro",
-    "Lección",
-    "Evento",
-    "Tema",
-    "Personaje",
-    "Ruta",
-    "Sección",
-  ];
+  let activeSearchType = "Todos";
+  let currentResults = [];
 
   function normalizeText(value) {
-    return String(value ?? "")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .trim();
+    return normalizeSearchText(value);
   }
 
   function escapeHtml(value) {
@@ -285,65 +273,6 @@ function getExploreCount(item: ExploreItem) {
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
-  }
-
-  function getScore(item, query) {
-    const title = normalizeText(item.title);
-    const type = normalizeText(item.type);
-    const summary = normalizeText(item.summary);
-    const searchText = normalizeText(item.searchText);
-
-    if (title === query) return 120;
-    if (title.startsWith(query)) return 100;
-    if (title.includes(query)) return 80;
-    if (type.includes(query)) return 65;
-    if (summary.includes(query)) return 45;
-    if (searchText.includes(query)) return 35;
-
-    const words = query.split(/\s+/).filter(Boolean);
-
-    if (words.length > 1 && words.every((word) => title.includes(word))) {
-      return 75;
-    }
-
-    if (words.length > 1 && words.every((word) => searchText.includes(word))) {
-      return 32;
-    }
-
-    return 0;
-  }
-
-  function sortSearchResults(a, b) {
-    return (
-      b.score - a.score ||
-      a.typePriority - b.typePriority ||
-      a.bookOrder - b.bookOrder ||
-      a.chapterNumber - b.chapterNumber ||
-      a.verseNumber - b.verseNumber ||
-      a.title.localeCompare(b.title)
-    );
-  }
-
-  function groupResults(results) {
-    return results.reduce((groups, item) => {
-      if (!groups[item.type]) {
-        groups[item.type] = [];
-      }
-
-      groups[item.type].push(item);
-
-      return groups;
-    }, {});
-  }
-
-  function renderResultCard(item) {
-    return `
-      <a href="${escapeHtml(item.url)}" class="search-result">
-        <span class="search-result-type">${escapeHtml(item.type)}</span>
-        <h3>${escapeHtml(item.title)}</h3>
-        <p>${escapeHtml(item.summary)}</p>
-      </a>
-    `;
   }
 
   function updateUrl(value) {
@@ -358,13 +287,95 @@ function getExploreCount(item: ExploreItem) {
     window.history.replaceState({}, "", url);
   }
 
+  function getFilteredResults(results) {
+    return getDisplaySearchResults(results, activeSearchType, 120);
+  }
+
+  function renderFilters(results) {
+    if (!filtersElement) return;
+
+    const counts = getSearchCounts(results);
+
+    if (
+      activeSearchType !== "Todos" &&
+      !SEARCH_FILTER_ORDER.includes(activeSearchType)
+    ) {
+      activeSearchType = "Todos";
+    }
+
+    if (activeSearchType !== "Todos" && !counts[activeSearchType]) {
+      activeSearchType = "Todos";
+    }
+
+    const filters = getAvailableSearchFilters(results);
+
+    filtersElement.hidden = false;
+
+    filtersElement.innerHTML = [
+      `<button type="button" data-search-filter="Todos">Todos <span>${results.length}</span></button>`,
+      ...filters.map(
+        ({ type, count }) =>
+          `<button type="button" data-search-filter="${escapeHtml(type)}">${escapeHtml(type)} <span>${count}</span></button>`
+      ),
+    ].join("");
+
+    filtersElement
+      .querySelectorAll("[data-search-filter]")
+      .forEach((button) => {
+        button.classList.toggle(
+          "is-active",
+          button.getAttribute("data-search-filter") === activeSearchType
+        );
+
+        button.addEventListener("click", () => {
+          activeSearchType =
+            button.getAttribute("data-search-filter") ?? "Todos";
+
+          renderFilteredResults();
+        });
+      });
+  }
+
+  function renderResultCard(item) {
+    return `
+      <a href="${escapeHtml(item.url)}" class="search-result">
+        <span class="search-result-type">${escapeHtml(item.type)}</span>
+        <h3>${escapeHtml(item.title)}</h3>
+        <p>${escapeHtml(item.summary)}</p>
+      </a>
+    `;
+  }
+
+  function renderFilteredResults() {
+    if (!resultsElement || !resultsSummaryElement || !filtersElement) return;
+
+    renderFilters(currentResults);
+
+    const filteredResults = getFilteredResults(currentResults);
+    const query = input?.value ?? "";
+
+    resultsSummaryElement.hidden = false;
+    resultsSummaryElement.textContent =
+      activeSearchType === "Todos"
+        ? `${currentResults.length} resultado${currentResults.length === 1 ? "" : "s"} para “${query}”`
+        : `${filteredResults.length} resultado${filteredResults.length === 1 ? "" : "s"} en ${activeSearchType} para “${query}”`;
+
+    resultsElement.innerHTML = filteredResults.map(renderResultCard).join("");
+  }
+
   function renderResults(query) {
     const normalizedQuery = normalizeText(query);
 
-    if (!resultsElement || !emptyElement || !resultsSummaryElement) return;
+    if (!resultsElement || !emptyElement || !resultsSummaryElement || !filtersElement) {
+      return;
+    }
 
     if (!normalizedQuery) {
+      currentResults = [];
+      activeSearchType = "Todos";
       resultsElement.innerHTML = "";
+      filtersElement.innerHTML = "";
+      filtersElement.hidden = true;
       resultsSummaryElement.hidden = true;
       resultsSummaryElement.textContent = "";
       emptyElement.hidden = true;
@@ -373,17 +384,14 @@ function getExploreCount(item: ExploreItem) {
       return;
     }
 
-    const results = items
-      .map((item) => ({
-        ...item,
-        score: getScore(item, normalizedQuery),
-      }))
-      .filter((item) => item.score > 0)
-      .sort(sortSearchResults)
-      .slice(0, 120);
+    const results = getSearchResults(items, query);
+
+    currentResults = results;
 
     if (results.length === 0) {
       resultsElement.innerHTML = "";
+      filtersElement.innerHTML = "";
+      filtersElement.hidden = true;
       resultsSummaryElement.hidden = true;
       resultsSummaryElement.textContent = "";
       emptyElement.hidden = false;
@@ -394,50 +402,15 @@ function getExploreCount(item: ExploreItem) {
 
     emptyElement.hidden = true;
     emptyElement.style.display = "none";
-    resultsSummaryElement.hidden = false;
-    resultsSummaryElement.textContent = `${results.length} resultado${results.length === 1 ? "" : "s"} para “${query}”`;
-
-    const groups = groupResults(results);
-
-    resultsElement.innerHTML = typeOrder
-      .filter((type) => groups[type]?.length)
-      .map((type) => {
-        const groupResults = groups[type].slice(0, 16);
-
-        return `
-          <section class="search-result-group">
-            <div class="search-result-group-header">
-              <span>${escapeHtml(type)}</span>
-              <strong>${groups[type].length}</strong>
-            </div>
-
-            <div class="search-result-group-grid">
-              ${groupResults.map(renderResultCard).join("")}
-            </div>
-          </section>
-        `;
-      })
-      .join("");
+    renderFilteredResults();
   }
 
   input?.addEventListener("input", (event) => {
     const value = event.target.value;
 
+    activeSearchType = "Todos";
     renderResults(value);
     updateUrl(value);
-  });
-
-  suggestionButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const value = button.getAttribute("data-search-suggestion") ?? "";
-
-      if (input) {
-        input.value = value;
-        input.focus();
-        renderResults(value);
-        updateUrl(value);
-      }
-    });
   });
 
   if (input && initialQuery) {
@@ -456,7 +429,6 @@ function getExploreCount(item: ExploreItem) {
     align-items: end;
     overflow: hidden;
   }
-
 
   .advanced-search-hero-content,
   .advanced-search-hero-card {
@@ -486,7 +458,6 @@ function getExploreCount(item: ExploreItem) {
   .advanced-search-hero-card,
   .search-stat-card,
   .search-result,
-  .search-result-group,
   .advanced-explore-card {
     border: 1px solid #eadcc4;
     box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
@@ -504,7 +475,6 @@ function getExploreCount(item: ExploreItem) {
   .advanced-search-hero-card span,
   .search-stat-card span,
   .search-label,
-  .search-result-group-header span,
   .search-result-type,
   .advanced-explore-card span,
   .advanced-explore-header span {
@@ -526,7 +496,7 @@ function getExploreCount(item: ExploreItem) {
   .advanced-explore-card p {
     margin: 0;
     color: #6a5c4d;
-    line-height: 1.7;
+    line-height: 1.55;
   }
 
   .search-stats {
@@ -569,36 +539,84 @@ function getExploreCount(item: ExploreItem) {
     display: block;
   }
 
-  .search-suggestions {
+  :global(.search-filters) {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
+    margin-top: 18px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(93, 50, 18, 0.34) transparent;
   }
 
-  .search-suggestions button {
-    display: inline-flex;
-    min-height: 36px;
-    align-items: center;
-    padding: 0 13px;
+  :global(.search-filters[hidden]) {
+    display: none;
+  }
+
+  :global(.search-filters::-webkit-scrollbar) {
+    height: 8px;
+  }
+
+  :global(.search-filters::-webkit-scrollbar-track) {
+    background: transparent;
+  }
+
+  :global(.search-filters::-webkit-scrollbar-thumb) {
     border-radius: 999px;
+    background: rgba(93, 50, 18, 0.34);
+  }
+
+  :global(.search-filters::-webkit-scrollbar-thumb:hover) {
+    background: rgba(93, 50, 18, 0.48);
+  }
+
+  :global(.search-filters button) {
+    display: inline-flex;
+    flex: 0 0 auto;
+    min-height: 32px;
+    align-items: center;
+    gap: 6px;
+    padding: 0 11px;
     border: 1px solid #eadcc4;
-    background: white;
+    border-radius: 999px;
+    background: #fffaf0;
     color: #5d3212;
     font: inherit;
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     font-weight: 900;
+    line-height: 1;
+    white-space: nowrap;
     cursor: pointer;
   }
 
-  .search-suggestions button:hover {
+  :global(.search-filters button span) {
+    display: inline;
+    font: inherit;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  :global(.search-filters button.is-active) {
+    background: #5d3212;
+    border-color: #5d3212;
+    color: #fffaf0;
+  }
+
+  :global(.search-filters button:hover) {
     border-color: #c8a982;
     background: #fff7e8;
+  }
+
+  :global(.search-filters button.is-active:hover) {
+    background: #5d3212;
+    border-color: #5d3212;
+    color: #fffaf0;
   }
 
   .advanced-explore-block {
     display: grid;
     gap: 16px;
-    margin-top: 24px;
+    margin-top: 32px;
     padding: 20px;
     border-radius: 24px;
     background: #fffaf0;
@@ -683,49 +701,19 @@ function getExploreCount(item: ExploreItem) {
   }
 
   .enhanced-search-results {
-    gap: 22px;
-  }
-
-  .search-result-group {
-    display: grid;
-    gap: 16px;
-    padding: 22px;
-    border-radius: 24px;
-    background: #fffaf0;
-  }
-
-  .search-result-group-header {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    align-items: center;
-  }
-
-  .search-result-group-header strong {
-    display: inline-flex;
-    min-width: 34px;
-    height: 34px;
-    align-items: center;
-    justify-content: center;
-    border-radius: 999px;
-    background: white;
-    border: 1px solid #eadcc4;
-    color: #5d3212;
-    font-size: 0.9rem;
-  }
-
-  .search-result-group-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    gap: 12px;
+    margin-top: 16px;
   }
 
   .search-result {
     display: grid;
     align-content: start;
-    gap: 8px;
-    padding: 20px;
-    border-radius: 20px;
+    gap: 7px;
+    min-height: 138px;
+    padding: 15px 16px;
+    border-radius: 18px;
     background: white;
     text-decoration: none;
     transition:
@@ -743,8 +731,25 @@ function getExploreCount(item: ExploreItem) {
   .search-result h3 {
     margin: 0;
     color: #2d2418;
-    font-size: 1.08rem;
-    line-height: 1.35;
+    font-size: 1rem;
+    line-height: 1.28;
+  }
+
+  .search-result p {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.94rem;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  .search-result-type {
+    width: fit-content;
+    margin-bottom: 2px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #fff7e8;
+    border: 1px solid #eadcc4;
   }
 
   :global(html[data-theme="dark"]) .advanced-search-hero-card,
@@ -757,7 +762,6 @@ function getExploreCount(item: ExploreItem) {
 
   :global(html[data-theme="dark"]) .enhanced-search-panel,
   :global(html[data-theme="dark"]) .advanced-explore-block,
-  :global(html[data-theme="dark"]) .search-result-group,
   :global(html[data-theme="dark"]) .search-result,
   :global(html[data-theme="dark"]) .advanced-explore-card {
     background: #21160e;
@@ -767,7 +771,6 @@ function getExploreCount(item: ExploreItem) {
   :global(html[data-theme="dark"]) .advanced-search-hero-card span,
   :global(html[data-theme="dark"]) .search-stat-card span,
   :global(html[data-theme="dark"]) .search-label,
-  :global(html[data-theme="dark"]) .search-result-group-header span,
   :global(html[data-theme="dark"]) .search-result-type,
   :global(html[data-theme="dark"]) .search-results-summary,
   :global(html[data-theme="dark"]) .advanced-explore-card span,
@@ -790,18 +793,42 @@ function getExploreCount(item: ExploreItem) {
     color: #d8c8b6;
   }
 
-  :global(html[data-theme="dark"]) .search-suggestions button,
-  :global(html[data-theme="dark"]) .search-result-group-header strong,
-  :global(html[data-theme="dark"]) .advanced-explore-header span {
+  :global(html[data-theme="dark"]) .advanced-explore-header span,
+  :global(html[data-theme="dark"]) .search-result-type {
     background: #18110c;
     border-color: #3a2a1d;
     color: #f3d6ad;
   }
 
-  :global(html[data-theme="dark"]) .search-suggestions button:hover {
+  :global(html[data-theme="dark"] .search-filters) {
+    scrollbar-color: rgba(233, 184, 114, 0.5) transparent;
+  }
+
+  :global(html[data-theme="dark"] .search-filters::-webkit-scrollbar-thumb) {
+    background: rgba(233, 184, 114, 0.5);
+  }
+
+  :global(html[data-theme="dark"] .search-filters::-webkit-scrollbar-thumb:hover) {
+    background: rgba(233, 184, 114, 0.68);
+  }
+
+  :global(html[data-theme="dark"] .search-filters button) {
+    background: #21160e;
+    border-color: #4a3523;
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"] .search-filters button:hover) {
     background: #312113;
     border-color: #6c4c2f;
     color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"] .search-filters button.is-active),
+  :global(html[data-theme="dark"] .search-filters button.is-active:hover) {
+    background: #e9b872;
+    border-color: #e9b872;
+    color: #1b120b;
   }
 
   @media (max-width: 960px) {
@@ -814,7 +841,7 @@ function getExploreCount(item: ExploreItem) {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .search-result-group-grid {
+    .enhanced-search-results {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
@@ -822,7 +849,7 @@ function getExploreCount(item: ExploreItem) {
   @media (max-width: 640px) {
     .search-stats,
     .advanced-explore-grid,
-    .search-result-group-grid {
+    .enhanced-search-results {
       grid-template-columns: 1fr;
     }
 
@@ -855,9 +882,24 @@ function getExploreCount(item: ExploreItem) {
 
     .advanced-search-hero-card,
     .enhanced-search-panel,
-    .advanced-explore-block,
-    .search-result-group {
+    .advanced-explore-block {
       padding: 18px;
+    }
+
+    :global(.search-filters) {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(93, 50, 18, 0.34) transparent;
+    }
+
+    :global(.search-filters button) {
+      flex: 0 0 auto;
+    }
+
+    .search-result {
+      min-height: auto;
     }
 
     .advanced-explore-header {
