@@ -22,219 +22,504 @@ const topicsCount = getAllTopics().filter((item) => item.status !== "Borrador").
 const peopleCount = getAllPeople().filter((item) => item.status !== "Borrador").length;
 const placesCount = getAllPlaces().filter((item) => item.status !== "Borrador").length;
 const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Borrador").length;
+
+const featuredItems = [
+  {
+    title: "Búsqueda avanzada",
+    eyebrow: "Consulta rápida",
+    description:
+      "Busca libros, pasajes, versículos, personajes, lugares, eventos, temas, glosario y lecciones desde un solo lugar.",
+    count: "Índice local",
+    url: sitePath("/buscar/"),
+    primary: true,
+  },
+  {
+    title: "Leer la Biblia",
+    eyebrow: "RVR1960",
+    description:
+      "Navega por libros, capítulos y versículos de la versión bíblica objetivo del proyecto.",
+    count: `${booksCount} libros`,
+    url: sitePath("/biblia/"),
+    primary: false,
+  },
+  {
+    title: "Recursos visuales",
+    eyebrow: "Mapas y cronología",
+    description:
+      "Accede al mapa bíblico, línea de tiempo, lugares, eventos y recursos visuales futuros.",
+    count: `${placesCount + eventsCount} conexiones`,
+    url: sitePath("/recursos/"),
+    primary: false,
+  },
+];
+
+const guidedItems = [
+  {
+    title: "Ruta principal",
+    count: `${routesCount} ruta`,
+    description:
+      "Sigue el panorama visual de la Biblia desde creación hasta nueva creación.",
+    url: sitePath("/rutas/panorama-visual-de-la-biblia/"),
+  },
+  {
+    title: "Lecciones",
+    count: `${lessonsCount} lecciones`,
+    description:
+      "Estudia unidades cortas conectadas con pasajes, temas, eventos y recursos.",
+    url: sitePath("/lecciones/"),
+  },
+];
+
+const bibleItems = [
+  {
+    title: "Biblia",
+    count: "RVR1960",
+    description:
+      "Navega por libros y capítulos. El texto bíblico se muestra desde la base de datos.",
+    url: sitePath("/biblia/"),
+  },
+  {
+    title: "Libros bíblicos",
+    count: `${booksCount} libros`,
+    description:
+      "Explora los libros con resumen, género, categoría y conexiones editoriales.",
+    url: sitePath("/libros/"),
+  },
+  {
+    title: "Pasajes bíblicos",
+    count: `${passagesCount} pasajes`,
+    description:
+      "Consulta pasajes conectados con lecciones, eventos, libros, temas y lugares.",
+    url: sitePath("/pasajes/"),
+  },
+];
+
+const visualItems = [
+  {
+    title: "Recursos visuales",
+    count: "Centro visual",
+    description:
+      "Agrupa mapa, línea de tiempo, lugares, eventos y recursos visuales futuros.",
+    url: sitePath("/recursos/"),
+  },
+  {
+    title: "Mapa bíblico",
+    count: `${placesCount} lugares`,
+    description:
+      "Explora lugares bíblicos con pines, eventos relacionados y enlaces internos.",
+    url: sitePath("/mapa/"),
+  },
+  {
+    title: "Línea de tiempo",
+    count: `${eventsCount} eventos`,
+    description:
+      "Visualiza acontecimientos bíblicos en una secuencia narrativa y cronológica.",
+    url: sitePath("/linea-de-tiempo/"),
+  },
+  {
+    title: "Eventos bíblicos",
+    count: `${eventsCount} eventos`,
+    description:
+      "Conecta sucesos bíblicos con libros, pasajes, lugares, personas y temas.",
+    url: sitePath("/eventos/"),
+  },
+];
+
+const entityItems = [
+  {
+    title: "Temas",
+    count: `${topicsCount} temas`,
+    description:
+      "Explora conceptos bíblicos como redención, Mesías, evangelio y nueva creación.",
+    url: sitePath("/temas/"),
+  },
+  {
+    title: "Glosario",
+    count: `${glossaryCount} términos`,
+    description:
+      "Consulta palabras importantes explicadas con lenguaje claro y accesible.",
+    url: sitePath("/glosario/"),
+  },
+  {
+    title: "Personajes",
+    count: `${peopleCount} personajes`,
+    description:
+      "Conoce personas relevantes dentro de la historia bíblica y sus conexiones.",
+    url: sitePath("/personajes/"),
+  },
+  {
+    title: "Lugares",
+    count: `${placesCount} lugares`,
+    description:
+      "Consulta ciudades, regiones, montes y rutas vinculadas con eventos y mapas.",
+    url: sitePath("/lugares/"),
+  },
+];
+
+const projectItems = [
+  {
+    title: "Acerca de EBV",
+    count: "Proyecto",
+    description:
+      "Conoce el propósito, enfoque editorial y estructura de la Enciclopedia Bíblica Visual.",
+    url: sitePath("/acerca/"),
+  },
+  {
+    title: "Avisos legales",
+    count: "Legal",
+    description:
+      "Revisa notas sobre RVR1960, permisos, recursos visuales y uso responsable de contenido.",
+    url: sitePath("/legal/"),
+  },
+];
 ---
 
 <BaseLayout
   title="Explorar"
-  description="Explora la Enciclopedia Bíblica Visual por rutas, Biblia, libros, pasajes, mapas, eventos, temas, personajes, lugares y glosario."
+  description="Explora la Enciclopedia Bíblica Visual por búsqueda avanzada, Biblia, recursos visuales, rutas, lecciones, libros, pasajes, eventos, temas, personajes, lugares y glosario."
 >
-  <main class="page">
+  <main class="page explore-page">
     <div class="breadcrumb">
       <a href={sitePath("/")}>Inicio</a> → Explorar
     </div>
 
-    <section class="hero">
-      <p class="eyebrow">Centro de navegación</p>
+    <section class="hero explore-hero">
+      <div class="explore-hero-content">
+        <p class="eyebrow">Centro de navegación</p>
 
-      <h1>Explorar la enciclopedia</h1>
+        <h1>Explorar la enciclopedia</h1>
 
-      <p class="subtitle">
-        Navega por rutas guiadas, libros bíblicos, pasajes, mapas, línea de tiempo
-        y entidades conectadas. Esta página organiza todo el contenido principal.
-      </p>
-
-      <div class="actions">
-        <a href={sitePath("/buscar/")} class="button">
-          Buscar contenido
-        </a>
-
-        <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button secondary">
-          Empezar ruta principal
-        </a>
+        <p class="subtitle">
+          Navega por las áreas principales del proyecto: búsqueda avanzada, lectura bíblica,
+          recursos visuales, aprendizaje guiado y entidades bíblicas conectadas.
+        </p>
+        
       </div>
+
+      <aside class="explore-hero-card" aria-label="Resumen del contenido">
+        <span>Contenido conectado</span>
+        <strong>{booksCount + passagesCount + lessonsCount + eventsCount + peopleCount + placesCount + topicsCount + glossaryCount}</strong>
+        <p>
+          Elementos editoriales, bíblicos y visuales disponibles.
+        </p>
+      </aside>
     </section>
 
-    <section class="section">
-      <div class="explore-heading">
+    <section class="explore-feature-grid" aria-label="Accesos principales">
+      {featuredItems.map((item) => (
+        <a
+          href={item.url}
+          class:list={[
+            "explore-feature-card",
+            item.primary ? "is-primary" : "",
+          ]}
+        >
+          <span>{item.eyebrow}</span>
+          <strong>{item.title}</strong>
+          <p>{item.description}</p>
+          <small>{item.count}</small>
+        </a>
+      ))}
+    </section>
+
+    <section class="section explore-section">
+      <div class="section-header">
         <div>
-          <h2>Aprendizaje guiado</h2>
-          <p>Para estudiar con orden, paso a paso.</p>
+          <p class="eyebrow">Aprendizaje guiado</p>
+          <h2>Estudiar con orden</h2>
         </div>
+
+        <span class="section-count">
+          {routesCount + lessonsCount} elementos
+        </span>
       </div>
 
       <div class="explore-grid">
-        <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="explore-card">
-          <span class="explore-count">{routesCount} ruta</span>
-          <h3>Ruta principal</h3>
-          <p>
-            Sigue el panorama visual de la Biblia desde creación hasta nueva creación.
-          </p>
-        </a>
-
-        <a href={sitePath("/lecciones/")} class="explore-card">
-          <span class="explore-count">{lessonsCount} lecciones</span>
-          <h3>Lecciones</h3>
-          <p>
-            Estudia unidades cortas, conectadas con pasajes, temas, eventos y recursos.
-          </p>
-        </a>
-
-        <a href={sitePath("/buscar/")} class="explore-card">
-          <span class="explore-count">Buscador</span>
-          <h3>Buscar contenido</h3>
-          <p>
-            Encuentra rápidamente libros, temas, personajes, lugares, eventos y pasajes.
-          </p>
-        </a>
+        {guidedItems.map((item) => (
+          <a href={item.url} class="explore-card">
+            <span class="explore-count">{item.count}</span>
+            <h3>{item.title}</h3>
+            <p>{item.description}</p>
+          </a>
+        ))}
       </div>
     </section>
 
-    <section class="section">
-      <div class="explore-heading">
+    <section class="section explore-section">
+      <div class="section-header">
         <div>
-          <h2>Referencia bíblica</h2>
-          <p>Para navegar por la Biblia, sus libros y pasajes.</p>
+          <p class="eyebrow">Referencia bíblica</p>
+          <h2>Biblia, libros y pasajes</h2>
         </div>
+
+        <span class="section-count">
+          {booksCount + passagesCount} recursos
+        </span>
       </div>
 
       <div class="explore-grid">
-        <a href={sitePath("/biblia/")} class="explore-card">
-          <span class="explore-count">RVR1960</span>
-          <h3>Biblia</h3>
-          <p>
-            Navega por libros y capítulos. El texto aparecerá al importar la RVR1960 autorizada.
-          </p>
-        </a>
-
-        <a href={sitePath("/libros/")} class="explore-card">
-          <span class="explore-count">{booksCount} libros</span>
-          <h3>Libros bíblicos</h3>
-          <p>
-            Explora los 66 libros con resumen, género, categoría y conexiones.
-          </p>
-        </a>
-
-        <a href={sitePath("/pasajes/")} class="explore-card">
-          <span class="explore-count">{passagesCount} pasajes</span>
-          <h3>Pasajes bíblicos</h3>
-          <p>
-            Consulta pasajes conectados con lecciones, eventos y libros bíblicos.
-          </p>
-        </a>
+        {bibleItems.map((item) => (
+          <a href={item.url} class="explore-card">
+            <span class="explore-count">{item.count}</span>
+            <h3>{item.title}</h3>
+            <p>{item.description}</p>
+          </a>
+        ))}
       </div>
     </section>
 
-    <section class="section">
-      <div class="explore-heading">
+    <section class="section explore-section">
+      <div class="section-header">
         <div>
-          <h2>Visualización</h2>
-          <p>Para ver la historia bíblica de forma espacial y cronológica.</p>
+          <p class="eyebrow">Visualización</p>
+          <h2>Recursos visuales y narrativos</h2>
         </div>
+
+        <span class="section-count">
+          {visualItems.length} módulos
+        </span>
       </div>
 
       <div class="explore-grid">
-        <a href={sitePath("/linea-de-tiempo/")} class="explore-card">
-          <span class="explore-count">Cronología</span>
-          <h3>Línea de tiempo</h3>
-          <p>
-            Visualiza eventos ordenados dentro del panorama de la historia bíblica.
-          </p>
-        </a>
-
-        <a href={sitePath("/mapa/")} class="explore-card">
-          <span class="explore-count">Mapa</span>
-          <h3>Mapa bíblico</h3>
-          <p>
-            Explora lugares bíblicos con pines, eventos relacionados y enlaces.
-          </p>
-        </a>
-
-        <a href={sitePath("/recursos/")} class="explore-card">
-          <span class="explore-count">Visual</span>
-          <h3>Recursos visuales</h3>
-          <p>
-            Accede a mapas, línea de tiempo, lugares, eventos y recursos visuales futuros.
-          </p>
-        </a>
-
-        <a href={sitePath("/eventos/")} class="explore-card">
-          <span class="explore-count">{eventsCount} eventos</span>
-          <h3>Eventos bíblicos</h3>
-          <p>
-            Conecta sucesos bíblicos con libros, pasajes, lugares, personas y temas.
-          </p>
-        </a>
+        {visualItems.map((item) => (
+          <a href={item.url} class="explore-card">
+            <span class="explore-count">{item.count}</span>
+            <h3>{item.title}</h3>
+            <p>{item.description}</p>
+          </a>
+        ))}
       </div>
     </section>
 
-    <section class="section">
-      <div class="explore-heading">
+    <section class="section explore-section">
+      <div class="section-header">
         <div>
-          <h2>Entidades bíblicas</h2>
-          <p>Para explorar la enciclopedia como una red conectada.</p>
+          <p class="eyebrow">Red bíblica</p>
+          <h2>Entidades conectadas</h2>
         </div>
+
+        <span class="section-count">
+          {topicsCount + glossaryCount + peopleCount + placesCount} elementos
+        </span>
       </div>
 
       <div class="explore-grid">
-        <a href={sitePath("/temas/")} class="explore-card">
-          <span class="explore-count">{topicsCount} temas</span>
-          <h3>Temas</h3>
-          <p>
-            Conceptos bíblicos como redención, Mesías, evangelio y nueva creación.
-          </p>
-        </a>
-
-        <a href={sitePath("/personajes/")} class="explore-card">
-          <span class="explore-count">{peopleCount} personajes</span>
-          <h3>Personajes</h3>
-          <p>
-            Personas relevantes dentro de la historia bíblica y sus conexiones.
-          </p>
-        </a>
-
-        <a href={sitePath("/lugares/")} class="explore-card">
-          <span class="explore-count">{placesCount} lugares</span>
-          <h3>Lugares</h3>
-          <p>
-            Ciudades, rutas y regiones vinculadas con eventos y mapas.
-          </p>
-        </a>
-
-        <a href={sitePath("/glosario/")} class="explore-card">
-          <span class="explore-count">{glossaryCount} términos</span>
-          <h3>Glosario</h3>
-          <p>
-            Palabras importantes explicadas con lenguaje claro y accesible.
-          </p>
-        </a>
+        {entityItems.map((item) => (
+          <a href={item.url} class="explore-card">
+            <span class="explore-count">{item.count}</span>
+            <h3>{item.title}</h3>
+            <p>{item.description}</p>
+          </a>
+        ))}
       </div>
     </section>
 
-    <section class="section">
-      <div class="explore-heading">
+    <section class="section explore-section">
+      <div class="section-header">
         <div>
-          <h2>Proyecto</h2>
-          <p>Información general, estado del proyecto y avisos importantes.</p>
+          <p class="eyebrow">Proyecto</p>
+          <h2>Información y avisos</h2>
         </div>
       </div>
 
-      <div class="explore-grid">
-        <a href={sitePath("/acerca/")} class="explore-card">
-          <span class="explore-count">Proyecto</span>
-          <h3>Acerca</h3>
-          <p>
-            Conoce el propósito, enfoque y estructura de la Enciclopedia Bíblica Visual.
-          </p>
-        </a>
-
-        <a href={sitePath("/legal/")} class="explore-card">
-          <span class="explore-count">Legal</span>
-          <h3>Avisos legales</h3>
-          <p>
-            Revisa notas sobre RVR1960, permisos, recursos visuales y uso de contenido.
-          </p>
-        </a>
+      <div class="explore-grid project-grid">
+        {projectItems.map((item) => (
+          <a href={item.url} class="explore-card">
+            <span class="explore-count">{item.count}</span>
+            <h3>{item.title}</h3>
+            <p>{item.description}</p>
+          </a>
+        ))}
       </div>
     </section>
   </main>
 </BaseLayout>
+
+<style>
+  .explore-hero {
+    display: grid;
+    grid-template-columns: 1fr minmax(230px, 320px);
+    gap: 32px;
+    align-items: end;
+  }
+
+  .explore-hero-content,
+  .explore-hero-card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .explore-hero-card,
+  .explore-feature-card,
+  .explore-card {
+    border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
+  }
+
+  .explore-hero-card {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .explore-hero-card span,
+  .explore-feature-card span,
+  .explore-feature-card small,
+  .explore-count {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .explore-hero-card strong {
+    color: #2d2418;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .explore-hero-card p,
+  .explore-feature-card p,
+  .explore-card p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .explore-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .explore-feature-card {
+    display: grid;
+    gap: 10px;
+    min-height: 210px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .explore-feature-card.is-primary {
+    background: #fff7e8;
+  }
+
+  .explore-feature-card:hover,
+  .explore-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .explore-feature-card strong {
+    color: #2d2418;
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+
+  .explore-feature-card small {
+    align-self: end;
+  }
+
+  .explore-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .project-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .explore-card {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    min-height: 190px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .explore-card h3 {
+    margin: 0;
+    color: #2d2418;
+    font-size: 1.1rem;
+    line-height: 1.3;
+  }
+
+  :global(html[data-theme="dark"]) .explore-hero-card,
+  :global(html[data-theme="dark"]) .explore-feature-card,
+  :global(html[data-theme="dark"]) .explore-section {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(html[data-theme="dark"]) .explore-feature-card.is-primary,
+  :global(html[data-theme="dark"]) .explore-card {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .explore-hero-card span,
+  :global(html[data-theme="dark"]) .explore-feature-card span,
+  :global(html[data-theme="dark"]) .explore-feature-card small,
+  :global(html[data-theme="dark"]) .explore-count {
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"]) .explore-hero-card strong,
+  :global(html[data-theme="dark"]) .explore-feature-card strong,
+  :global(html[data-theme="dark"]) .explore-card h3 {
+    color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"]) .explore-hero-card p,
+  :global(html[data-theme="dark"]) .explore-feature-card p,
+  :global(html[data-theme="dark"]) .explore-card p {
+    color: #d8c8b6;
+  }
+
+  @media (max-width: 960px) {
+    .explore-hero {
+      grid-template-columns: 1fr;
+    }
+
+    .explore-feature-grid,
+    .explore-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .explore-feature-grid,
+    .explore-grid,
+    .project-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .explore-hero-card,
+    .explore-feature-card,
+    .explore-card {
+      min-height: auto;
+      padding: 18px;
+    }
+  }
+</style>
