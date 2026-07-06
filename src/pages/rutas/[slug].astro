@@ -35,6 +35,10 @@ const publishedLessons = orderedLessons.filter(
   (lesson) => lesson.status !== "Borrador",
 );
 
+const draftLessons = orderedLessons.filter(
+  (lesson) => lesson.status === "Borrador",
+);
+
 const firstPublishedLesson = publishedLessons[0] ?? null;
 const lastPublishedLesson = publishedLessons[publishedLessons.length - 1] ?? null;
 
@@ -42,29 +46,81 @@ const completionPercent =
   orderedLessons.length > 0
     ? Math.round((publishedLessons.length / orderedLessons.length) * 100)
     : 0;
+
+const routeDescription =
+  route.description ??
+  route.subtitle ??
+  "Ruta guiada para estudiar la Biblia visualmente.";
+
+const routeSubtitle =
+  route.subtitle ??
+  "Una guía progresiva para recorrer la historia bíblica de principio a fin.";
+
+const statusLabel =
+  publishedLessons.length === orderedLessons.length
+    ? "Ruta publicada"
+    : "En desarrollo editorial";
+
+const storylineStages = [
+  {
+    label: "Creación",
+    range: "Inicio",
+    description: "Dios crea todas las cosas buenas, ordenadas y con propósito.",
+  },
+  {
+    label: "Caída",
+    range: "Ruptura",
+    description: "El pecado rompe la comunión del ser humano con Dios.",
+  },
+  {
+    label: "Promesa",
+    range: "Esperanza",
+    description: "Dios anuncia su plan de redención y preserva su promesa.",
+  },
+  {
+    label: "Pacto",
+    range: "Pueblo",
+    description: "Dios forma a Israel y revela su carácter por medio de su pacto.",
+  },
+  {
+    label: "Cristo",
+    range: "Cumplimiento",
+    description: "Jesús cumple la promesa, vence el pecado y revela al Padre.",
+  },
+  {
+    label: "Nueva creación",
+    range: "Consumación",
+    description: "La historia bíblica culmina en la restauración final de todas las cosas.",
+  },
+];
 ---
 
 <BaseLayout
   title={route.title}
-  description={route.description ?? "Ruta guiada para estudiar la Biblia visualmente."}
+  description={routeDescription}
 >
   <main class="page">
     <div class="breadcrumb">
-      <a href={sitePath("/")}>Inicio</a> → Rutas → {route.title}
+      <a href={sitePath("/")}>Inicio</a> → <a href={sitePath("/lecciones/")}>Lecciones</a> → {route.title}
     </div>
 
     <section class="hero route-hero">
-      <p class="eyebrow">Ruta guiada · {orderedLessons.length} lecciones</p>
+      <p class="eyebrow">
+        Ruta guiada · {orderedLessons.length} lecciones
+      </p>
 
       <h1>{route.title}</h1>
 
       <p class="subtitle">
-        {route.description}
+        {routeDescription}
       </p>
 
       <div class="route-progress" aria-label={`Progreso editorial: ${completionPercent}%`}>
         <div class="route-progress-header">
-          <span>{publishedLessons.length} de {orderedLessons.length} lecciones publicadas</span>
+          <span>
+            {publishedLessons.length} de {orderedLessons.length} lecciones publicadas
+          </span>
+
           <strong>{completionPercent}%</strong>
         </div>
 
@@ -82,16 +138,16 @@ const completionPercent =
 
         {lastPublishedLesson && (
           <a href={sitePath(`/lecciones/${lastPublishedLesson.slug}/`)} class="button secondary">
-            Ir a la última lección
+            Ir a la última publicada
           </a>
         )}
 
-        <a href={sitePath("/linea-de-tiempo/")} class="button secondary">
-          Ver línea de tiempo
+        <a href={sitePath("/lecciones/")} class="button secondary">
+          Ver índice de lecciones
         </a>
 
-        <a href={sitePath("/mapa/")} class="button secondary">
-          Ver mapa bíblico
+        <a href={sitePath("/linea-de-tiempo/")} class="button secondary">
+          Ver línea de tiempo
         </a>
       </div>
     </section>
@@ -109,7 +165,7 @@ const completionPercent =
 
       <article class="route-stat">
         <span>Estado</span>
-        <strong>{route.status}</strong>
+        <strong>{statusLabel}</strong>
       </article>
 
       <article class="route-stat">
@@ -119,15 +175,52 @@ const completionPercent =
     </section>
 
     <section class="section route-intro">
-      <h2>Cómo recorrer esta ruta</h2>
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Propósito de la ruta</p>
+          <h2>Cómo estudiar esta ruta</h2>
+        </div>
+
+        <a href={sitePath("/mapa/")} class="button secondary">
+          Ver mapa bíblico
+        </a>
+      </div>
 
       <div class="content">
         <p>
-          Esta ruta presenta la Biblia como una sola historia: creación, caída,
-          promesa, redención y nueva creación. Puedes avanzar lección por lección,
-          usar los enlaces relacionados para explorar personajes, lugares y temas,
-          o volver a la ruta principal cuando quieras retomar el recorrido.
+          {routeSubtitle}
         </p>
+
+        <p>
+          Puedes avanzar lección por lección, usar los enlaces relacionados para
+          explorar libros, personajes, lugares, eventos, temas y pasajes, o volver
+          a esta ruta cuando quieras retomar el recorrido.
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Estructura narrativa</p>
+          <h2>La historia bíblica en seis movimientos</h2>
+        </div>
+
+        <a href={sitePath("/explorar/")} class="button secondary">
+          Explorar recursos
+        </a>
+      </div>
+
+      <div class="entity-list">
+        {storylineStages.map((stage) => (
+          <article class="entity-card">
+            <span class="meta">{stage.range}</span>
+
+            <h2>{stage.label}</h2>
+
+            <p>{stage.description}</p>
+          </article>
+        ))}
       </div>
     </section>
 
@@ -145,43 +238,66 @@ const completionPercent =
         )}
       </div>
 
-      <ol class="lesson-track">
-        {orderedLessons.map((lesson) => (
-          <li class:list={["lesson-track-item", lesson.status === "Borrador" && "is-draft"]}>
-            {lesson.status !== "Borrador" ? (
-              <a href={sitePath(`/lecciones/${lesson.slug}/`)} class="lesson-track-card">
-                <span class="lesson-track-number">
-                  {String(lesson.lesson_number).padStart(2, "0")}
-                </span>
+      {orderedLessons.length > 0 ? (
+        <ol class="lesson-track">
+          {orderedLessons.map((lesson) => (
+            <li class:list={["lesson-track-item", lesson.status === "Borrador" && "is-draft"]}>
+              {lesson.status !== "Borrador" ? (
+                <a href={sitePath(`/lecciones/${lesson.slug}/`)} class="lesson-track-card">
+                  <span class="lesson-track-number">
+                    {String(lesson.lesson_number).padStart(2, "0")}
+                  </span>
 
-                <span class="lesson-track-content">
-                  <strong>{lesson.title}</strong>
+                  <span class="lesson-track-content">
+                    <strong>{lesson.title}</strong>
 
-                  {lesson.main_idea && (
-                    <small>{lesson.main_idea}</small>
-                  )}
+                    <small>
+                      {lesson.main_idea ?? lesson.summary ?? "Resumen pendiente."}
+                    </small>
 
-                  <em>
-                    {lesson.estimated_time ?? "7–10 minutos"} · {lesson.status}
-                  </em>
-                </span>
-              </a>
-            ) : (
-              <div class="lesson-track-card">
-                <span class="lesson-track-number">
-                  {String(lesson.lesson_number).padStart(2, "0")}
-                </span>
+                    <em>
+                      {lesson.estimated_time ?? "7–10 minutos"} · {lesson.status}
+                    </em>
+                  </span>
+                </a>
+              ) : (
+                <div class="lesson-track-card">
+                  <span class="lesson-track-number">
+                    {String(lesson.lesson_number).padStart(2, "0")}
+                  </span>
 
-                <span class="lesson-track-content">
-                  <strong>{lesson.title}</strong>
-                  <small>Esta lección todavía está pendiente de publicación.</small>
-                  <em>Próximamente</em>
-                </span>
-              </div>
-            )}
-          </li>
-        ))}
-      </ol>
+                  <span class="lesson-track-content">
+                    <strong>{lesson.title}</strong>
+
+                    <small>
+                      Esta lección todavía está pendiente de publicación.
+                    </small>
+
+                    <em>Próximamente</em>
+                  </span>
+                </div>
+              )}
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <div class="content">
+          <p>
+            Todavía no hay lecciones registradas para esta ruta.
+          </p>
+        </div>
+      )}
     </section>
+
+    {draftLessons.length > 0 && (
+      <section class="section">
+        <div class="notice-box">
+          <p>
+            Hay {draftLessons.length} lecciones en preparación. Aparecerán como
+            disponibles cuando cambien a estado publicado.
+          </p>
+        </div>
+      </section>
+    )}
   </main>
 </BaseLayout>
