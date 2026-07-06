@@ -1,17 +1,76 @@
 ---
 import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getAllLessons } from "../../lib/queries";
+import { getAllLessons, getAllRoutes } from "../../lib/queries";
+
+const mainRouteSlug = "panorama-visual-de-la-biblia";
+
+const routes = getAllRoutes();
+const mainRoute = routes.find((route) => route.slug === mainRouteSlug) ?? null;
 
 const allLessons = getAllLessons();
 
-const publishedLessons = allLessons.filter(
-  (lesson) => lesson.status !== "Borrador"
+const routeLessons = mainRoute
+  ? allLessons.filter((lesson) => lesson.route_id === mainRoute.id)
+  : allLessons;
+
+const orderedLessons = [...routeLessons].sort(
+  (a, b) => a.lesson_number - b.lesson_number,
 );
 
-const draftLessonsCount = allLessons.filter(
-  (lesson) => lesson.status === "Borrador"
-).length;
+const publishedLessons = orderedLessons.filter(
+  (lesson) => lesson.status !== "Borrador",
+);
+
+const draftLessons = orderedLessons.filter(
+  (lesson) => lesson.status === "Borrador",
+);
+
+const firstPublishedLesson = publishedLessons[0] ?? null;
+const lastPublishedLesson = publishedLessons[publishedLessons.length - 1] ?? null;
+
+const completionPercent =
+  orderedLessons.length > 0
+    ? Math.round((publishedLessons.length / orderedLessons.length) * 100)
+    : 0;
+
+const statusLabel =
+  publishedLessons.length === orderedLessons.length
+    ? "Ruta publicada"
+    : "En desarrollo editorial";
+
+const storylineStages = [
+  {
+    label: "Creación",
+    range: "Lecciones 1–2",
+    description: "Dios crea todas las cosas buenas y con propósito.",
+  },
+  {
+    label: "Caída",
+    range: "Lección 3",
+    description: "El pecado rompe la comunión del ser humano con Dios.",
+  },
+  {
+    label: "Promesa",
+    range: "Lecciones 4–10",
+    description: "Dios anuncia y desarrolla su plan de redención.",
+  },
+  {
+    label: "Israel",
+    range: "Lecciones 11–18",
+    description: "Dios forma un pueblo, revela su pacto y sostiene su esperanza.",
+  },
+  {
+    label: "Jesús",
+    range: "Lección 19",
+    description: "El Mesías prometido cumple la historia de redención.",
+  },
+  {
+    label: "Nueva creación",
+    range: "Lección 20",
+    description: "La obra de Cristo apunta a la restauración final de todas las cosas.",
+  },
+];
 ---
 
 <BaseLayout
@@ -23,61 +82,167 @@ const draftLessonsCount = allLessons.filter(
       <a href={sitePath("/")}>Inicio</a> → Lecciones
     </div>
 
-    <section class="hero">
+    <section class="hero route-hero">
       <p class="eyebrow">Aprendizaje guiado</p>
 
       <h1>Lecciones</h1>
 
       <p class="subtitle">
-        Estudia unidades breves y conectadas con pasajes, libros, eventos, temas,
-        personajes, lugares y recursos visuales.
+        Recorre la Biblia como una sola historia: creación, caída, promesa,
+        redención en Cristo y nueva creación.
       </p>
 
-      <div class="actions">
-        <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button">
-          Ver ruta principal
-        </a>
+      <div class="route-progress" aria-label={`Progreso editorial: ${completionPercent}%`}>
+        <div class="route-progress-header">
+          <span>
+            {publishedLessons.length} de {orderedLessons.length} lecciones publicadas
+          </span>
 
-        <a href={sitePath("/explorar/")} class="button secondary">
-          Explorar enciclopedia
+          <strong>{completionPercent}%</strong>
+        </div>
+
+        <div class="route-progress-bar">
+          <span style={`width: ${completionPercent}%`}></span>
+        </div>
+      </div>
+
+      <div class="actions">
+        {firstPublishedLesson && (
+          <a href={sitePath(`/lecciones/${firstPublishedLesson.slug}/`)} class="button">
+            Empezar primera lección
+          </a>
+        )}
+
+        {lastPublishedLesson && (
+          <a href={sitePath(`/lecciones/${lastPublishedLesson.slug}/`)} class="button secondary">
+            Continuar hasta la última publicada
+          </a>
+        )}
+
+        <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button secondary">
+          Ver ruta principal
         </a>
       </div>
     </section>
 
-    <section class="section">
-      <h2>Lecciones publicadas</h2>
+    <section class="route-overview">
+      <article class="route-stat">
+        <span>Ruta</span>
+        <strong>{mainRoute?.title ?? "Panorama Visual de la Biblia"}</strong>
+      </article>
 
-      {publishedLessons.length > 0 ? (
-        <div class="entity-list">
-          {publishedLessons.map((lesson) => (
-            <a href={sitePath(`/lecciones/${lesson.slug}/`)} class="entity-card">
-              <span class="meta">Lección {lesson.lesson_number}</span>
+      <article class="route-stat">
+        <span>Lecciones</span>
+        <strong>{orderedLessons.length}</strong>
+      </article>
 
-              <h2>{lesson.title}</h2>
+      <article class="route-stat">
+        <span>Publicadas</span>
+        <strong>{publishedLessons.length}</strong>
+      </article>
 
-              <p>
-                {lesson.main_idea ?? lesson.summary ?? "Resumen pendiente."}
-              </p>
-            </a>
-          ))}
+      <article class="route-stat">
+        <span>Estado</span>
+        <strong>{statusLabel}</strong>
+      </article>
+    </section>
+
+    <section class="section route-intro">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Mapa del recorrido</p>
+          <h2>La historia bíblica en etapas</h2>
         </div>
+
+        <a href={sitePath("/linea-de-tiempo/")} class="button secondary">
+          Ver línea de tiempo
+        </a>
+      </div>
+
+      <div class="entity-list">
+        {storylineStages.map((stage) => (
+          <article class="entity-card">
+            <span class="meta">{stage.range}</span>
+
+            <h2>{stage.label}</h2>
+
+            <p>{stage.description}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Recorrido completo</p>
+          <h2>Lecciones de la ruta</h2>
+        </div>
+
+        {firstPublishedLesson && (
+          <a href={sitePath(`/lecciones/${firstPublishedLesson.slug}/`)} class="button secondary">
+            Comenzar
+          </a>
+        )}
+      </div>
+
+      {orderedLessons.length > 0 ? (
+        <ol class="lesson-track">
+          {orderedLessons.map((lesson) => (
+            <li class:list={["lesson-track-item", lesson.status === "Borrador" && "is-draft"]}>
+              {lesson.status !== "Borrador" ? (
+                <a href={sitePath(`/lecciones/${lesson.slug}/`)} class="lesson-track-card">
+                  <span class="lesson-track-number">
+                    {String(lesson.lesson_number).padStart(2, "0")}
+                  </span>
+
+                  <span class="lesson-track-content">
+                    <strong>{lesson.title}</strong>
+
+                    <small>
+                      {lesson.main_idea ?? lesson.summary ?? "Resumen pendiente."}
+                    </small>
+
+                    <em>
+                      {lesson.estimated_time ?? "7–10 minutos"} · {lesson.status}
+                    </em>
+                  </span>
+                </a>
+              ) : (
+                <div class="lesson-track-card">
+                  <span class="lesson-track-number">
+                    {String(lesson.lesson_number).padStart(2, "0")}
+                  </span>
+
+                  <span class="lesson-track-content">
+                    <strong>{lesson.title}</strong>
+
+                    <small>
+                      Esta lección todavía está pendiente de publicación.
+                    </small>
+
+                    <em>Próximamente</em>
+                  </span>
+                </div>
+              )}
+            </li>
+          ))}
+        </ol>
       ) : (
         <div class="content">
           <p>
-            Todavía no hay lecciones publicadas.
+            Todavía no hay lecciones registradas para esta ruta.
           </p>
         </div>
       )}
     </section>
 
-    {draftLessonsCount > 0 && (
+    {draftLessons.length > 0 && (
       <section class="section">
-        <h2>En preparación</h2>
-
         <div class="notice-box">
           <p>
-            Hay {draftLessonsCount} lecciones en borrador. Estas aparecerán aquí
-            cuando cambien a estado publicado.
+            Hay {draftLessons.length} lecciones en preparación. Aparecerán como
+            disponibles cuando cambien a estado publicado.
           </p>
         </div>
       </section>
