@@ -4,6 +4,12 @@ export type SearchResultItem = SearchIndexItem & {
   score: number;
 };
 
+type BibleReferenceQuery = {
+  bookName: string;
+  chapterNumber: number;
+  verseNumber: number | null;
+};
+
 export const SEARCH_FILTER_ORDER = [
   "Versículo",
   "Glosario",
@@ -12,6 +18,10 @@ export const SEARCH_FILTER_ORDER = [
   "Evento",
   "Tema",
   "Lección",
+  "Ruta",
+  "Sección",
+  "Libro",
+  "Pasaje",
 ];
 
 const TYPE_RANK: Record<string, number> = {
@@ -42,12 +52,315 @@ const ENTITY_TITLE_BOOST: Record<string, number> = {
   Versículo: 20,
 };
 
+const BIBLE_BOOK_ALIASES: Record<string, string> = {
+  gn: "genesis",
+  gen: "genesis",
+  genesis: "genesis",
+
+  ex: "exodo",
+  exo: "exodo",
+  exodo: "exodo",
+
+  lv: "levitico",
+  lev: "levitico",
+  levitico: "levitico",
+
+  nm: "numeros",
+  num: "numeros",
+  numeros: "numeros",
+
+  dt: "deuteronomio",
+  deut: "deuteronomio",
+  deuteronomio: "deuteronomio",
+
+  jos: "josue",
+  josue: "josue",
+
+  jue: "jueces",
+  jueces: "jueces",
+
+  rut: "rut",
+
+  "1 sam": "1 samuel",
+  "1 s": "1 samuel",
+  "1sam": "1 samuel",
+  "1s": "1 samuel",
+  "1 samuel": "1 samuel",
+
+  "2 sam": "2 samuel",
+  "2 s": "2 samuel",
+  "2sam": "2 samuel",
+  "2s": "2 samuel",
+  "2 samuel": "2 samuel",
+
+  "1 re": "1 reyes",
+  "1 r": "1 reyes",
+  "1re": "1 reyes",
+  "1r": "1 reyes",
+  "1 reyes": "1 reyes",
+
+  "2 re": "2 reyes",
+  "2 r": "2 reyes",
+  "2re": "2 reyes",
+  "2r": "2 reyes",
+  "2 reyes": "2 reyes",
+
+  "1 cr": "1 cronicas",
+  "1 cro": "1 cronicas",
+  "1cr": "1 cronicas",
+  "1cro": "1 cronicas",
+  "1 cronicas": "1 cronicas",
+
+  "2 cr": "2 cronicas",
+  "2 cro": "2 cronicas",
+  "2cr": "2 cronicas",
+  "2cro": "2 cronicas",
+  "2 cronicas": "2 cronicas",
+
+  esd: "esdras",
+  esdras: "esdras",
+
+  neh: "nehemias",
+  nehemias: "nehemias",
+
+  est: "ester",
+  ester: "ester",
+
+  job: "job",
+
+  sal: "salmos",
+  salmo: "salmos",
+  salmos: "salmos",
+  ps: "salmos",
+  pslm: "salmos",
+
+  pr: "proverbios",
+  prov: "proverbios",
+  proverbios: "proverbios",
+
+  ec: "eclesiastes",
+  ecl: "eclesiastes",
+  eclesiastes: "eclesiastes",
+
+  cnt: "cantares",
+  cantar: "cantares",
+  cantares: "cantares",
+
+  is: "isaias",
+  isa: "isaias",
+  isaias: "isaias",
+
+  jer: "jeremias",
+  jeremias: "jeremias",
+
+  lam: "lamentaciones",
+  lamentaciones: "lamentaciones",
+
+  ez: "ezequiel",
+  eze: "ezequiel",
+  ezequiel: "ezequiel",
+
+  dn: "daniel",
+  dan: "daniel",
+  daniel: "daniel",
+
+  os: "oseas",
+  ose: "oseas",
+  oseas: "oseas",
+
+  jl: "joel",
+  joel: "joel",
+
+  am: "amos",
+  amos: "amos",
+
+  abd: "abdias",
+  abdias: "abdias",
+
+  jon: "jonas",
+  jonas: "jonas",
+
+  miq: "miqueas",
+  miqueas: "miqueas",
+
+  nah: "nahum",
+  nahum: "nahum",
+
+  hab: "habacuc",
+  habacuc: "habacuc",
+
+  sof: "sofonias",
+  sofonias: "sofonias",
+
+  hag: "hageo",
+  hageo: "hageo",
+
+  zac: "zacarias",
+  zacarias: "zacarias",
+
+  mal: "malaquias",
+  malaquias: "malaquias",
+
+  mt: "mateo",
+  mat: "mateo",
+  mateo: "mateo",
+
+  mr: "marcos",
+  mar: "marcos",
+  marcos: "marcos",
+
+  lc: "lucas",
+  luc: "lucas",
+  lucas: "lucas",
+
+  jn: "juan",
+  juan: "juan",
+
+  hch: "hechos",
+  hechos: "hechos",
+
+  ro: "romanos",
+  rom: "romanos",
+  romanos: "romanos",
+
+  "1 co": "1 corintios",
+  "1 cor": "1 corintios",
+  "1co": "1 corintios",
+  "1cor": "1 corintios",
+  "1 corintios": "1 corintios",
+
+  "2 co": "2 corintios",
+  "2 cor": "2 corintios",
+  "2co": "2 corintios",
+  "2cor": "2 corintios",
+  "2 corintios": "2 corintios",
+
+  ga: "galatas",
+  gal: "galatas",
+  galatas: "galatas",
+
+  ef: "efesios",
+  efe: "efesios",
+  efesios: "efesios",
+
+  fil: "filipenses",
+  filipenses: "filipenses",
+
+  col: "colosenses",
+  colosenses: "colosenses",
+
+  "1 tes": "1 tesalonicenses",
+  "1tes": "1 tesalonicenses",
+  "1 tesalonicenses": "1 tesalonicenses",
+
+  "2 tes": "2 tesalonicenses",
+  "2tes": "2 tesalonicenses",
+  "2 tesalonicenses": "2 tesalonicenses",
+
+  "1 ti": "1 timoteo",
+  "1 tim": "1 timoteo",
+  "1ti": "1 timoteo",
+  "1tim": "1 timoteo",
+  "1 timoteo": "1 timoteo",
+
+  "2 ti": "2 timoteo",
+  "2 tim": "2 timoteo",
+  "2ti": "2 timoteo",
+  "2tim": "2 timoteo",
+  "2 timoteo": "2 timoteo",
+
+  tit: "tito",
+  tito: "tito",
+
+  flm: "filemon",
+  filemon: "filemon",
+
+  heb: "hebreos",
+  hebreos: "hebreos",
+
+  stg: "santiago",
+  sant: "santiago",
+  santiago: "santiago",
+
+  "1 p": "1 pedro",
+  "1 pe": "1 pedro",
+  "1 ped": "1 pedro",
+  "1p": "1 pedro",
+  "1pe": "1 pedro",
+  "1ped": "1 pedro",
+  "1 pedro": "1 pedro",
+
+  "2 p": "2 pedro",
+  "2 pe": "2 pedro",
+  "2 ped": "2 pedro",
+  "2p": "2 pedro",
+  "2pe": "2 pedro",
+  "2ped": "2 pedro",
+  "2 pedro": "2 pedro",
+
+  "1 jn": "1 juan",
+  "1jn": "1 juan",
+  "1 juan": "1 juan",
+
+  "2 jn": "2 juan",
+  "2jn": "2 juan",
+  "2 juan": "2 juan",
+
+  "3 jn": "3 juan",
+  "3jn": "3 juan",
+  "3 juan": "3 juan",
+
+  jud: "judas",
+  judas: "judas",
+
+  ap: "apocalipsis",
+  apo: "apocalipsis",
+  apoc: "apocalipsis",
+  apocalipsis: "apocalipsis",
+};
+
+const normalizedItemCache = new WeakMap<
+  SearchIndexItem,
+  {
+    title: string;
+    type: string;
+    summary: string;
+    searchText: string;
+  }
+>();
+
 export function normalizeSearchText(value: unknown) {
   return String(value ?? "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
+}
+
+function normalizeReferenceText(value: string) {
+  return normalizeSearchText(value)
+    .replace(/[.;,]/g, " ")
+    .replace(/\s*:\s*/g, ":")
+    .replace(/\s+/g, " ");
+}
+
+function getNormalizedItem(item: SearchIndexItem) {
+  const cached = normalizedItemCache.get(item);
+
+  if (cached) {
+    return cached;
+  }
+
+  const normalized = {
+    title: normalizeSearchText(item.title),
+    type: normalizeSearchText(item.type),
+    summary: normalizeSearchText(item.summary),
+    searchText: normalizeSearchText(item.searchText),
+  };
+
+  normalizedItemCache.set(item, normalized);
+
+  return normalized;
 }
 
 function getTypeRank(type: string) {
@@ -78,15 +391,87 @@ function hasAllWords(value: string, words: string[]) {
   return words.length > 0 && words.every((word) => value.includes(word));
 }
 
+function parseBibleReferenceQuery(rawQuery: string): BibleReferenceQuery | null {
+  const query = normalizeReferenceText(rawQuery);
+
+  const referenceMatch = query.match(/^(.+?)\s+(\d{1,3})(?::|\s+)?(\d{1,3})?$/);
+
+  if (!referenceMatch) {
+    return null;
+  }
+
+  const [, rawBookName, rawChapterNumber, rawVerseNumber] = referenceMatch;
+
+  const compactBookName = rawBookName.replace(/\s+/g, "");
+  const bookName =
+    BIBLE_BOOK_ALIASES[rawBookName] ??
+    BIBLE_BOOK_ALIASES[compactBookName] ??
+    rawBookName;
+
+  const chapterNumber = Number(rawChapterNumber);
+  const verseNumber = rawVerseNumber ? Number(rawVerseNumber) : null;
+
+  if (!bookName || !Number.isFinite(chapterNumber)) {
+    return null;
+  }
+
+  if (chapterNumber <= 0 || (verseNumber !== null && verseNumber <= 0)) {
+    return null;
+  }
+
+  return {
+    bookName,
+    chapterNumber,
+    verseNumber,
+  };
+}
+
+function getBibleReferenceScore(
+  item: SearchIndexItem,
+  normalizedTitle: string,
+  bibleReference: BibleReferenceQuery | null
+) {
+  if (!bibleReference || item.type !== "Versículo") {
+    return 0;
+  }
+
+  const expectedTitleStart = `${bibleReference.bookName} `;
+
+  if (!normalizedTitle.startsWith(expectedTitleStart)) {
+    return 0;
+  }
+
+  if (item.chapterNumber !== bibleReference.chapterNumber) {
+    return 0;
+  }
+
+  if (
+    bibleReference.verseNumber !== null &&
+    item.verseNumber !== bibleReference.verseNumber
+  ) {
+    return 0;
+  }
+
+  if (bibleReference.verseNumber !== null) {
+    return 17000;
+  }
+
+  return 14000 - Math.min(item.verseNumber, 200);
+}
+
 export function scoreSearchItem(item: SearchIndexItem, rawQuery: string) {
   const query = normalizeSearchText(rawQuery);
 
   if (!query) return 0;
 
-  const title = normalizeSearchText(item.title);
-  const type = normalizeSearchText(item.type);
-  const summary = normalizeSearchText(item.summary);
-  const searchText = normalizeSearchText(item.searchText);
+  const { title, type, summary, searchText } = getNormalizedItem(item);
+  const bibleReference = parseBibleReferenceQuery(rawQuery);
+
+  const referenceScore = getBibleReferenceScore(item, title, bibleReference);
+
+  if (referenceScore > 0) {
+    return referenceScore;
+  }
 
   const words = getSearchWords(query);
   const phraseSearch = isPhraseSearch(query);

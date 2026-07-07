@@ -2,7 +2,8 @@
 import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
-  getAllLessons,
+  getAllRoutes,
+  getLessonsByRouteId,
   getBibleRefsByLessonId,
   getEventsByLessonId,
   getBooksByLessonId,
@@ -21,12 +22,15 @@ import {
   type LessonQuestion,
   type RelatedItem,
   type Passage,
+  type Route,
 } from "../../lib/queries";
 
 type Props = {
+  route: Route;
   lesson: Lesson;
   previousLesson: Lesson | null;
   nextLesson: Lesson | null;
+  totalRouteLessons: number;
   bibleRefs: LessonBibleRef[];
   points: LessonPoint[];
   questions: LessonQuestion[];
@@ -40,34 +44,42 @@ type Props = {
 };
 
 export function getStaticPaths() {
-  const publishedLessons = getAllLessons()
-    .filter((lesson) => lesson.status !== "Borrador")
-    .sort((a, b) => a.lesson_number - b.lesson_number);
+  const routes = getAllRoutes();
 
-  return publishedLessons.map((lesson, index) => ({
-    params: { slug: lesson.slug },
-    props: {
-      lesson,
-      previousLesson: publishedLessons[index - 1] ?? null,
-      nextLesson: publishedLessons[index + 1] ?? null,
-      bibleRefs: getBibleRefsByLessonId(lesson.id),
-      points: getPointsByLessonId(lesson.id),
-      questions: getQuestionsByLessonId(lesson.id),
-      topics: getTopicsByLessonId(lesson.id),
-      people: getPeopleByLessonId(lesson.id),
-      places: getPlacesByLessonId(lesson.id),
-      glossary: getGlossaryByLessonId(lesson.id),
-      events: getEventsByLessonId(lesson.id),
-      books: getBooksByLessonId(lesson.id),
-      passages: getPassagesByLessonId(lesson.id),
-    },
-  }));
+  return routes.flatMap((route) => {
+    const publishedLessons = getLessonsByRouteId(route.id)
+      .filter((lesson) => lesson.status !== "Borrador")
+      .sort((a, b) => a.lesson_number - b.lesson_number);
+
+    return publishedLessons.map((lesson, index) => ({
+      params: { slug: lesson.slug },
+      props: {
+        route,
+        lesson,
+        previousLesson: publishedLessons[index - 1] ?? null,
+        nextLesson: publishedLessons[index + 1] ?? null,
+        totalRouteLessons: publishedLessons.length,
+        bibleRefs: getBibleRefsByLessonId(lesson.id),
+        points: getPointsByLessonId(lesson.id),
+        questions: getQuestionsByLessonId(lesson.id),
+        topics: getTopicsByLessonId(lesson.id),
+        people: getPeopleByLessonId(lesson.id),
+        places: getPlacesByLessonId(lesson.id),
+        glossary: getGlossaryByLessonId(lesson.id),
+        events: getEventsByLessonId(lesson.id),
+        books: getBooksByLessonId(lesson.id),
+        passages: getPassagesByLessonId(lesson.id),
+      },
+    }));
+  });
 }
 
 const {
+  route,
   lesson,
   previousLesson,
   nextLesson,
+  totalRouteLessons,
   bibleRefs,
   points,
   questions,
@@ -80,9 +92,13 @@ const {
   passages,
 } = Astro.props;
 
-const totalRouteLessons = 20;
-const progressPercent = Math.round((lesson.lesson_number / totalRouteLessons) * 100);
+const progressPercent =
+  totalRouteLessons > 0
+    ? Math.round((lesson.lesson_number / totalRouteLessons) * 100)
+    : 0;
+
 const lessonStepLabel = `Lección ${lesson.lesson_number} de ${totalRouteLessons}`;
+const routePath = `/rutas/${route.slug}/`;
 
 const relatedCount =
   topics.length +
@@ -150,7 +166,7 @@ const storylineStages = [
   <main class="page">
     <div class="breadcrumb">
       <a href={sitePath("/")}>Inicio</a> →
-      <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")}>Panorama Visual de la Biblia</a> →
+      <a href={sitePath(routePath)}>{route.title}</a> →
       Lección {lesson.lesson_number}
     </div>
 
@@ -178,7 +194,7 @@ const storylineStages = [
 
         <p>
           Has avanzado hasta el {progressPercent}% de la ruta
-          <strong> Panorama Visual de la Biblia</strong>.
+          <strong> {route.title}</strong>.
         </p>
       </div>
 
@@ -576,7 +592,7 @@ const storylineStages = [
           <h2>Continuar ruta</h2>
         </div>
 
-        <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")} class="button secondary">
+        <a href={sitePath(routePath)} class="button secondary">
           Ver ruta completa
         </a>
       </div>
@@ -597,11 +613,11 @@ const storylineStages = [
         )}
 
         <a
-          href={sitePath("/rutas/panorama-visual-de-la-biblia/")}
+          href={sitePath(routePath)}
           class="lesson-nav-card center"
         >
           <span>Ruta principal</span>
-          <strong>Ver las 20 lecciones</strong>
+          <strong>Ver {totalRouteLessons} lecciones</strong>
         </a>
 
         {nextLesson ? (

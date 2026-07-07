@@ -275,6 +275,35 @@ function getExploreCount(item: ExploreItem) {
       .replaceAll("'", "&#039;");
   }
 
+  function escapeRegExp(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function getHighlightWords(query) {
+    return Array.from(
+      new Set(
+        normalizeText(query)
+          .split(/\s+/)
+          .filter((word) => word.length >= 3)
+      )
+    );
+  }
+
+  function highlightMatches(value, query) {
+    const safeValue = escapeHtml(value);
+    const words = getHighlightWords(query);
+
+    if (words.length === 0) {
+      return safeValue;
+    }
+
+    const pattern = new RegExp(`(${words.map(escapeRegExp).join("|")})`, "gi");
+
+    return safeValue.replace(pattern, "<mark>$1</mark>");
+  }
+
+  let searchDebounceTimer;
+
   function updateUrl(value) {
     const url = new URL(window.location.href);
 
@@ -337,11 +366,13 @@ function getExploreCount(item: ExploreItem) {
   }
 
   function renderResultCard(item) {
+    const query = input?.value ?? "";
+
     return `
       <a href="${escapeHtml(item.url)}" class="search-result">
         <span class="search-result-type">${escapeHtml(item.type)}</span>
-        <h3>${escapeHtml(item.title)}</h3>
-        <p>${escapeHtml(item.summary)}</p>
+        <h3>${highlightMatches(item.title, query)}</h3>
+        <p>${highlightMatches(item.summary, query)}</p>
       </a>
     `;
   }
@@ -409,8 +440,13 @@ function getExploreCount(item: ExploreItem) {
     const value = event.target.value;
 
     activeSearchType = "Todos";
-    renderResults(value);
     updateUrl(value);
+
+    window.clearTimeout(searchDebounceTimer);
+
+    searchDebounceTimer = window.setTimeout(() => {
+      renderResults(value);
+    }, 120);
   });
 
   if (input && initialQuery) {
@@ -743,6 +779,14 @@ function getExploreCount(item: ExploreItem) {
     -webkit-box-orient: vertical;
   }
 
+  .search-result mark {
+    padding: 0 2px;
+    border-radius: 5px;
+    background: #ffe2a8;
+    color: #2d2418;
+    font-weight: 900;
+  }
+
   .search-result-type {
     width: fit-content;
     margin-bottom: 2px;
@@ -791,6 +835,11 @@ function getExploreCount(item: ExploreItem) {
   :global(html[data-theme="dark"]) .search-result p,
   :global(html[data-theme="dark"]) .advanced-explore-card p {
     color: #d8c8b6;
+  }
+
+  :global(html[data-theme="dark"]) .search-result mark {
+    background: #6c4c2f;
+    color: #fff5e8;
   }
 
   :global(html[data-theme="dark"]) .advanced-explore-header span,

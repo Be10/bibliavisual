@@ -511,6 +511,7 @@ const searchDataUrl = sitePath("/buscar/datos.json");
 
     let searchItems = null;
     let activeSearchType = "Todos";
+    let globalSearchDebounceTimer;
 
     function getPreferredTheme() {
       const storedTheme = localStorage.getItem("ebv-theme");
@@ -564,6 +565,33 @@ const searchDataUrl = sitePath("/buscar/datos.json");
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+    }
+
+    function escapeRegExp(value) {
+      return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function getHighlightWords(query) {
+      return Array.from(
+        new Set(
+          normalizeText(query)
+            .split(/\s+/)
+            .filter((word) => word.length >= 3)
+        )
+      );
+    }
+
+    function highlightMatches(value, query) {
+      const safeValue = escapeHtml(value);
+      const words = getHighlightWords(query);
+
+      if (words.length === 0) {
+        return safeValue;
+      }
+
+      const pattern = new RegExp(`(${words.map(escapeRegExp).join("|")})`, "gi");
+
+      return safeValue.replace(pattern, "<mark>$1</mark>");
     }
 
     async function loadSearchItems() {
@@ -736,11 +764,13 @@ const searchDataUrl = sitePath("/buscar/datos.json");
     }
 
     function renderResultCard(item) {
+      const query = searchInput?.value ?? "";
+
       return `
         <a href="${escapeHtml(item.url)}" class="global-search-result">
           <span>${escapeHtml(item.type)}</span>
-          <strong>${escapeHtml(item.title)}</strong>
-          <small>${escapeHtml(item.summary)}</small>
+          <strong>${highlightMatches(item.title, query)}</strong>
+          <small>${highlightMatches(item.summary, query)}</small>
         </a>
       `;
     }
@@ -845,7 +875,12 @@ const searchDataUrl = sitePath("/buscar/datos.json");
 
     searchInput?.addEventListener("input", () => {
       activeSearchType = "Todos";
-      renderSearchResults(searchInput.value);
+
+      window.clearTimeout(globalSearchDebounceTimer);
+
+      globalSearchDebounceTimer = window.setTimeout(() => {
+        renderSearchResults(searchInput.value);
+      }, 120);
     });
 
     searchInput?.addEventListener("focus", () => {
@@ -4347,6 +4382,19 @@ box-shadow: 0 0 0 6px #100c08;
     overflow: hidden;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+  }
+
+  .global-search-result mark {
+    padding: 0 2px;
+    border-radius: 5px;
+    background: #ffe2a8;
+    color: #2d2418;
+    font-weight: 900;
+  }
+
+  html[data-theme="dark"] .global-search-result mark {
+    background: #6c4c2f;
+    color: #fff5e8;
   }
 
   .global-search-state {
