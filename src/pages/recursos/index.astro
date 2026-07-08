@@ -8,6 +8,7 @@ import {
   getAllPeople,
   getAllPlaces,
   getAllTopics,
+  getAllVisualResources,
 } from "../../lib/queries";
 
 const eventsCount = getAllEvents().filter((item) => item.status !== "Borrador").length;
@@ -17,7 +18,65 @@ const topicsCount = getAllTopics().filter((item) => item.status !== "Borrador").
 const glossaryCount = getAllGlossaryTerms().filter((item) => item.status !== "Borrador").length;
 const passagesCount = getAllPassages().filter((item) => item.status !== "Borrador").length;
 
-const visualResources = [
+const visualResources = getAllVisualResources();
+
+const visibleVisualResources = visualResources.filter(
+  (resource) => resource.status !== "Borrador",
+);
+
+const visualResourceTypes = Array.from(
+  new Set(visibleVisualResources.map((resource) => resource.resource_type)),
+);
+
+const visualResourcesWithImages = visibleVisualResources.filter(
+  (resource) => Boolean(resource.url),
+);
+
+const ideaResources = visibleVisualResources.filter(
+  (resource) => resource.status === "Idea",
+);
+
+function getResourceImageUrl(url: string | null) {
+  if (!url) return null;
+
+  return url.startsWith("/") ? sitePath(url) : url;
+}
+
+function truncateText(value: string | null, maxLength = 112) {
+  const text = value?.trim() || "Recurso visual en preparación editorial.";
+
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  const trimmed = text.slice(0, maxLength).trim();
+  const lastSpaceIndex = trimmed.lastIndexOf(" ");
+
+  if (lastSpaceIndex <= 0) {
+    return `${trimmed}...`;
+  }
+
+  return `${trimmed.slice(0, lastSpaceIndex)}...`;
+}
+
+function truncateTitle(value: string, maxLength = 62) {
+  const title = value.trim();
+
+  if (title.length <= maxLength) {
+    return title;
+  }
+
+  const trimmed = title.slice(0, maxLength).trim();
+  const lastSpaceIndex = trimmed.lastIndexOf(" ");
+
+  if (lastSpaceIndex <= 0) {
+    return `${trimmed}...`;
+  }
+
+  return `${trimmed.slice(0, lastSpaceIndex)}...`;
+}
+
+const platformResources = [
   {
     title: "Mapa bíblico",
     eyebrow: "Geografía",
@@ -90,29 +149,11 @@ const editorialResources = [
     url: sitePath("/pasajes/"),
   },
 ];
-
-const futureResources = [
-  {
-    title: "Infografías bíblicas",
-    description:
-      "Espacio preparado para futuras infografías sobre libros, temas, eventos, rutas y panoramas bíblicos.",
-  },
-  {
-    title: "Recursos descargables",
-    description:
-      "Área futura para materiales de estudio, guías visuales y recursos complementarios.",
-  },
-  {
-    title: "Colecciones visuales",
-    description:
-      "Sección futura para agrupar mapas, líneas de tiempo, esquemas y visualizaciones por tema.",
-  },
-];
 ---
 
 <BaseLayout
   title="Recursos visuales"
-  description="Explora recursos visuales y editoriales de la Enciclopedia Bíblica Visual: mapa bíblico, línea de tiempo, lugares, eventos, personajes, temas, glosario y pasajes."
+  description="Explora recursos visuales y editoriales de la Enciclopedia Bíblica Visual: mapa bíblico, línea de tiempo, infografías, esquemas, lugares, eventos, personajes, temas, glosario y pasajes."
 >
   <main class="page resources-page">
     <div class="breadcrumb">
@@ -126,8 +167,8 @@ const futureResources = [
         <h1>Ver la Biblia con claridad</h1>
 
         <p class="subtitle">
-          Explora mapas, líneas de tiempo, lugares, eventos y conexiones visuales
-          que ayudan a estudiar la Biblia como una historia unificada.
+          Explora mapas, líneas de tiempo, infografías, esquemas y conexiones
+          visuales que ayudan a estudiar la Biblia como una historia unificada.
         </p>
 
         <div class="actions">
@@ -146,34 +187,95 @@ const futureResources = [
       </div>
 
       <aside class="resources-hero-card" aria-label="Resumen de recursos visuales">
-        <span>Recursos activos</span>
-        <strong>{visualResources.length + editorialResources.length}</strong>
+        <span>Recursos visuales</span>
+        <strong>{visibleVisualResources.length}</strong>
         <p>
-          Módulos visuales y editoriales conectados
+          Ideas, esquemas, mapas e infografías conectadas a las lecciones
         </p>
       </aside>
     </section>
 
     <section class="resources-stats" aria-label="Resumen de recursos disponibles">
       <article class="resources-stat-card">
-        <span>Lugares</span>
-        <strong>{placesCount}</strong>
+        <span>Visuales</span>
+        <strong>{visibleVisualResources.length}</strong>
       </article>
 
       <article class="resources-stat-card">
-        <span>Eventos</span>
-        <strong>{eventsCount}</strong>
+        <span>Con imagen</span>
+        <strong>{visualResourcesWithImages.length}</strong>
       </article>
 
       <article class="resources-stat-card">
-        <span>Personajes</span>
-        <strong>{peopleCount}</strong>
+        <span>Tipos</span>
+        <strong>{visualResourceTypes.length}</strong>
       </article>
 
       <article class="resources-stat-card">
-        <span>Temas</span>
-        <strong>{topicsCount}</strong>
+        <span>Ideas</span>
+        <strong>{ideaResources.length}</strong>
       </article>
+    </section>
+
+    <section class="section resources-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Banco visual</p>
+          <h2>Recursos visuales editoriales</h2>
+        </div>
+
+        <span class="section-count">
+          {visibleVisualResources.length} recursos
+        </span>
+      </div>
+
+      {visibleVisualResources.length > 0 ? (
+        <div class="visual-resource-grid">
+          {visibleVisualResources.map((resource) => {
+            const imageUrl = getResourceImageUrl(resource.url);
+
+            return (
+              <a
+                href={sitePath(`/recursos/${resource.slug}/`)}
+                class:list={[
+                  "visual-resource-card",
+                  imageUrl ? "has-image" : "has-placeholder",
+                ]}
+              >
+                <div class="visual-resource-media">
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt={resource.alt_text ?? resource.title}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div class="visual-resource-placeholder" aria-hidden="true">
+                      <span>{resource.resource_type}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div class="visual-resource-body">
+                  <span>{resource.resource_type}</span>
+
+                  <strong title={resource.title}>{truncateTitle(resource.title)}</strong>
+
+                  <p>{truncateText(resource.description)}</p>
+
+                  <small>{resource.status}</small>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      ) : (
+        <div class="content">
+          <p>
+            Todavía no hay recursos visuales registrados.
+          </p>
+        </div>
+      )}
     </section>
 
     <section class="section resources-section">
@@ -184,12 +286,12 @@ const futureResources = [
         </div>
 
         <span class="section-count">
-          {visualResources.length} recursos
+          {platformResources.length} recursos
         </span>
       </div>
 
       <div class="resources-feature-grid">
-        {visualResources.map((resource) => (
+        {platformResources.map((resource) => (
           <a
             href={resource.url}
             class:list={[
@@ -230,29 +332,6 @@ const futureResources = [
       </div>
     </section>
 
-    <section class="section resources-section resources-future-section">
-      <div class="section-header">
-        <div>
-          <p class="eyebrow">Próximamente</p>
-          <h2>Recursos visuales futuros</h2>
-        </div>
-
-        <span class="section-count">
-          En planificación
-        </span>
-      </div>
-
-      <div class="resources-future-grid">
-        {futureResources.map((resource) => (
-          <article class="resources-future-card">
-            <span>Futuro</span>
-            <strong>{resource.title}</strong>
-            <p>{resource.description}</p>
-          </article>
-        ))}
-      </div>
-    </section>
-
     <section class="section resources-footer-nav">
       <a href={sitePath("/explorar/")} class="button secondary">
         Ver centro de navegación
@@ -270,9 +349,19 @@ const futureResources = [
 </BaseLayout>
 
 <style>
+  .resources-page,
+  .resources-page * {
+    box-sizing: border-box;
+  }
+
+  .resources-page {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
   .resources-hero {
     display: grid;
-    grid-template-columns: 1fr minmax(230px, 320px);
+    grid-template-columns: minmax(0, 1fr) minmax(230px, 320px);
     gap: 32px;
     align-items: end;
   }
@@ -281,12 +370,13 @@ const futureResources = [
   .resources-hero-card {
     position: relative;
     z-index: 1;
+    min-width: 0;
   }
 
   .resources-hero-card,
   .resources-stat-card,
   .resources-card,
-  .resources-future-card {
+  .visual-resource-card {
     border: 1px solid #eadcc4;
     box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
   }
@@ -303,26 +393,41 @@ const futureResources = [
   .resources-hero-card span,
   .resources-stat-card span,
   .resources-card span,
-  .resources-future-card span {
+  .visual-resource-body span,
+  .visual-resource-placeholder span {
+    display: block;
+    max-width: 100%;
     color: #8a5a2b;
     font-size: 0.76rem;
     font-weight: 900;
     letter-spacing: 0.08em;
+    line-height: 1.25;
     text-transform: uppercase;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .resources-hero-card strong {
+    max-width: 100%;
     color: #2d2418;
     font-size: 3rem;
     line-height: 1;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .resources-hero-card p,
   .resources-card p,
-  .resources-future-card p {
+  .visual-resource-body p {
+    max-width: 100%;
     margin: 0;
     color: #6a5c4d;
     line-height: 1.7;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .resources-stats {
@@ -333,82 +438,170 @@ const futureResources = [
   }
 
   .resources-stat-card {
+    min-width: 0;
     padding: 22px;
     border-radius: 22px;
     background: white;
   }
 
   .resources-stat-card span {
-    display: block;
     margin-bottom: 10px;
   }
 
   .resources-stat-card strong {
     display: block;
+    max-width: 100%;
     color: #2d2418;
     font-size: 2rem;
     line-height: 1;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
+  .visual-resource-grid,
   .resources-feature-grid,
-  .resources-grid,
-  .resources-future-grid {
+  .resources-grid {
     display: grid;
     gap: 16px;
+    min-width: 0;
+  }
+
+  .visual-resource-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
   }
 
   .resources-feature-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .resources-grid,
-  .resources-future-grid {
+  .resources-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .resources-card,
-  .resources-future-card {
-    display: grid;
-    gap: 10px;
-    align-content: start;
-    min-height: 210px;
-    padding: 22px;
+  .visual-resource-card,
+  .resources-card {
+    min-width: 0;
+    max-width: 100%;
     border-radius: 22px;
     background: #fffaf0;
     text-decoration: none;
-    transition:
-      transform 160ms ease,
-      border-color 160ms ease,
-      box-shadow 160ms ease;
   }
 
+  .visual-resource-card {
+    display: grid;
+    grid-template-rows: 300px auto;
+    min-height: 515px;
+    overflow: hidden;
+  }
+
+  .resources-card {
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 10px;
+    min-height: 220px;
+    padding: 22px;
+    overflow: hidden;
+  }
+
+  .visual-resource-card:hover,
   .resources-card:hover {
-    transform: translateY(-2px);
     border-color: #c8a982;
     box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
   }
 
-  .resources-card strong,
-  .resources-future-card strong {
-    color: #2d2418;
-    font-size: 1.15rem;
-    line-height: 1.3;
+  .visual-resource-media {
+    width: 100%;
+    height: 300px;
+    min-width: 0;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at top left, rgba(233, 184, 114, 0.28), transparent 36%),
+      linear-gradient(135deg, #fff2d8, #f7dfb7);
   }
 
+  .visual-resource-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .visual-resource-placeholder {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    place-items: center;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .visual-resource-body {
+    display: grid;
+    grid-template-rows: auto auto auto auto;
+    gap: 10px;
+    min-width: 0;
+    max-width: 100%;
+    padding: 22px 24px 24px;
+    overflow: hidden;
+  }
+
+  .visual-resource-body strong,
+  .resources-card strong {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    overflow: visible;
+    color: #2d2418;
+    font-size: 1.15rem;
+    line-height: 1.32;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .visual-resource-body p {
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    overflow: visible;
+    line-height: 1.7;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .resources-card p {
+    display: -webkit-box;
+    overflow: hidden;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+  }
+
+  .visual-resource-body small,
   .resources-card small {
-    align-self: end;
+    display: block;
+    align-self: start;
+    min-width: 0;
+    max-width: 100%;
+    padding-top: 2px;
     color: #5d3212;
     font-size: 0.84rem;
     font-weight: 900;
+    line-height: 1.25;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .resources-card.is-featured {
     min-height: 240px;
     background: white;
-  }
-
-  .resources-future-card {
-    background: #fff7e8;
   }
 
   .resources-footer-nav {
@@ -428,7 +621,7 @@ const futureResources = [
   }
 
   :global(html[data-theme="dark"]) .resources-card,
-  :global(html[data-theme="dark"]) .resources-future-card {
+  :global(html[data-theme="dark"]) .visual-resource-card {
     background: #21160e;
     border-color: #3a2a1d;
   }
@@ -437,24 +630,32 @@ const futureResources = [
     background: #18110c;
   }
 
+  :global(html[data-theme="dark"]) .visual-resource-media {
+    background:
+      radial-gradient(circle at top left, rgba(233, 184, 114, 0.18), transparent 36%),
+      linear-gradient(135deg, #2a1c11, #3a2a1d);
+  }
+
   :global(html[data-theme="dark"]) .resources-hero-card span,
   :global(html[data-theme="dark"]) .resources-stat-card span,
   :global(html[data-theme="dark"]) .resources-card span,
   :global(html[data-theme="dark"]) .resources-card small,
-  :global(html[data-theme="dark"]) .resources-future-card span {
+  :global(html[data-theme="dark"]) .visual-resource-body span,
+  :global(html[data-theme="dark"]) .visual-resource-body small,
+  :global(html[data-theme="dark"]) .visual-resource-placeholder span {
     color: #e9b872;
   }
 
   :global(html[data-theme="dark"]) .resources-hero-card strong,
   :global(html[data-theme="dark"]) .resources-stat-card strong,
   :global(html[data-theme="dark"]) .resources-card strong,
-  :global(html[data-theme="dark"]) .resources-future-card strong {
+  :global(html[data-theme="dark"]) .visual-resource-body strong {
     color: #fff5e8;
   }
 
   :global(html[data-theme="dark"]) .resources-hero-card p,
   :global(html[data-theme="dark"]) .resources-card p,
-  :global(html[data-theme="dark"]) .resources-future-card p {
+  :global(html[data-theme="dark"]) .visual-resource-body p {
     color: #d8c8b6;
   }
 
@@ -464,27 +665,65 @@ const futureResources = [
       grid-template-columns: 1fr;
     }
 
+    .visual-resource-grid,
     .resources-stats,
-    .resources-grid,
-    .resources-future-grid {
+    .resources-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
   @media (max-width: 640px) {
+    .resources-hero,
+    .visual-resource-grid,
     .resources-stats,
-    .resources-grid,
-    .resources-future-grid {
+    .resources-grid {
       grid-template-columns: 1fr;
     }
 
-    .resources-card,
-    .resources-future-card {
+    .resources-card {
       min-height: auto;
+    }
+
+    .visual-resource-card {
+      grid-template-rows: 225px auto;
+      min-height: 455px;
+      height: auto;
+    }
+
+    .visual-resource-media {
+      height: 225px;
+    }
+
+    .visual-resource-body {
+      padding: 20px 22px 24px;
     }
 
     .resources-footer-nav {
       align-items: flex-start;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .visual-resource-card {
+      grid-template-rows: 220px auto;
+      min-height: 450px;
+      height: auto;
+    }
+
+    .visual-resource-media {
+      height: 220px;
+    }
+
+    .visual-resource-body {
+      padding: 20px 20px 24px;
+    }
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    .visual-resource-card:hover,
+    .resources-card:hover {
+      border-color: #eadcc4;
+      box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
     }
   }
 </style>

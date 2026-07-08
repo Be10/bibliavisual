@@ -948,3 +948,99 @@ export function getBibleVersesByPassageId(
     )
     .all(passageId, versionId) as BibleVerse[];
 }
+
+export type VisualResource = {
+  id: string;
+  title: string;
+  slug: string;
+  resource_type: string;
+  description: string | null;
+  alt_text: string | null;
+  url: string | null;
+  status: string;
+};
+
+export type VisualResourceLesson = {
+  id: string;
+  route_id: string;
+  lesson_number: number;
+  title: string;
+  slug: string;
+  eyebrow: string | null;
+  main_idea: string | null;
+  summary: string | null;
+  estimated_time: string | null;
+  status: string;
+};
+
+export function getAllVisualResources(): VisualResource[] {
+  return db
+    .prepare(
+      `
+      SELECT *
+      FROM visual_resources
+      ORDER BY resource_type ASC, title ASC
+      `
+    )
+    .all() as VisualResource[];
+}
+
+export function getVisualResourceBySlug(
+  slug: string
+): VisualResource | undefined {
+  return db
+    .prepare(
+      `
+      SELECT *
+      FROM visual_resources
+      WHERE slug = ?
+      `
+    )
+    .get(slug) as VisualResource | undefined;
+}
+
+export function getVisualResourcesByLessonId(
+  lessonId: string
+): VisualResource[] {
+  return db
+    .prepare(
+      `
+      SELECT visual_resources.*
+      FROM lesson_visual_resources
+      JOIN visual_resources
+        ON visual_resources.id = lesson_visual_resources.visual_resource_id
+      WHERE lesson_visual_resources.lesson_id = ?
+      ORDER BY visual_resources.resource_type ASC, visual_resources.title ASC
+      `
+    )
+    .all(lessonId) as VisualResource[];
+}
+
+export function getLessonsByVisualResourceId(
+  visualResourceId: string
+): VisualResourceLesson[] {
+  return db
+    .prepare(
+      `
+      SELECT
+        lessons.id,
+        lessons.route_id,
+        lessons.lesson_number,
+        lessons.title,
+        lessons.slug,
+        lessons.eyebrow,
+        lessons.main_idea,
+        lessons.summary,
+        lessons.estimated_time,
+        lessons.status
+      FROM lesson_visual_resources
+      JOIN lessons
+        ON lessons.id = lesson_visual_resources.lesson_id
+      WHERE
+        lesson_visual_resources.visual_resource_id = ?
+        AND lessons.status != 'Borrador'
+      ORDER BY lessons.lesson_number ASC
+      `
+    )
+    .all(visualResourceId) as VisualResourceLesson[];
+}
