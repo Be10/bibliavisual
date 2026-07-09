@@ -20,7 +20,8 @@ import { sitePath } from "../../lib/site-paths";
 
       <p class="subtitle">
         Una prueba visual con MapLibre GL JS: mapa inclinado, relieve,
-        etiquetas bíblicas, agua animada y una ruta marítima con barco en movimiento.
+        etiquetas bíblicas, agua animada, zonas marítimas bíblicas y una ruta
+        con barco en movimiento.
       </p>
 
       <div class="actions">
@@ -55,11 +56,13 @@ import { sitePath } from "../../lib/site-paths";
     <section class="map3d-notes">
       <article>
         <p class="eyebrow">Próximas mejoras</p>
-        <h2>Barco bíblico direccional</h2>
+        <h2>Zonas de agua bíblicas</h2>
         <p>
-          Esta versión usa tus imágenes PNG del barco en ocho direcciones. El
-          mapa elige automáticamente la imagen correcta según el rumbo visual de
-          la ruta: norte, noreste, este, sureste, sur, suroeste, oeste y noroeste.
+          Esta versión agrega una primera capa de zonas de agua: Mediterráneo,
+          Mar Rojo, Mar Muerto, Mar de Galilea, Jordán y Nilo. Las ondas ya no
+          se dibujan como líneas generales, sino dentro de zonas más controladas.
+          Luego podremos reemplazar estos polígonos iniciales por formas GeoJSON
+          más precisas.
         </p>
       </article>
     </section>
@@ -102,6 +105,20 @@ import { sitePath } from "../../lib/site-paths";
   };
 
   type BoatDirection = "n" | "ne" | "e" | "se" | "s" | "sw" | "w" | "nw";
+
+  type WaterZone = {
+    id: string;
+    name: string;
+    kind: "sea" | "lake";
+    coordinates: [number, number][][];
+  };
+
+  type WaterRoute = {
+    id: string;
+    name: string;
+    kind: "river";
+    coordinates: [number, number][];
+  };
 
   const places: BiblePlace[] = [
     {
@@ -207,24 +224,150 @@ import { sitePath } from "../../lib/site-paths";
     [12.4964, 41.9028],
   ];
 
-  const baseWaterMotionLines: [number, number][][] = [
+  const waterZones: WaterZone[] = [
+    {
+      id: "mediterranean-east",
+      name: "Mar Mediterráneo oriental",
+      kind: "sea",
+      coordinates: [
+        [
+          [16.5, 32.3],
+          [18.9, 33.0],
+          [21.8, 33.3],
+          [25.4, 33.2],
+          [29.0, 33.0],
+          [32.8, 33.4],
+          [34.6, 34.1],
+          [35.4, 35.4],
+          [34.4, 36.2],
+          [31.6, 36.3],
+          [28.6, 36.0],
+          [25.6, 36.5],
+          [22.0, 37.2],
+          [18.2, 37.4],
+          [14.5, 36.5],
+          [13.5, 34.7],
+          [16.5, 32.3],
+        ],
+      ],
+    },
+    {
+      id: "red-sea",
+      name: "Mar Rojo",
+      kind: "sea",
+      coordinates: [
+        [
+          [32.7, 27.9],
+          [33.2, 28.8],
+          [33.8, 29.6],
+          [34.4, 29.5],
+          [34.7, 28.3],
+          [35.0, 27.2],
+          [35.5, 25.8],
+          [36.1, 24.6],
+          [37.1, 22.8],
+          [38.1, 21.0],
+          [39.0, 19.4],
+          [39.5, 17.8],
+          [38.7, 17.2],
+          [37.4, 19.3],
+          [36.4, 21.0],
+          [35.5, 23.0],
+          [34.8, 25.2],
+          [34.1, 27.0],
+          [33.3, 27.9],
+          [32.7, 27.9],
+        ],
+      ],
+    },
+    {
+      id: "dead-sea",
+      name: "Mar Muerto",
+      kind: "lake",
+      coordinates: [
+        [
+          [35.39, 31.05],
+          [35.50, 31.08],
+          [35.57, 31.28],
+          [35.58, 31.55],
+          [35.52, 31.75],
+          [35.42, 31.77],
+          [35.36, 31.57],
+          [35.35, 31.31],
+          [35.39, 31.05],
+        ],
+      ],
+    },
+    {
+      id: "sea-of-galilee",
+      name: "Mar de Galilea",
+      kind: "lake",
+      coordinates: [
+        [
+          [35.50, 32.70],
+          [35.61, 32.70],
+          [35.68, 32.79],
+          [35.66, 32.91],
+          [35.57, 32.96],
+          [35.49, 32.91],
+          [35.46, 32.80],
+          [35.50, 32.70],
+        ],
+      ],
+    },
+  ];
+
+  const waterRoutes: WaterRoute[] = [
+    {
+      id: "jordan-river",
+      name: "Río Jordán",
+      kind: "river",
+      coordinates: [
+        [35.57, 32.93],
+        [35.56, 32.68],
+        [35.55, 32.42],
+        [35.53, 32.12],
+        [35.50, 31.84],
+        [35.48, 31.60],
+        [35.47, 31.34],
+        [35.45, 31.10],
+      ],
+    },
+    {
+      id: "nile-delta",
+      name: "Nilo",
+      kind: "river",
+      coordinates: [
+        [31.25, 30.05],
+        [31.1, 29.4],
+        [30.9, 28.7],
+        [30.75, 27.9],
+        [30.65, 27.2],
+        [30.55, 26.5],
+        [30.45, 25.7],
+        [30.35, 25.0],
+      ],
+    },
+  ];
+
+  const waterMotionLines: [number, number][][] = [
     [
-      [30.6, 34.7],
-      [31.7, 34.9],
-      [32.8, 34.8],
-      [33.9, 34.5],
+      [30.4, 34.7],
+      [31.4, 34.9],
+      [32.5, 34.8],
+      [33.5, 34.5],
     ],
     [
-      [27.4, 35.5],
-      [28.8, 35.8],
-      [30.1, 35.7],
-      [31.4, 35.4],
+      [27.2, 35.5],
+      [28.5, 35.8],
+      [29.8, 35.7],
+      [31.1, 35.4],
     ],
     [
       [23.0, 36.2],
-      [24.4, 36.5],
-      [25.8, 36.4],
-      [27.1, 36.1],
+      [24.3, 36.5],
+      [25.7, 36.4],
+      [27.0, 36.1],
     ],
     [
       [19.0, 36.7],
@@ -240,21 +383,53 @@ import { sitePath } from "../../lib/site-paths";
     ],
     [
       [29.4, 33.4],
-      [30.6, 33.3],
-      [31.7, 33.3],
-      [32.8, 33.5],
+      [30.5, 33.3],
+      [31.6, 33.3],
+      [32.7, 33.5],
     ],
     [
-      [21.2, 34.8],
-      [22.6, 35.0],
-      [24.0, 34.9],
-      [25.3, 34.6],
+      [34.4, 27.8],
+      [34.7, 26.9],
+      [35.0, 25.9],
+      [35.5, 24.9],
     ],
     [
-      [17.8, 34.1],
-      [19.2, 34.3],
-      [20.6, 34.2],
-      [22.0, 33.9],
+      [35.8, 25.6],
+      [36.3, 24.6],
+      [36.8, 23.6],
+      [37.4, 22.6],
+    ],
+    [
+      [35.41, 31.18],
+      [35.48, 31.30],
+      [35.49, 31.46],
+      [35.45, 31.63],
+    ],
+    [
+      [35.50, 32.78],
+      [35.55, 32.84],
+      [35.62, 32.88],
+      [35.65, 32.83],
+    ],
+  ];
+
+  const riverMotionLines: [number, number][][] = [
+    [
+      [35.57, 32.93],
+      [35.56, 32.62],
+      [35.54, 32.30],
+      [35.51, 31.98],
+      [35.49, 31.66],
+      [35.46, 31.34],
+      [35.45, 31.10],
+    ],
+    [
+      [31.25, 30.05],
+      [31.05, 29.15],
+      [30.82, 28.25],
+      [30.63, 27.35],
+      [30.48, 26.45],
+      [30.35, 25.55],
     ],
   ];
 
@@ -477,20 +652,80 @@ import { sitePath } from "../../lib/site-paths";
     return "ne";
   }
 
+  function buildWaterZonesData() {
+    return {
+      type: "FeatureCollection",
+      features: waterZones.map((zone) => ({
+        type: "Feature",
+        properties: {
+          id: zone.id,
+          name: zone.name,
+          kind: zone.kind,
+        },
+        geometry: {
+          type: "Polygon",
+          coordinates: zone.coordinates,
+        },
+      })),
+    };
+  }
+
+  function buildWaterRoutesData() {
+    return {
+      type: "FeatureCollection",
+      features: waterRoutes.map((route) => ({
+        type: "Feature",
+        properties: {
+          id: route.id,
+          name: route.name,
+          kind: route.kind,
+        },
+        geometry: {
+          type: "LineString",
+          coordinates: route.coordinates,
+        },
+      })),
+    };
+  }
+
   function buildWaterMotionData(time: number) {
     return {
       type: "FeatureCollection",
-      features: baseWaterMotionLines.map((line, lineIndex) => ({
+      features: waterMotionLines.map((line, lineIndex) => ({
         type: "Feature",
         properties: {
           wave: lineIndex + 1,
+          kind: "water-wave",
         },
         geometry: {
           type: "LineString",
           coordinates: line.map(([lng, lat], pointIndex) => {
-            const phase = time * 0.0012 + lineIndex * 0.72 + pointIndex * 0.95;
-            const lngOffset = Math.sin(phase) * 0.028;
-            const latOffset = Math.cos(phase * 0.85) * 0.012;
+            const phase = time * 0.00115 + lineIndex * 0.72 + pointIndex * 0.95;
+            const lngOffset = Math.sin(phase) * 0.022;
+            const latOffset = Math.cos(phase * 0.85) * 0.01;
+
+            return [lng + lngOffset, lat + latOffset];
+          }),
+        },
+      })),
+    };
+  }
+
+  function buildRiverMotionData(time: number) {
+    return {
+      type: "FeatureCollection",
+      features: riverMotionLines.map((line, lineIndex) => ({
+        type: "Feature",
+        properties: {
+          wave: lineIndex + 1,
+          kind: "river-flow",
+        },
+        geometry: {
+          type: "LineString",
+          coordinates: line.map(([lng, lat], pointIndex) => {
+            const phase = time * 0.00125 + lineIndex * 0.9 + pointIndex * 0.7;
+            const lngOffset = Math.sin(phase) * 0.006;
+            const latOffset = Math.cos(phase * 0.9) * 0.006;
 
             return [lng + lngOffset, lat + latOffset];
           }),
@@ -590,6 +825,91 @@ import { sitePath } from "../../lib/site-paths";
     });
   }
 
+  function addWaterZones() {
+    map.addSource("biblical-water-zones", {
+      type: "geojson",
+      data: buildWaterZonesData() as any,
+    });
+
+    map.addLayer({
+      id: "biblical-water-zones-fill",
+      type: "fill",
+      source: "biblical-water-zones",
+      paint: {
+        "fill-color": "#4f9fd5",
+        "fill-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          3,
+          0.06,
+          7,
+          0.1,
+        ],
+      },
+    });
+
+    map.addLayer({
+      id: "biblical-water-zones-edge",
+      type: "line",
+      source: "biblical-water-zones",
+      paint: {
+        "line-color": "#f8dfaa",
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          3,
+          0.8,
+          7,
+          1.5,
+        ],
+        "line-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          3,
+          0.08,
+          7,
+          0.18,
+        ],
+      },
+    });
+
+    map.addSource("biblical-water-routes", {
+      type: "geojson",
+      data: buildWaterRoutesData() as any,
+    });
+
+    map.addLayer({
+      id: "biblical-water-routes-line",
+      type: "line",
+      source: "biblical-water-routes",
+      paint: {
+        "line-color": "#63b7e2",
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          4,
+          1.4,
+          8,
+          3.2,
+        ],
+        "line-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          4,
+          0.26,
+          8,
+          0.48,
+        ],
+        "line-blur": 0.6,
+      },
+    });
+  }
+
   function addWaterMotion() {
     map.addSource("water-motion", {
       type: "geojson",
@@ -607,11 +927,11 @@ import { sitePath } from "../../lib/site-paths";
           ["linear"],
           ["zoom"],
           3,
-          5,
+          4,
           7,
-          9,
+          8,
         ],
-        "line-opacity": 0.1,
+        "line-opacity": 0.08,
         "line-blur": 4,
       },
     });
@@ -627,31 +947,72 @@ import { sitePath } from "../../lib/site-paths";
           ["linear"],
           ["zoom"],
           3,
-          1.2,
+          1.1,
           7,
-          2.4,
+          2.2,
         ],
         "line-opacity": [
           "interpolate",
           ["linear"],
           ["zoom"],
           3,
-          0.14,
+          0.12,
           7,
-          0.28,
+          0.26,
         ],
-        "line-blur": 1.1,
+        "line-blur": 1,
         "line-dasharray": [1.3, 2.1],
       },
     });
 
+    map.addSource("river-motion", {
+      type: "geojson",
+      data: buildRiverMotionData(performance.now()) as any,
+    });
+
+    map.addLayer({
+      id: "river-motion-glow",
+      type: "line",
+      source: "river-motion",
+      paint: {
+        "line-color": "#d8f2ff",
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          4,
+          1,
+          8,
+          2.2,
+        ],
+        "line-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          4,
+          0.1,
+          8,
+          0.28,
+        ],
+        "line-blur": 1.5,
+        "line-dasharray": [1, 2.4],
+      },
+    });
+
     function frame(now: number) {
-      const source = map.getSource("water-motion") as
+      const waterSource = map.getSource("water-motion") as
+        | maplibregl.GeoJSONSource
+        | undefined;
+      const riverSource = map.getSource("river-motion") as
         | maplibregl.GeoJSONSource
         | undefined;
 
-      if (source && map.getLayer("water-motion-lines")) {
-        source.setData(buildWaterMotionData(now) as any);
+      if (waterSource && map.getLayer("water-motion-lines")) {
+        waterSource.setData(buildWaterMotionData(now) as any);
+      }
+
+      if (riverSource && map.getLayer("river-motion-glow")) {
+        riverSource.setData(buildRiverMotionData(now) as any);
       }
 
       window.requestAnimationFrame(frame);
@@ -921,6 +1282,7 @@ import { sitePath } from "../../lib/site-paths";
   map.on("load", () => {
     softenBaseMap();
     addTerrain();
+    addWaterZones();
     addWaterMotion();
     addBiblicalAreas();
     addBiblicalPlaces();
