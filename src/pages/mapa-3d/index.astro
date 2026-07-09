@@ -6,7 +6,7 @@ import { sitePath } from "../../lib/site-paths";
 
 <BaseLayout
   title="Mapa bíblico 3D"
-  description="Mapa bíblico experimental con perspectiva, lugares seleccionados y rutas visuales."
+  description="Mapa bíblico experimental con perspectiva, relieve, lugares seleccionados y rutas visuales."
 >
   <main class="page map3d-page">
     <div class="breadcrumb">
@@ -19,8 +19,8 @@ import { sitePath } from "../../lib/site-paths";
       <h1>Mapa bíblico 3D</h1>
 
       <p class="subtitle">
-        Una primera prueba visual con MapLibre GL JS: mapa inclinado, lugares
-        bíblicos seleccionados y una ruta marítima animada.
+        Una prueba visual con MapLibre GL JS: mapa inclinado, relieve,
+        etiquetas bíblicas, agua animada y una ruta marítima con barco en movimiento.
       </p>
 
       <div class="actions">
@@ -30,7 +30,11 @@ import { sitePath } from "../../lib/site-paths";
       </div>
     </section>
 
-    <section class="map3d-shell">
+    <section
+      class="map3d-shell"
+      aria-label="Mapa bíblico 3D interactivo"
+      data-boat-base={sitePath("/images/mapa-3d/barcos/")}
+    >
       <div class="map3d-toolbar" aria-label="Controles del mapa">
         <button type="button" data-map-action="israel">Israel</button>
         <button type="button" data-map-action="mediterraneo">Mediterráneo</button>
@@ -38,7 +42,26 @@ import { sitePath } from "../../lib/site-paths";
         <button type="button" data-map-action="ruta">Ruta marítima</button>
       </div>
 
+      <div class="map3d-status">
+        <span class="map3d-status-dot"></span>
+        Mapa experimental
+      </div>
+
       <div id="biblical-map-3d"></div>
+
+      <div class="map3d-vignette" aria-hidden="true"></div>
+    </section>
+
+    <section class="map3d-notes">
+      <article>
+        <p class="eyebrow">Próximas mejoras</p>
+        <h2>Barco bíblico direccional</h2>
+        <p>
+          Esta versión usa tus imágenes PNG del barco en ocho direcciones. El
+          mapa elige automáticamente la imagen correcta según el rumbo visual de
+          la ruta: norte, noreste, este, sureste, sur, suroeste, oeste y noroeste.
+        </p>
+      </article>
     </section>
   </main>
 </BaseLayout>
@@ -51,6 +74,34 @@ import { sitePath } from "../../lib/site-paths";
     description: string;
     coordinates: [number, number];
   };
+
+  type BibleArea = {
+    name: string;
+    coordinates: [number, number];
+    size: number;
+  };
+
+  type CameraPreset = {
+    center: [number, number];
+    zoom: number;
+    pitch: number;
+    bearing: number;
+  };
+
+  type RouteSegment = {
+    from: [number, number];
+    to: [number, number];
+    distance: number;
+    accumulatedDistance: number;
+  };
+
+  type RoutePoint = {
+    coordinates: [number, number];
+    from: [number, number];
+    to: [number, number];
+  };
+
+  type BoatDirection = "n" | "ne" | "e" | "se" | "s" | "sw" | "w" | "nw";
 
   const places: BiblePlace[] = [
     {
@@ -100,6 +151,54 @@ import { sitePath } from "../../lib/site-paths";
     },
   ];
 
+  const areas: BibleArea[] = [
+    {
+      name: "Mar Mediterráneo",
+      coordinates: [25.4, 35.4],
+      size: 18,
+    },
+    {
+      name: "Mar Rojo",
+      coordinates: [35.2, 25.3],
+      size: 15,
+    },
+    {
+      name: "Mar Muerto",
+      coordinates: [35.49, 31.52],
+      size: 13,
+    },
+    {
+      name: "Mar de Galilea",
+      coordinates: [35.58, 32.82],
+      size: 13,
+    },
+    {
+      name: "Río Jordán",
+      coordinates: [35.56, 32.08],
+      size: 13,
+    },
+    {
+      name: "Egipto",
+      coordinates: [30.4, 27.8],
+      size: 19,
+    },
+    {
+      name: "Sinaí",
+      coordinates: [33.7, 29.2],
+      size: 17,
+    },
+    {
+      name: "Canaán",
+      coordinates: [35.0, 31.6],
+      size: 16,
+    },
+    {
+      name: "Mesopotamia",
+      coordinates: [43.8, 33.6],
+      size: 18,
+    },
+  ];
+
   const maritimeRoute: [number, number][] = [
     [34.904, 32.5007],
     [33.4299, 35.1264],
@@ -108,14 +207,93 @@ import { sitePath } from "../../lib/site-paths";
     [12.4964, 41.9028],
   ];
 
+  const baseWaterMotionLines: [number, number][][] = [
+    [
+      [30.6, 34.7],
+      [31.7, 34.9],
+      [32.8, 34.8],
+      [33.9, 34.5],
+    ],
+    [
+      [27.4, 35.5],
+      [28.8, 35.8],
+      [30.1, 35.7],
+      [31.4, 35.4],
+    ],
+    [
+      [23.0, 36.2],
+      [24.4, 36.5],
+      [25.8, 36.4],
+      [27.1, 36.1],
+    ],
+    [
+      [19.0, 36.7],
+      [20.4, 37.0],
+      [21.8, 36.9],
+      [23.2, 36.6],
+    ],
+    [
+      [24.6, 34.1],
+      [25.8, 34.3],
+      [27.0, 34.2],
+      [28.2, 33.9],
+    ],
+    [
+      [29.4, 33.4],
+      [30.6, 33.3],
+      [31.7, 33.3],
+      [32.8, 33.5],
+    ],
+    [
+      [21.2, 34.8],
+      [22.6, 35.0],
+      [24.0, 34.9],
+      [25.3, 34.6],
+    ],
+    [
+      [17.8, 34.1],
+      [19.2, 34.3],
+      [20.6, 34.2],
+      [22.0, 33.9],
+    ],
+  ];
+
+  const cameraPresets: Record<string, CameraPreset> = {
+    israel: {
+      center: [35.2137, 31.7683],
+      zoom: 7,
+      pitch: 64,
+      bearing: -18,
+    },
+    mediterraneo: {
+      center: [24.8, 36.4],
+      zoom: 4.2,
+      pitch: 58,
+      bearing: -12,
+    },
+    mesopotamia: {
+      center: [43.7, 33.4],
+      zoom: 5,
+      pitch: 62,
+      bearing: -22,
+    },
+    ruta: {
+      center: [24.6, 37.5],
+      zoom: 4.4,
+      pitch: 64,
+      bearing: -28,
+    },
+  };
+
   const map = new maplibregl.Map({
     container: "biblical-map-3d",
     style: "https://tiles.openfreemap.org/styles/liberty",
     center: [35.2137, 31.7683],
     zoom: 5.5,
-    pitch: 58,
+    pitch: 62,
     bearing: -18,
-    maxPitch: 75,
+    maxPitch: 78,
+    attributionControl: true,
   });
 
   map.addControl(
@@ -127,6 +305,11 @@ import { sitePath } from "../../lib/site-paths";
     "top-right",
   );
 
+  function getBoatBasePath() {
+    const shell = document.querySelector<HTMLElement>(".map3d-shell");
+    return shell?.dataset.boatBase ?? "/images/mapa-3d/barcos/";
+  }
+
   function createPopup(place: BiblePlace) {
     return `
       <article class="map3d-popup">
@@ -136,42 +319,340 @@ import { sitePath } from "../../lib/site-paths";
     `;
   }
 
-  function animateBoat() {
-    const source = map.getSource("boat-point");
+  function createBoatImage(direction: BoatDirection) {
+    const boatBasePath = getBoatBasePath();
 
-    if (!source || source.type !== "geojson") {
+    const directionLabel = {
+      n: "norte",
+      ne: "noreste",
+      e: "este",
+      se: "sureste",
+      s: "sur",
+      sw: "suroeste",
+      w: "oeste",
+      nw: "noroeste",
+    }[direction];
+
+    return `
+      <div class="map3d-boat-variant map3d-boat-variant-${direction}">
+        <span class="map3d-boat-shadow" aria-hidden="true"></span>
+        <span class="map3d-boat-wake map3d-boat-wake-main" aria-hidden="true"></span>
+        <span class="map3d-boat-wake map3d-boat-wake-soft" aria-hidden="true"></span>
+
+        <img
+          class="map3d-boat-image"
+          src="${boatBasePath}barco-${direction}.png"
+          alt="Barco navegando hacia el ${directionLabel}"
+          draggable="false"
+        />
+      </div>
+    `;
+  }
+
+  function createDirectionalBoatElement() {
+    const element = document.createElement("div");
+    element.className = "map3d-directional-boat";
+
+    element.innerHTML = `
+      <div class="map3d-directional-boat-float">
+        ${createBoatImage("n")}
+        ${createBoatImage("ne")}
+        ${createBoatImage("e")}
+        ${createBoatImage("se")}
+        ${createBoatImage("s")}
+        ${createBoatImage("sw")}
+        ${createBoatImage("w")}
+        ${createBoatImage("nw")}
+      </div>
+    `;
+
+    return element;
+  }
+
+  function getApproxDistance(from: [number, number], to: [number, number]) {
+    const lngDistance = to[0] - from[0];
+    const latDistance = to[1] - from[1];
+    const averageLat = ((from[1] + to[1]) / 2) * (Math.PI / 180);
+    const adjustedLngDistance = lngDistance * Math.cos(averageLat);
+
+    return Math.sqrt(
+      adjustedLngDistance * adjustedLngDistance + latDistance * latDistance,
+    );
+  }
+
+  function getRouteSegments() {
+    const segments: RouteSegment[] = [];
+    let accumulatedDistance = 0;
+
+    for (let index = 0; index < maritimeRoute.length - 1; index += 1) {
+      const from = maritimeRoute[index];
+      const to = maritimeRoute[index + 1];
+      const distance = getApproxDistance(from, to);
+
+      segments.push({
+        from,
+        to,
+        distance,
+        accumulatedDistance,
+      });
+
+      accumulatedDistance += distance;
+    }
+
+    return {
+      segments,
+      totalDistance: accumulatedDistance,
+    };
+  }
+
+  const routeMetrics = getRouteSegments();
+
+  function interpolateRoutePoint(progress: number): RoutePoint {
+    const safeProgress = Math.min(Math.max(progress, 0), 0.999999);
+    const targetDistance = safeProgress * routeMetrics.totalDistance;
+
+    const activeSegment =
+      routeMetrics.segments.find((segment) => {
+        return (
+          targetDistance >= segment.accumulatedDistance &&
+          targetDistance <= segment.accumulatedDistance + segment.distance
+        );
+      }) ?? routeMetrics.segments[routeMetrics.segments.length - 1];
+
+    const segmentProgress =
+      (targetDistance - activeSegment.accumulatedDistance) /
+      activeSegment.distance;
+
+    const lng =
+      activeSegment.from[0] +
+      (activeSegment.to[0] - activeSegment.from[0]) * segmentProgress;
+    const lat =
+      activeSegment.from[1] +
+      (activeSegment.to[1] - activeSegment.from[1]) * segmentProgress;
+
+    return {
+      coordinates: [lng, lat],
+      from: activeSegment.from,
+      to: activeSegment.to,
+    };
+  }
+
+  function getBoatDirection(from: [number, number], to: [number, number]): BoatDirection {
+    const fromPoint = map.project(from);
+    const toPoint = map.project(to);
+
+    const deltaX = toPoint.x - fromPoint.x;
+    const deltaY = toPoint.y - fromPoint.y;
+    const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+    const normalizedAngle = (angle + 360) % 360;
+
+    if (normalizedAngle >= 337.5 || normalizedAngle < 22.5) {
+      return "e";
+    }
+
+    if (normalizedAngle >= 22.5 && normalizedAngle < 67.5) {
+      return "se";
+    }
+
+    if (normalizedAngle >= 67.5 && normalizedAngle < 112.5) {
+      return "s";
+    }
+
+    if (normalizedAngle >= 112.5 && normalizedAngle < 157.5) {
+      return "sw";
+    }
+
+    if (normalizedAngle >= 157.5 && normalizedAngle < 202.5) {
+      return "w";
+    }
+
+    if (normalizedAngle >= 202.5 && normalizedAngle < 247.5) {
+      return "nw";
+    }
+
+    if (normalizedAngle >= 247.5 && normalizedAngle < 292.5) {
+      return "n";
+    }
+
+    return "ne";
+  }
+
+  function buildWaterMotionData(time: number) {
+    return {
+      type: "FeatureCollection",
+      features: baseWaterMotionLines.map((line, lineIndex) => ({
+        type: "Feature",
+        properties: {
+          wave: lineIndex + 1,
+        },
+        geometry: {
+          type: "LineString",
+          coordinates: line.map(([lng, lat], pointIndex) => {
+            const phase = time * 0.0012 + lineIndex * 0.72 + pointIndex * 0.95;
+            const lngOffset = Math.sin(phase) * 0.028;
+            const latOffset = Math.cos(phase * 0.85) * 0.012;
+
+            return [lng + lngOffset, lat + latOffset];
+          }),
+        },
+      })),
+    };
+  }
+
+  function softenBaseMap() {
+    const layers = map.getStyle().layers ?? [];
+
+    for (const layer of layers) {
+      if (layer.type === "symbol") {
+        map.setLayoutProperty(layer.id, "visibility", "none");
+      }
+
+      if (layer.type === "line") {
+        const layerId = layer.id.toLowerCase();
+
+        if (
+          layerId.includes("road") ||
+          layerId.includes("street") ||
+          layerId.includes("highway") ||
+          layerId.includes("rail")
+        ) {
+          map.setPaintProperty(layer.id, "line-opacity", 0.14);
+          map.setPaintProperty(layer.id, "line-color", "#8c6a3f");
+        }
+
+        if (
+          layerId.includes("boundary") ||
+          layerId.includes("border") ||
+          layerId.includes("admin")
+        ) {
+          map.setPaintProperty(layer.id, "line-opacity", 0.24);
+          map.setPaintProperty(layer.id, "line-color", "#7a5933");
+        }
+      }
+
+      if (layer.type === "fill") {
+        const layerId = layer.id.toLowerCase();
+
+        if (
+          layerId.includes("water") ||
+          layerId.includes("ocean") ||
+          layerId.includes("sea")
+        ) {
+          map.setPaintProperty(layer.id, "fill-color", "#8cb5de");
+          map.setPaintProperty(layer.id, "fill-opacity", 0.94);
+        }
+
+        if (
+          layerId.includes("land") ||
+          layerId.includes("earth") ||
+          layerId.includes("background")
+        ) {
+          map.setPaintProperty(layer.id, "fill-color", "#ead8b8");
+        }
+      }
+
+      if (layer.type === "background") {
+        map.setPaintProperty(layer.id, "background-color", "#ead8b8");
+      }
+    }
+  }
+
+  function addTerrain() {
+    if (map.getSource("terrain-dem")) {
       return;
     }
 
-    const duration = 22000;
-    const start = performance.now();
+    map.addSource("terrain-dem", {
+      type: "raster-dem",
+      tiles: [
+        "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+      ],
+      tileSize: 256,
+      maxzoom: 12,
+      encoding: "terrarium",
+    });
+
+    map.setTerrain({
+      source: "terrain-dem",
+      exaggeration: 1.25,
+    });
+
+    map.addLayer({
+      id: "terrain-hillshade",
+      type: "hillshade",
+      source: "terrain-dem",
+      paint: {
+        "hillshade-shadow-color": "#5a3a1d",
+        "hillshade-highlight-color": "#f4ddb3",
+        "hillshade-accent-color": "#9d7240",
+        "hillshade-exaggeration": 0.36,
+      },
+    });
+  }
+
+  function addWaterMotion() {
+    map.addSource("water-motion", {
+      type: "geojson",
+      data: buildWaterMotionData(performance.now()) as any,
+    });
+
+    map.addLayer({
+      id: "water-motion-shadow",
+      type: "line",
+      source: "water-motion",
+      paint: {
+        "line-color": "#17465b",
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          3,
+          5,
+          7,
+          9,
+        ],
+        "line-opacity": 0.1,
+        "line-blur": 4,
+      },
+    });
+
+    map.addLayer({
+      id: "water-motion-lines",
+      type: "line",
+      source: "water-motion",
+      paint: {
+        "line-color": "#fff1c9",
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          3,
+          1.2,
+          7,
+          2.4,
+        ],
+        "line-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          3,
+          0.14,
+          7,
+          0.28,
+        ],
+        "line-blur": 1.1,
+        "line-dasharray": [1.3, 2.1],
+      },
+    });
 
     function frame(now: number) {
-      const elapsed = (now - start) % duration;
-      const progress = elapsed / duration;
-      const routeIndex = Math.floor(progress * (maritimeRoute.length - 1));
-      const nextIndex = Math.min(routeIndex + 1, maritimeRoute.length - 1);
-      const segmentProgress = progress * (maritimeRoute.length - 1) - routeIndex;
+      const source = map.getSource("water-motion") as
+        | maplibregl.GeoJSONSource
+        | undefined;
 
-      const from = maritimeRoute[routeIndex];
-      const to = maritimeRoute[nextIndex];
-
-      const lng = from[0] + (to[0] - from[0]) * segmentProgress;
-      const lat = from[1] + (to[1] - from[1]) * segmentProgress;
-
-      source.setData({
-        type: "FeatureCollection",
-        features: [
-          {
-            type: "Feature",
-            properties: {},
-            geometry: {
-              type: "Point",
-              coordinates: [lng, lat],
-            },
-          },
-        ],
-      });
+      if (source && map.getLayer("water-motion-lines")) {
+        source.setData(buildWaterMotionData(now) as any);
+      }
 
       window.requestAnimationFrame(frame);
     }
@@ -179,7 +660,7 @@ import { sitePath } from "../../lib/site-paths";
     window.requestAnimationFrame(frame);
   }
 
-  map.on("load", () => {
+  function addBiblicalPlaces() {
     map.addSource("bible-places", {
       type: "geojson",
       data: {
@@ -199,11 +680,39 @@ import { sitePath } from "../../lib/site-paths";
     });
 
     map.addLayer({
+      id: "bible-places-glow",
+      type: "circle",
+      source: "bible-places",
+      paint: {
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          3,
+          9,
+          7,
+          16,
+        ],
+        "circle-color": "#e6b45a",
+        "circle-opacity": 0.22,
+        "circle-blur": 0.8,
+      },
+    });
+
+    map.addLayer({
       id: "bible-places-circles",
       type: "circle",
       source: "bible-places",
       paint: {
-        "circle-radius": 7,
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          3,
+          4.8,
+          7,
+          7.5,
+        ],
         "circle-color": "#c69a45",
         "circle-stroke-color": "#3a2414",
         "circle-stroke-width": 2,
@@ -216,17 +725,75 @@ import { sitePath } from "../../lib/site-paths";
       source: "bible-places",
       layout: {
         "text-field": ["get", "name"],
-        "text-size": 13,
+        "text-size": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          3,
+          11,
+          7,
+          14,
+        ],
         "text-offset": [0, 1.35],
         "text-anchor": "top",
+        "text-allow-overlap": false,
       },
       paint: {
         "text-color": "#3a2414",
         "text-halo-color": "#f7ecd2",
-        "text-halo-width": 1.6,
+        "text-halo-width": 1.8,
+      },
+    });
+  }
+
+  function addBiblicalAreas() {
+    map.addSource("bible-areas", {
+      type: "geojson",
+      data: {
+        type: "FeatureCollection",
+        features: areas.map((area) => ({
+          type: "Feature",
+          properties: {
+            name: area.name,
+            size: area.size,
+          },
+          geometry: {
+            type: "Point",
+            coordinates: area.coordinates,
+          },
+        })),
       },
     });
 
+    map.addLayer({
+      id: "bible-area-labels",
+      type: "symbol",
+      source: "bible-areas",
+      layout: {
+        "text-field": ["get", "name"],
+        "text-size": ["get", "size"],
+        "text-font": ["Noto Sans Italic"],
+        "text-anchor": "center",
+        "text-allow-overlap": false,
+      },
+      paint: {
+        "text-color": "#5a3a1d",
+        "text-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          3,
+          0.62,
+          7,
+          0.82,
+        ],
+        "text-halo-color": "#f4e6ca",
+        "text-halo-width": 1.4,
+      },
+    });
+  }
+
+  function addMaritimeRoute() {
     map.addSource("maritime-route", {
       type: "geojson",
       data: {
@@ -240,45 +807,61 @@ import { sitePath } from "../../lib/site-paths";
     });
 
     map.addLayer({
-      id: "maritime-route-line",
+      id: "maritime-route-shadow",
       type: "line",
       source: "maritime-route",
       paint: {
-        "line-color": "#1c7890",
-        "line-width": 4,
-        "line-opacity": 0.75,
-        "line-dasharray": [2, 1],
-      },
-    });
-
-    map.addSource("boat-point", {
-      type: "geojson",
-      data: {
-        type: "FeatureCollection",
-        features: [
-          {
-            type: "Feature",
-            properties: {},
-            geometry: {
-              type: "Point",
-              coordinates: maritimeRoute[0],
-            },
-          },
-        ],
+        "line-color": "#173f48",
+        "line-width": 7,
+        "line-opacity": 0.18,
+        "line-blur": 1.8,
       },
     });
 
     map.addLayer({
-      id: "boat-symbol",
-      type: "symbol",
-      source: "boat-point",
-      layout: {
-        "text-field": "⛵",
-        "text-size": 28,
-        "text-allow-overlap": true,
+      id: "maritime-route-line",
+      type: "line",
+      source: "maritime-route",
+      paint: {
+        "line-color": "#1d7f96",
+        "line-width": 4,
+        "line-opacity": 0.68,
+        "line-dasharray": [2, 1],
       },
     });
+  }
 
+  function addDirectionalBoat() {
+    const boatElement = createDirectionalBoatElement();
+
+    const initialPoint = interpolateRoutePoint(0);
+
+    const boatMarker = new maplibregl.Marker({
+      element: boatElement,
+      anchor: "center",
+    })
+      .setLngLat(initialPoint.coordinates)
+      .addTo(map);
+
+    const duration = 52000;
+    const start = performance.now();
+
+    function frame(now: number) {
+      const elapsed = (now - start) % duration;
+      const progress = elapsed / duration;
+      const point = interpolateRoutePoint(progress);
+      const direction = getBoatDirection(point.from, point.to);
+
+      boatMarker.setLngLat(point.coordinates);
+      boatElement.dataset.direction = direction;
+
+      window.requestAnimationFrame(frame);
+    }
+
+    window.requestAnimationFrame(frame);
+  }
+
+  function bindMapEvents() {
     map.on("click", "bible-places-circles", (event) => {
       const feature = event.features?.[0];
 
@@ -286,7 +869,7 @@ import { sitePath } from "../../lib/site-paths";
         return;
       }
 
-      const coordinates = (feature.geometry as GeoJSON.Point).coordinates.slice() as [
+      const coordinates = (feature.geometry as any).coordinates.slice() as [
         number,
         number,
       ];
@@ -314,55 +897,39 @@ import { sitePath } from "../../lib/site-paths";
     map.on("mouseleave", "bible-places-circles", () => {
       map.getCanvas().style.cursor = "";
     });
+  }
 
-    animateBoat();
-  });
+  function bindToolbar() {
+    document.querySelectorAll("[data-map-action]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const action = button.getAttribute("data-map-action");
 
-  document.querySelectorAll("[data-map-action]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const action = button.getAttribute("data-map-action");
+        if (!action || !cameraPresets[action]) {
+          return;
+        }
 
-      if (action === "israel") {
         map.flyTo({
-          center: [35.2137, 31.7683],
-          zoom: 7,
-          pitch: 60,
-          bearing: -18,
+          ...cameraPresets[action],
           speed: 0.8,
+          curve: 1.35,
+          essential: true,
         });
-      }
-
-      if (action === "mediterraneo") {
-        map.flyTo({
-          center: [24.8, 36.4],
-          zoom: 4.2,
-          pitch: 56,
-          bearing: -12,
-          speed: 0.8,
-        });
-      }
-
-      if (action === "mesopotamia") {
-        map.flyTo({
-          center: [43.7, 33.4],
-          zoom: 5,
-          pitch: 58,
-          bearing: -22,
-          speed: 0.8,
-        });
-      }
-
-      if (action === "ruta") {
-        map.flyTo({
-          center: [24.6, 37.5],
-          zoom: 4.4,
-          pitch: 62,
-          bearing: -28,
-          speed: 0.8,
-        });
-      }
+      });
     });
+  }
+
+  map.on("load", () => {
+    softenBaseMap();
+    addTerrain();
+    addWaterMotion();
+    addBiblicalAreas();
+    addBiblicalPlaces();
+    addMaritimeRoute();
+    addDirectionalBoat();
+    bindMapEvents();
   });
+
+  bindToolbar();
 </script>
 
 <style>
@@ -378,48 +945,139 @@ import { sitePath } from "../../lib/site-paths";
   .map3d-shell {
     position: relative;
     overflow: hidden;
-    border: 1px solid #e5d3b5;
-    border-radius: 28px;
+    border: 1px solid rgba(198, 154, 69, 0.32);
+    border-radius: 30px;
     background:
-      radial-gradient(circle at top left, rgba(233, 184, 114, 0.2), transparent 34%),
-      #f5ead2;
-    box-shadow: 0 24px 70px rgba(71, 45, 21, 0.14);
+      radial-gradient(circle at top left, rgba(233, 184, 114, 0.24), transparent 34%),
+      linear-gradient(135deg, rgba(80, 47, 22, 0.9), rgba(31, 22, 15, 0.96));
+    box-shadow:
+      0 28px 80px rgba(35, 22, 12, 0.28),
+      inset 0 1px 0 rgba(255, 239, 205, 0.18);
   }
 
   #biblical-map-3d {
     width: 100%;
-    height: min(72vh, 720px);
-    min-height: 520px;
+    height: min(74vh, 760px);
+    min-height: 560px;
+    background: #152027;
   }
 
   .map3d-toolbar {
     position: absolute;
-    z-index: 2;
+    z-index: 5;
     top: 18px;
     left: 18px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    max-width: calc(100% - 110px);
+    max-width: calc(100% - 120px);
   }
 
   .map3d-toolbar button {
     cursor: pointer;
-    border: 1px solid rgba(94, 58, 24, 0.28);
+    border: 1px solid rgba(94, 58, 24, 0.24);
     border-radius: 999px;
-    background: rgba(255, 248, 235, 0.92);
+    background:
+      linear-gradient(180deg, rgba(255, 248, 235, 0.96), rgba(239, 219, 184, 0.94));
     color: #3a2414;
     font: inherit;
     font-size: 0.86rem;
-    font-weight: 750;
+    font-weight: 800;
+    letter-spacing: -0.01em;
     padding: 9px 13px;
-    box-shadow: 0 8px 22px rgba(58, 36, 20, 0.12);
+    box-shadow:
+      0 10px 24px rgba(58, 36, 20, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      background 160ms ease;
   }
 
   .map3d-toolbar button:hover {
-    border-color: #c69a45;
-    background: #fff4dc;
+    border-color: rgba(198, 154, 69, 0.74);
+    background:
+      linear-gradient(180deg, #fff7e8, #eed2a1);
+    transform: translateY(-1px);
+  }
+
+  .map3d-status {
+    position: absolute;
+    z-index: 5;
+    right: 18px;
+    bottom: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(198, 154, 69, 0.34);
+    border-radius: 999px;
+    background: rgba(28, 20, 14, 0.78);
+    color: #f8e7c8;
+    font-size: 0.78rem;
+    font-weight: 750;
+    padding: 8px 12px;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(10px);
+  }
+
+  .map3d-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #d8a84b;
+    box-shadow: 0 0 0 5px rgba(216, 168, 75, 0.18);
+  }
+
+  .map3d-vignette {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    background:
+      radial-gradient(circle at center, transparent 56%, rgba(31, 18, 10, 0.2) 100%),
+      linear-gradient(180deg, rgba(255, 236, 196, 0.06), transparent 32%, rgba(30, 18, 10, 0.2));
+    mix-blend-mode: multiply;
+  }
+
+  .map3d-notes {
+    border: 1px solid rgba(198, 154, 69, 0.22);
+    border-radius: 24px;
+    background:
+      radial-gradient(circle at top left, rgba(198, 154, 69, 0.16), transparent 34%),
+      rgba(255, 248, 235, 0.72);
+    padding: clamp(20px, 4vw, 30px);
+  }
+
+  .map3d-notes h2 {
+    margin: 0 0 10px;
+    color: #3a2414;
+  }
+
+  .map3d-notes p {
+    max-width: 820px;
+    margin: 0;
+    color: #6f5940;
+    line-height: 1.7;
+  }
+
+  :global(.maplibregl-ctrl-group) {
+    overflow: hidden;
+    border: 1px solid rgba(94, 58, 24, 0.18);
+    border-radius: 14px;
+    background: rgba(255, 248, 235, 0.94);
+    box-shadow: 0 12px 28px rgba(58, 36, 20, 0.16);
+  }
+
+  :global(.maplibregl-ctrl button) {
+    color: #3a2414;
+  }
+
+  :global(.maplibregl-ctrl-attrib) {
+    border-radius: 10px;
+    background: rgba(255, 248, 235, 0.82);
+    color: #4f3925;
+    font-size: 0.68rem;
   }
 
   :global(.maplibregl-popup-content) {
@@ -430,8 +1088,15 @@ import { sitePath } from "../../lib/site-paths";
     box-shadow: 0 18px 44px rgba(58, 36, 20, 0.18);
   }
 
+  :global(.maplibregl-popup-close-button) {
+    color: #5d3212;
+    font-size: 1.25rem;
+    padding: 4px 8px;
+  }
+
   :global(.map3d-popup) {
     max-width: 230px;
+    padding-right: 8px;
   }
 
   :global(.map3d-popup strong) {
@@ -447,21 +1112,335 @@ import { sitePath } from "../../lib/site-paths";
     line-height: 1.45;
   }
 
+  :global(.map3d-directional-boat) {
+    width: clamp(60px, 6.2vw, 96px);
+    height: clamp(60px, 6.2vw, 96px);
+    pointer-events: none;
+    z-index: 6;
+  }
+
+  :global(.map3d-directional-boat-float) {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    animation: directionalBoatFloat 3.2s ease-in-out infinite;
+    filter:
+      drop-shadow(0 16px 18px rgba(15, 34, 42, 0.36))
+      drop-shadow(0 0 14px rgba(255, 236, 188, 0.16));
+  }
+
+  :global(.map3d-boat-variant) {
+    position: absolute;
+    inset: 0;
+    display: none;
+  }
+
+  :global(.map3d-directional-boat[data-direction="n"] .map3d-boat-variant-n),
+  :global(.map3d-directional-boat[data-direction="ne"] .map3d-boat-variant-ne),
+  :global(.map3d-directional-boat[data-direction="e"] .map3d-boat-variant-e),
+  :global(.map3d-directional-boat[data-direction="se"] .map3d-boat-variant-se),
+  :global(.map3d-directional-boat[data-direction="s"] .map3d-boat-variant-s),
+  :global(.map3d-directional-boat[data-direction="sw"] .map3d-boat-variant-sw),
+  :global(.map3d-directional-boat[data-direction="w"] .map3d-boat-variant-w),
+  :global(.map3d-directional-boat[data-direction="nw"] .map3d-boat-variant-nw) {
+    display: block;
+  }
+
+  :global(.map3d-boat-image) {
+    position: relative;
+    z-index: 3;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    user-select: none;
+  }
+
+  :global(.map3d-boat-shadow) {
+    position: absolute;
+    z-index: 1;
+    border-radius: 999px;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(29, 73, 88, 0.34),
+      transparent 68%
+    );
+    filter: blur(2px);
+  }
+
+  :global(.map3d-boat-wake) {
+    position: absolute;
+    z-index: 1;
+    border-radius: 999px;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(255, 242, 203, 0.58),
+      transparent 70%
+    );
+    opacity: 0.5;
+    transform-origin: center;
+    filter: blur(0.5px);
+  }
+
+  :global(.map3d-boat-wake-main) {
+    animation: directionalWakeMain 1.8s ease-in-out infinite;
+  }
+
+  :global(.map3d-boat-wake-soft) {
+    animation: directionalWakeSoft 2.3s ease-in-out infinite;
+  }
+
+  :global(.map3d-boat-variant-n .map3d-boat-shadow) {
+    left: 33%;
+    right: 33%;
+    bottom: 8%;
+    height: 14%;
+  }
+
+  :global(.map3d-boat-variant-n .map3d-boat-wake-main) {
+    left: 34%;
+    top: 76%;
+    width: 32%;
+    height: 12%;
+  }
+
+  :global(.map3d-boat-variant-n .map3d-boat-wake-soft) {
+    left: 39%;
+    top: 88%;
+    width: 22%;
+    height: 9%;
+  }
+
+  :global(.map3d-boat-variant-s .map3d-boat-shadow) {
+    left: 33%;
+    right: 33%;
+    top: 10%;
+    height: 14%;
+  }
+
+  :global(.map3d-boat-variant-s .map3d-boat-wake-main) {
+    left: 34%;
+    bottom: 76%;
+    width: 32%;
+    height: 12%;
+  }
+
+  :global(.map3d-boat-variant-s .map3d-boat-wake-soft) {
+    left: 39%;
+    bottom: 88%;
+    width: 22%;
+    height: 9%;
+  }
+
+  :global(.map3d-boat-variant-e .map3d-boat-shadow) {
+    left: 17%;
+    bottom: 18%;
+    width: 46%;
+    height: 13%;
+  }
+
+  :global(.map3d-boat-variant-e .map3d-boat-wake-main) {
+    left: -2%;
+    bottom: 20%;
+    width: 38%;
+    height: 11%;
+  }
+
+  :global(.map3d-boat-variant-e .map3d-boat-wake-soft) {
+    left: -7%;
+    bottom: 31%;
+    width: 28%;
+    height: 8%;
+  }
+
+  :global(.map3d-boat-variant-w .map3d-boat-shadow) {
+    right: 17%;
+    bottom: 18%;
+    width: 46%;
+    height: 13%;
+  }
+
+  :global(.map3d-boat-variant-w .map3d-boat-wake-main) {
+    right: -2%;
+    bottom: 20%;
+    width: 38%;
+    height: 11%;
+  }
+
+  :global(.map3d-boat-variant-w .map3d-boat-wake-soft) {
+    right: -7%;
+    bottom: 31%;
+    width: 28%;
+    height: 8%;
+  }
+
+  :global(.map3d-boat-variant-ne .map3d-boat-shadow) {
+    left: 20%;
+    bottom: 14%;
+    width: 42%;
+    height: 12%;
+    transform: rotate(-28deg);
+  }
+
+  :global(.map3d-boat-variant-ne .map3d-boat-wake-main) {
+    left: 8%;
+    top: 72%;
+    width: 38%;
+    height: 11%;
+    transform: rotate(-28deg);
+  }
+
+  :global(.map3d-boat-variant-ne .map3d-boat-wake-soft) {
+    left: -1%;
+    top: 84%;
+    width: 28%;
+    height: 8%;
+    transform: rotate(-28deg);
+  }
+
+  :global(.map3d-boat-variant-nw .map3d-boat-shadow) {
+    right: 20%;
+    bottom: 14%;
+    width: 42%;
+    height: 12%;
+    transform: rotate(28deg);
+  }
+
+  :global(.map3d-boat-variant-nw .map3d-boat-wake-main) {
+    right: 8%;
+    top: 72%;
+    width: 38%;
+    height: 11%;
+    transform: rotate(28deg);
+  }
+
+  :global(.map3d-boat-variant-nw .map3d-boat-wake-soft) {
+    right: -1%;
+    top: 84%;
+    width: 28%;
+    height: 8%;
+    transform: rotate(28deg);
+  }
+
+  :global(.map3d-boat-variant-se .map3d-boat-shadow) {
+    left: 20%;
+    top: 14%;
+    width: 42%;
+    height: 12%;
+    transform: rotate(28deg);
+  }
+
+  :global(.map3d-boat-variant-se .map3d-boat-wake-main) {
+    left: 8%;
+    bottom: 72%;
+    width: 38%;
+    height: 11%;
+    transform: rotate(28deg);
+  }
+
+  :global(.map3d-boat-variant-se .map3d-boat-wake-soft) {
+    left: -1%;
+    bottom: 84%;
+    width: 28%;
+    height: 8%;
+    transform: rotate(28deg);
+  }
+
+  :global(.map3d-boat-variant-sw .map3d-boat-shadow) {
+    right: 20%;
+    top: 14%;
+    width: 42%;
+    height: 12%;
+    transform: rotate(-28deg);
+  }
+
+  :global(.map3d-boat-variant-sw .map3d-boat-wake-main) {
+    right: 8%;
+    bottom: 72%;
+    width: 38%;
+    height: 11%;
+    transform: rotate(-28deg);
+  }
+
+  :global(.map3d-boat-variant-sw .map3d-boat-wake-soft) {
+    right: -1%;
+    bottom: 84%;
+    width: 28%;
+    height: 8%;
+    transform: rotate(-28deg);
+  }
+
+  @keyframes directionalBoatFloat {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+
+    50% {
+      translate: 0 -5px;
+    }
+  }
+
+  @keyframes directionalWakeMain {
+    0%,
+    100% {
+      opacity: 0.14;
+      scale: 0.72 0.8;
+    }
+
+    50% {
+      opacity: 0.5;
+      scale: 1.12 1;
+    }
+  }
+
+  @keyframes directionalWakeSoft {
+    0%,
+    100% {
+      opacity: 0.09;
+      scale: 0.58 0.72;
+    }
+
+    50% {
+      opacity: 0.32;
+      scale: 1 0.95;
+    }
+  }
+
   @media (max-width: 760px) {
     #biblical-map-3d {
       height: 68vh;
-      min-height: 460px;
+      min-height: 500px;
+    }
+
+    .map3d-shell {
+      border-radius: 26px;
     }
 
     .map3d-toolbar {
       top: 12px;
       left: 12px;
-      max-width: calc(100% - 24px);
+      max-width: calc(100% - 74px);
+      gap: 8px;
     }
 
     .map3d-toolbar button {
       padding: 8px 11px;
       font-size: 0.8rem;
+    }
+
+    .map3d-status {
+      display: none;
+    }
+
+    :global(.maplibregl-ctrl-attrib) {
+      max-width: 76%;
+      font-size: 0.62rem;
+    }
+
+    :global(.map3d-directional-boat) {
+      width: 68px;
+      height: 68px;
     }
   }
 </style>
