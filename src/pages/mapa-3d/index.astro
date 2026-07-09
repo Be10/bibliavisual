@@ -1,0 +1,467 @@
+---
+import "maplibre-gl/dist/maplibre-gl.css";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { sitePath } from "../../lib/site-paths";
+---
+
+<BaseLayout
+  title="Mapa bíblico 3D"
+  description="Mapa bíblico experimental con perspectiva, lugares seleccionados y rutas visuales."
+>
+  <main class="page map3d-page">
+    <div class="breadcrumb">
+      <a href={sitePath("/")}>Inicio</a> → Mapa bíblico 3D
+    </div>
+
+    <section class="hero map3d-hero">
+      <p class="eyebrow">Mapa experimental</p>
+
+      <h1>Mapa bíblico 3D</h1>
+
+      <p class="subtitle">
+        Una primera prueba visual con MapLibre GL JS: mapa inclinado, lugares
+        bíblicos seleccionados y una ruta marítima animada.
+      </p>
+
+      <div class="actions">
+        <a href={sitePath("/mapa/")} class="button secondary">
+          Volver al mapa actual
+        </a>
+      </div>
+    </section>
+
+    <section class="map3d-shell">
+      <div class="map3d-toolbar" aria-label="Controles del mapa">
+        <button type="button" data-map-action="israel">Israel</button>
+        <button type="button" data-map-action="mediterraneo">Mediterráneo</button>
+        <button type="button" data-map-action="mesopotamia">Mesopotamia</button>
+        <button type="button" data-map-action="ruta">Ruta marítima</button>
+      </div>
+
+      <div id="biblical-map-3d"></div>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  import maplibregl from "maplibre-gl";
+
+  type BiblePlace = {
+    name: string;
+    description: string;
+    coordinates: [number, number];
+  };
+
+  const places: BiblePlace[] = [
+    {
+      name: "Jerusalén",
+      description: "Ciudad central en la historia bíblica.",
+      coordinates: [35.2137, 31.7683],
+    },
+    {
+      name: "Belén",
+      description: "Ciudad asociada con David y el nacimiento de Jesús.",
+      coordinates: [35.2024, 31.7054],
+    },
+    {
+      name: "Nazaret",
+      description: "Lugar donde Jesús creció.",
+      coordinates: [35.3035, 32.6996],
+    },
+    {
+      name: "Capernaúm",
+      description: "Lugar importante del ministerio de Jesús en Galilea.",
+      coordinates: [35.575, 32.8803],
+    },
+    {
+      name: "Monte Sinaí",
+      description: "Región asociada con la entrega de la Ley.",
+      coordinates: [33.9753, 28.5397],
+    },
+    {
+      name: "Ur",
+      description: "Lugar asociado con el llamado de Abraham.",
+      coordinates: [46.1031, 30.9625],
+    },
+    {
+      name: "Harán",
+      description: "Lugar importante en el recorrido de Abraham.",
+      coordinates: [39.0319, 36.865],
+    },
+    {
+      name: "Babilonia",
+      description: "Ciudad asociada con el exilio de Judá.",
+      coordinates: [44.4215, 32.5364],
+    },
+    {
+      name: "Roma",
+      description: "Centro imperial relacionado con el avance del evangelio.",
+      coordinates: [12.4964, 41.9028],
+    },
+  ];
+
+  const maritimeRoute: [number, number][] = [
+    [34.904, 32.5007],
+    [33.4299, 35.1264],
+    [28.9784, 41.0082],
+    [14.3754, 35.9375],
+    [12.4964, 41.9028],
+  ];
+
+  const map = new maplibregl.Map({
+    container: "biblical-map-3d",
+    style: "https://tiles.openfreemap.org/styles/liberty",
+    center: [35.2137, 31.7683],
+    zoom: 5.5,
+    pitch: 58,
+    bearing: -18,
+    maxPitch: 75,
+  });
+
+  map.addControl(
+    new maplibregl.NavigationControl({
+      visualizePitch: true,
+      showCompass: true,
+      showZoom: true,
+    }),
+    "top-right",
+  );
+
+  function createPopup(place: BiblePlace) {
+    return `
+      <article class="map3d-popup">
+        <strong>${place.name}</strong>
+        <p>${place.description}</p>
+      </article>
+    `;
+  }
+
+  function animateBoat() {
+    const source = map.getSource("boat-point");
+
+    if (!source || source.type !== "geojson") {
+      return;
+    }
+
+    const duration = 22000;
+    const start = performance.now();
+
+    function frame(now: number) {
+      const elapsed = (now - start) % duration;
+      const progress = elapsed / duration;
+      const routeIndex = Math.floor(progress * (maritimeRoute.length - 1));
+      const nextIndex = Math.min(routeIndex + 1, maritimeRoute.length - 1);
+      const segmentProgress = progress * (maritimeRoute.length - 1) - routeIndex;
+
+      const from = maritimeRoute[routeIndex];
+      const to = maritimeRoute[nextIndex];
+
+      const lng = from[0] + (to[0] - from[0]) * segmentProgress;
+      const lat = from[1] + (to[1] - from[1]) * segmentProgress;
+
+      source.setData({
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            properties: {},
+            geometry: {
+              type: "Point",
+              coordinates: [lng, lat],
+            },
+          },
+        ],
+      });
+
+      window.requestAnimationFrame(frame);
+    }
+
+    window.requestAnimationFrame(frame);
+  }
+
+  map.on("load", () => {
+    map.addSource("bible-places", {
+      type: "geojson",
+      data: {
+        type: "FeatureCollection",
+        features: places.map((place) => ({
+          type: "Feature",
+          properties: {
+            name: place.name,
+            description: place.description,
+          },
+          geometry: {
+            type: "Point",
+            coordinates: place.coordinates,
+          },
+        })),
+      },
+    });
+
+    map.addLayer({
+      id: "bible-places-circles",
+      type: "circle",
+      source: "bible-places",
+      paint: {
+        "circle-radius": 7,
+        "circle-color": "#c69a45",
+        "circle-stroke-color": "#3a2414",
+        "circle-stroke-width": 2,
+      },
+    });
+
+    map.addLayer({
+      id: "bible-places-labels",
+      type: "symbol",
+      source: "bible-places",
+      layout: {
+        "text-field": ["get", "name"],
+        "text-size": 13,
+        "text-offset": [0, 1.35],
+        "text-anchor": "top",
+      },
+      paint: {
+        "text-color": "#3a2414",
+        "text-halo-color": "#f7ecd2",
+        "text-halo-width": 1.6,
+      },
+    });
+
+    map.addSource("maritime-route", {
+      type: "geojson",
+      data: {
+        type: "Feature",
+        properties: {},
+        geometry: {
+          type: "LineString",
+          coordinates: maritimeRoute,
+        },
+      },
+    });
+
+    map.addLayer({
+      id: "maritime-route-line",
+      type: "line",
+      source: "maritime-route",
+      paint: {
+        "line-color": "#1c7890",
+        "line-width": 4,
+        "line-opacity": 0.75,
+        "line-dasharray": [2, 1],
+      },
+    });
+
+    map.addSource("boat-point", {
+      type: "geojson",
+      data: {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            properties: {},
+            geometry: {
+              type: "Point",
+              coordinates: maritimeRoute[0],
+            },
+          },
+        ],
+      },
+    });
+
+    map.addLayer({
+      id: "boat-symbol",
+      type: "symbol",
+      source: "boat-point",
+      layout: {
+        "text-field": "⛵",
+        "text-size": 28,
+        "text-allow-overlap": true,
+      },
+    });
+
+    map.on("click", "bible-places-circles", (event) => {
+      const feature = event.features?.[0];
+
+      if (!feature) {
+        return;
+      }
+
+      const coordinates = (feature.geometry as GeoJSON.Point).coordinates.slice() as [
+        number,
+        number,
+      ];
+
+      const place = {
+        name: String(feature.properties?.name ?? ""),
+        description: String(feature.properties?.description ?? ""),
+        coordinates,
+      };
+
+      new maplibregl.Popup({
+        offset: 18,
+        closeButton: true,
+        closeOnClick: true,
+      })
+        .setLngLat(coordinates)
+        .setHTML(createPopup(place))
+        .addTo(map);
+    });
+
+    map.on("mouseenter", "bible-places-circles", () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+
+    map.on("mouseleave", "bible-places-circles", () => {
+      map.getCanvas().style.cursor = "";
+    });
+
+    animateBoat();
+  });
+
+  document.querySelectorAll("[data-map-action]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const action = button.getAttribute("data-map-action");
+
+      if (action === "israel") {
+        map.flyTo({
+          center: [35.2137, 31.7683],
+          zoom: 7,
+          pitch: 60,
+          bearing: -18,
+          speed: 0.8,
+        });
+      }
+
+      if (action === "mediterraneo") {
+        map.flyTo({
+          center: [24.8, 36.4],
+          zoom: 4.2,
+          pitch: 56,
+          bearing: -12,
+          speed: 0.8,
+        });
+      }
+
+      if (action === "mesopotamia") {
+        map.flyTo({
+          center: [43.7, 33.4],
+          zoom: 5,
+          pitch: 58,
+          bearing: -22,
+          speed: 0.8,
+        });
+      }
+
+      if (action === "ruta") {
+        map.flyTo({
+          center: [24.6, 37.5],
+          zoom: 4.4,
+          pitch: 62,
+          bearing: -28,
+          speed: 0.8,
+        });
+      }
+    });
+  });
+</script>
+
+<style>
+  .map3d-page {
+    display: grid;
+    gap: 28px;
+  }
+
+  .map3d-hero {
+    margin-bottom: 0;
+  }
+
+  .map3d-shell {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #e5d3b5;
+    border-radius: 28px;
+    background:
+      radial-gradient(circle at top left, rgba(233, 184, 114, 0.2), transparent 34%),
+      #f5ead2;
+    box-shadow: 0 24px 70px rgba(71, 45, 21, 0.14);
+  }
+
+  #biblical-map-3d {
+    width: 100%;
+    height: min(72vh, 720px);
+    min-height: 520px;
+  }
+
+  .map3d-toolbar {
+    position: absolute;
+    z-index: 2;
+    top: 18px;
+    left: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-width: calc(100% - 110px);
+  }
+
+  .map3d-toolbar button {
+    cursor: pointer;
+    border: 1px solid rgba(94, 58, 24, 0.28);
+    border-radius: 999px;
+    background: rgba(255, 248, 235, 0.92);
+    color: #3a2414;
+    font: inherit;
+    font-size: 0.86rem;
+    font-weight: 750;
+    padding: 9px 13px;
+    box-shadow: 0 8px 22px rgba(58, 36, 20, 0.12);
+    backdrop-filter: blur(10px);
+  }
+
+  .map3d-toolbar button:hover {
+    border-color: #c69a45;
+    background: #fff4dc;
+  }
+
+  :global(.maplibregl-popup-content) {
+    border-radius: 18px;
+    border: 1px solid #e5d3b5;
+    background: #fff8eb;
+    color: #3a2414;
+    box-shadow: 0 18px 44px rgba(58, 36, 20, 0.18);
+  }
+
+  :global(.map3d-popup) {
+    max-width: 230px;
+  }
+
+  :global(.map3d-popup strong) {
+    display: block;
+    margin-bottom: 5px;
+    color: #5d3212;
+  }
+
+  :global(.map3d-popup p) {
+    margin: 0;
+    color: #6f5940;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 760px) {
+    #biblical-map-3d {
+      height: 68vh;
+      min-height: 460px;
+    }
+
+    .map3d-toolbar {
+      top: 12px;
+      left: 12px;
+      max-width: calc(100% - 24px);
+    }
+
+    .map3d-toolbar button {
+      padding: 8px 11px;
+      font-size: 0.8rem;
+    }
+  }
+</style>
