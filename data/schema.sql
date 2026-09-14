@@ -25,6 +25,7 @@ DROP TABLE IF EXISTS glossary_terms;
 DROP TABLE IF EXISTS places;
 DROP TABLE IF EXISTS people;
 DROP TABLE IF EXISTS topics;
+DROP TABLE IF EXISTS book_translations;
 DROP TABLE IF EXISTS books;
 DROP TABLE IF EXISTS events;
 DROP TABLE IF EXISTS lessons;
@@ -43,6 +44,7 @@ CREATE TABLE routes (
 
 CREATE TABLE books (
   id TEXT PRIMARY KEY,
+  usfm_code TEXT UNIQUE,
   name TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
   abbreviation TEXT,
@@ -52,6 +54,21 @@ CREATE TABLE books (
   genre TEXT,
   summary TEXT,
   status TEXT NOT NULL DEFAULT 'Borrador'
+);
+
+CREATE TABLE book_translations (
+  book_id TEXT NOT NULL,
+  language TEXT NOT NULL,
+  name TEXT NOT NULL,
+  slug TEXT NOT NULL,
+  abbreviation TEXT,
+  testament TEXT NOT NULL,
+  category TEXT,
+  genre TEXT,
+  summary TEXT,
+  PRIMARY KEY (book_id, language),
+  UNIQUE (language, slug),
+  FOREIGN KEY (book_id) REFERENCES books(id)
 );
 
 CREATE TABLE bible_versions (

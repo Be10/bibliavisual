@@ -89,6 +89,184 @@ INSERT INTO books (
 ('book-apocalipsis', 'Apocalipsis', 'apocalipsis', 'Ap', 'Nuevo Testamento', 66, 'Profecía / Apocalíptico', 'Apocalíptico / profecía', 'Muestra la victoria final de Cristo y la nueva creación.', 'Publicado básico'
 );
 
+UPDATE books
+SET usfm_code = CASE id
+  WHEN 'book-genesis' THEN 'GEN'
+  WHEN 'book-exodo' THEN 'EXO'
+  WHEN 'book-levitico' THEN 'LEV'
+  WHEN 'book-numeros' THEN 'NUM'
+  WHEN 'book-deuteronomio' THEN 'DEU'
+  WHEN 'book-josue' THEN 'JOS'
+  WHEN 'book-jueces' THEN 'JDG'
+  WHEN 'book-rut' THEN 'RUT'
+  WHEN 'book-1-samuel' THEN '1SA'
+  WHEN 'book-2-samuel' THEN '2SA'
+  WHEN 'book-1-reyes' THEN '1KI'
+  WHEN 'book-2-reyes' THEN '2KI'
+  WHEN 'book-1-cronicas' THEN '1CH'
+  WHEN 'book-2-cronicas' THEN '2CH'
+  WHEN 'book-esdras' THEN 'EZR'
+  WHEN 'book-nehemias' THEN 'NEH'
+  WHEN 'book-ester' THEN 'EST'
+  WHEN 'book-job' THEN 'JOB'
+  WHEN 'book-salmos' THEN 'PSA'
+  WHEN 'book-proverbios' THEN 'PRO'
+  WHEN 'book-eclesiastes' THEN 'ECC'
+  WHEN 'book-cantares' THEN 'SNG'
+  WHEN 'book-isaias' THEN 'ISA'
+  WHEN 'book-jeremias' THEN 'JER'
+  WHEN 'book-lamentaciones' THEN 'LAM'
+  WHEN 'book-ezequiel' THEN 'EZK'
+  WHEN 'book-daniel' THEN 'DAN'
+  WHEN 'book-oseas' THEN 'HOS'
+  WHEN 'book-joel' THEN 'JOL'
+  WHEN 'book-amos' THEN 'AMO'
+  WHEN 'book-abdias' THEN 'OBA'
+  WHEN 'book-jonas' THEN 'JON'
+  WHEN 'book-miqueas' THEN 'MIC'
+  WHEN 'book-nahum' THEN 'NAM'
+  WHEN 'book-habacuc' THEN 'HAB'
+  WHEN 'book-sofonias' THEN 'ZEP'
+  WHEN 'book-hageo' THEN 'HAG'
+  WHEN 'book-zacarias' THEN 'ZEC'
+  WHEN 'book-malaquias' THEN 'MAL'
+  WHEN 'book-mateo' THEN 'MAT'
+  WHEN 'book-marcos' THEN 'MRK'
+  WHEN 'book-lucas' THEN 'LUK'
+  WHEN 'book-juan' THEN 'JHN'
+  WHEN 'book-hechos' THEN 'ACT'
+  WHEN 'book-romanos' THEN 'ROM'
+  WHEN 'book-1-corintios' THEN '1CO'
+  WHEN 'book-2-corintios' THEN '2CO'
+  WHEN 'book-galatas' THEN 'GAL'
+  WHEN 'book-efesios' THEN 'EPH'
+  WHEN 'book-filipenses' THEN 'PHP'
+  WHEN 'book-colosenses' THEN 'COL'
+  WHEN 'book-1-tesalonicenses' THEN '1TH'
+  WHEN 'book-2-tesalonicenses' THEN '2TH'
+  WHEN 'book-1-timoteo' THEN '1TI'
+  WHEN 'book-2-timoteo' THEN '2TI'
+  WHEN 'book-tito' THEN 'TIT'
+  WHEN 'book-filemon' THEN 'PHM'
+  WHEN 'book-hebreos' THEN 'HEB'
+  WHEN 'book-santiago' THEN 'JAS'
+  WHEN 'book-1-pedro' THEN '1PE'
+  WHEN 'book-2-pedro' THEN '2PE'
+  WHEN 'book-1-juan' THEN '1JN'
+  WHEN 'book-2-juan' THEN '2JN'
+  WHEN 'book-3-juan' THEN '3JN'
+  WHEN 'book-judas' THEN 'JUD'
+  WHEN 'book-apocalipsis' THEN 'REV'
+END;
+
+INSERT INTO book_translations (
+  book_id,
+  language,
+  name,
+  slug,
+  abbreviation,
+  testament,
+  category,
+  genre,
+  summary
+)
+SELECT
+  id,
+  'es',
+  name,
+  slug,
+  abbreviation,
+  testament,
+  category,
+  genre,
+  summary
+FROM books;
+
+INSERT INTO book_translations (
+  book_id,
+  language,
+  name,
+  slug,
+  abbreviation,
+  testament,
+  category,
+  genre,
+  summary
+) VALUES
+('book-genesis', 'en', 'Genesis', 'genesis', 'Gen', 'Old Testament', NULL, NULL, NULL),
+('book-exodo', 'en', 'Exodus', 'exodus', 'Exod', 'Old Testament', NULL, NULL, NULL),
+('book-levitico', 'en', 'Leviticus', 'leviticus', 'Lev', 'Old Testament', NULL, NULL, NULL),
+('book-numeros', 'en', 'Numbers', 'numbers', 'Num', 'Old Testament', NULL, NULL, NULL),
+('book-deuteronomio', 'en', 'Deuteronomy', 'deuteronomy', 'Deut', 'Old Testament', NULL, NULL, NULL),
+
+('book-josue', 'en', 'Joshua', 'joshua', 'Josh', 'Old Testament', NULL, NULL, NULL),
+('book-jueces', 'en', 'Judges', 'judges', 'Judg', 'Old Testament', NULL, NULL, NULL),
+('book-rut', 'en', 'Ruth', 'ruth', 'Ruth', 'Old Testament', NULL, NULL, NULL),
+('book-1-samuel', 'en', '1 Samuel', '1-samuel', '1 Sam', 'Old Testament', NULL, NULL, NULL),
+('book-2-samuel', 'en', '2 Samuel', '2-samuel', '2 Sam', 'Old Testament', NULL, NULL, NULL),
+('book-1-reyes', 'en', '1 Kings', '1-kings', '1 Kgs', 'Old Testament', NULL, NULL, NULL),
+('book-2-reyes', 'en', '2 Kings', '2-kings', '2 Kgs', 'Old Testament', NULL, NULL, NULL),
+('book-1-cronicas', 'en', '1 Chronicles', '1-chronicles', '1 Chr', 'Old Testament', NULL, NULL, NULL),
+('book-2-cronicas', 'en', '2 Chronicles', '2-chronicles', '2 Chr', 'Old Testament', NULL, NULL, NULL),
+('book-esdras', 'en', 'Ezra', 'ezra', 'Ezra', 'Old Testament', NULL, NULL, NULL),
+('book-nehemias', 'en', 'Nehemiah', 'nehemiah', 'Neh', 'Old Testament', NULL, NULL, NULL),
+('book-ester', 'en', 'Esther', 'esther', 'Esth', 'Old Testament', NULL, NULL, NULL),
+
+('book-job', 'en', 'Job', 'job', 'Job', 'Old Testament', NULL, NULL, NULL),
+('book-salmos', 'en', 'Psalms', 'psalms', 'Ps', 'Old Testament', NULL, NULL, NULL),
+('book-proverbios', 'en', 'Proverbs', 'proverbs', 'Prov', 'Old Testament', NULL, NULL, NULL),
+('book-eclesiastes', 'en', 'Ecclesiastes', 'ecclesiastes', 'Eccl', 'Old Testament', NULL, NULL, NULL),
+('book-cantares', 'en', 'Solomon''s Song', 'solomons-song', 'Song', 'Old Testament', NULL, NULL, NULL),
+
+('book-isaias', 'en', 'Isaiah', 'isaiah', 'Isa', 'Old Testament', NULL, NULL, NULL),
+('book-jeremias', 'en', 'Jeremiah', 'jeremiah', 'Jer', 'Old Testament', NULL, NULL, NULL),
+('book-lamentaciones', 'en', 'Lamentations', 'lamentations', 'Lam', 'Old Testament', NULL, NULL, NULL),
+('book-ezequiel', 'en', 'Ezekiel', 'ezekiel', 'Ezek', 'Old Testament', NULL, NULL, NULL),
+('book-daniel', 'en', 'Daniel', 'daniel', 'Dan', 'Old Testament', NULL, NULL, NULL),
+
+('book-oseas', 'en', 'Hosea', 'hosea', 'Hos', 'Old Testament', NULL, NULL, NULL),
+('book-joel', 'en', 'Joel', 'joel', 'Joel', 'Old Testament', NULL, NULL, NULL),
+('book-amos', 'en', 'Amos', 'amos', 'Amos', 'Old Testament', NULL, NULL, NULL),
+('book-abdias', 'en', 'Obadiah', 'obadiah', 'Obad', 'Old Testament', NULL, NULL, NULL),
+('book-jonas', 'en', 'Jonah', 'jonah', 'Jonah', 'Old Testament', NULL, NULL, NULL),
+('book-miqueas', 'en', 'Micah', 'micah', 'Mic', 'Old Testament', NULL, NULL, NULL),
+('book-nahum', 'en', 'Nahum', 'nahum', 'Nah', 'Old Testament', NULL, NULL, NULL),
+('book-habacuc', 'en', 'Habakkuk', 'habakkuk', 'Hab', 'Old Testament', NULL, NULL, NULL),
+('book-sofonias', 'en', 'Zephaniah', 'zephaniah', 'Zeph', 'Old Testament', NULL, NULL, NULL),
+('book-hageo', 'en', 'Haggai', 'haggai', 'Hag', 'Old Testament', NULL, NULL, NULL),
+('book-zacarias', 'en', 'Zechariah', 'zechariah', 'Zech', 'Old Testament', NULL, NULL, NULL),
+('book-malaquias', 'en', 'Malachi', 'malachi', 'Mal', 'Old Testament', NULL, NULL, NULL),
+
+('book-mateo', 'en', 'Matthew', 'matthew', 'Matt', 'New Testament', NULL, NULL, NULL),
+('book-marcos', 'en', 'Mark', 'mark', 'Mark', 'New Testament', NULL, NULL, NULL),
+('book-lucas', 'en', 'Luke', 'luke', 'Luke', 'New Testament', NULL, NULL, NULL),
+('book-juan', 'en', 'John', 'john', 'John', 'New Testament', NULL, NULL, NULL),
+('book-hechos', 'en', 'Acts', 'acts', 'Acts', 'New Testament', NULL, NULL, NULL),
+
+('book-romanos', 'en', 'Romans', 'romans', 'Rom', 'New Testament', NULL, NULL, NULL),
+('book-1-corintios', 'en', '1 Corinthians', '1-corinthians', '1 Cor', 'New Testament', NULL, NULL, NULL),
+('book-2-corintios', 'en', '2 Corinthians', '2-corinthians', '2 Cor', 'New Testament', NULL, NULL, NULL),
+('book-galatas', 'en', 'Galatians', 'galatians', 'Gal', 'New Testament', NULL, NULL, NULL),
+('book-efesios', 'en', 'Ephesians', 'ephesians', 'Eph', 'New Testament', NULL, NULL, NULL),
+('book-filipenses', 'en', 'Philippians', 'philippians', 'Phil', 'New Testament', NULL, NULL, NULL),
+('book-colosenses', 'en', 'Colossians', 'colossians', 'Col', 'New Testament', NULL, NULL, NULL),
+('book-1-tesalonicenses', 'en', '1 Thessalonians', '1-thessalonians', '1 Thess', 'New Testament', NULL, NULL, NULL),
+('book-2-tesalonicenses', 'en', '2 Thessalonians', '2-thessalonians', '2 Thess', 'New Testament', NULL, NULL, NULL),
+('book-1-timoteo', 'en', '1 Timothy', '1-timothy', '1 Tim', 'New Testament', NULL, NULL, NULL),
+('book-2-timoteo', 'en', '2 Timothy', '2-timothy', '2 Tim', 'New Testament', NULL, NULL, NULL),
+('book-tito', 'en', 'Titus', 'titus', 'Titus', 'New Testament', NULL, NULL, NULL),
+('book-filemon', 'en', 'Philemon', 'philemon', 'Phlm', 'New Testament', NULL, NULL, NULL),
+
+('book-hebreos', 'en', 'Hebrews', 'hebrews', 'Heb', 'New Testament', NULL, NULL, NULL),
+('book-santiago', 'en', 'James', 'james', 'Jas', 'New Testament', NULL, NULL, NULL),
+('book-1-pedro', 'en', '1 Peter', '1-peter', '1 Pet', 'New Testament', NULL, NULL, NULL),
+('book-2-pedro', 'en', '2 Peter', '2-peter', '2 Pet', 'New Testament', NULL, NULL, NULL),
+('book-1-juan', 'en', '1 John', '1-john', '1 John', 'New Testament', NULL, NULL, NULL),
+('book-2-juan', 'en', '2 John', '2-john', '2 John', 'New Testament', NULL, NULL, NULL),
+('book-3-juan', 'en', '3 John', '3-john', '3 John', 'New Testament', NULL, NULL, NULL),
+('book-judas', 'en', 'Jude', 'jude', 'Jude', 'New Testament', NULL, NULL, NULL),
+('book-apocalipsis', 'en', 'Revelation', 'revelation', 'Rev', 'New Testament', NULL, NULL, NULL);
+
 INSERT INTO bible_versions (
   id,
   name,

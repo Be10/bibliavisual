@@ -1,5 +1,13 @@
 import { sitePath } from "./site-paths";
 import {
+  getBibleRootPath,
+  getBibleVersePath,
+} from "./bible-routes";
+
+import {
+  getDefaultBibleVersionId,
+} from "./bible-config";
+import {
   getAllBooks,
   getAllEvents,
   getAllGlossaryTerms,
@@ -46,6 +54,9 @@ function joinSearchText(...parts: Array<string | number | null | undefined>) {
   return parts.filter(Boolean).join(" ");
 }
 
+const spanishBibleVersionId =
+  getDefaultBibleVersionId("es");
+
 export function buildSearchIndex(): SearchIndexItem[] {
   const rawBooks = getAllBooks().filter((book) => book.status !== "Borrador");
 
@@ -68,7 +79,7 @@ export function buildSearchIndex(): SearchIndexItem[] {
     {
       title: "Biblia",
       type: "Sección",
-      url: sitePath("/biblia/"),
+      url: getBibleRootPath("es"),
       summary: "Lectura bíblica por libros, capítulos y versículos.",
       searchText: "Biblia lectura bíblica libros capítulos versículos",
       typePriority: getTypePriority("Sección"),
@@ -315,9 +326,13 @@ export function buildSearchIndex(): SearchIndexItem[] {
     .map((verse) => ({
       title: `${verse.book_name} ${verse.chapter_number}:${verse.verse_number}`,
       type: "Versículo",
-      url: sitePath(
-        `/biblia/${verse.book_slug}/${verse.chapter_number}/#v${verse.verse_number}`
-      ),
+      url: getBibleVersePath(
+            "es",
+            spanishBibleVersionId,
+            verse.book_usfm_code,
+            verse.chapter_number,
+            verse.verse_number
+          ),
       summary: verse.verse_text ?? "",
       searchText: joinSearchText(
         verse.book_name,

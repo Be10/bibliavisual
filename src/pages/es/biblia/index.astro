@@ -1,0 +1,464 @@
+---
+import { sitePath } from "../../../lib/site-paths";
+
+import {
+  getBibleVersionPath,
+} from "../../../lib/bible-routes";
+
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+
+import {
+  getBibleVersionsByLanguage,
+} from "../../../lib/queries";
+
+const versions =
+  getBibleVersionsByLanguage("es");
+---
+
+<BaseLayout
+  lang="es"
+  title="Biblia"
+  description="Selecciona una versión de la Biblia disponible en español."
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href={sitePath("/")}>Inicio</a> → Biblia
+    </div>
+
+    <section class="hero bible-hero">
+      <div class="bible-hero-content">
+        <p class="eyebrow">
+          Lectura bíblica
+        </p>
+
+        <h1>Biblia</h1>
+
+        <p class="subtitle">
+          Selecciona la versión bíblica que deseas leer.
+        </p>
+      </div>
+
+      <aside
+        class="bible-hero-card"
+        aria-label="Versiones bíblicas"
+      >
+        <span>Idioma</span>
+        <strong>Español</strong>
+
+        <p>
+          {versions.length}{" "}
+          {versions.length === 1
+            ? "versión disponible"
+            : "versiones disponibles"}
+        </p>
+      </aside>
+    </section>
+
+    <section class="section bible-directory-section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">
+            Versiones disponibles
+          </p>
+
+          <h2>Selecciona una versión</h2>
+        </div>
+
+        <span class="section-count">
+          {versions.length}
+        </span>
+      </div>
+
+      <div class="bible-book-grid">
+        {versions.map((version) => (
+          <a
+            href={getBibleVersionPath(
+              "es",
+              version.id
+            )}
+            class="bible-book-card"
+          >
+            <div class="bible-book-main">
+              <span>Versión bíblica</span>
+
+              <h2>{version.abbreviation}</h2>
+
+              <p>{version.name}</p>
+            </div>
+
+            <div class="bible-book-footer">
+              <small>Español</small>
+              <strong>Abrir Biblia →</strong>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .bible-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 320px);
+    gap: 28px;
+    align-items: end;
+    overflow: hidden;
+  }
+
+  .bible-hero::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -120px;
+    width: 320px;
+    height: 320px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
+    pointer-events: none;
+  }
+
+  .bible-hero-content,
+  .bible-hero-card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .bible-hero-card,
+  .bible-stat-card,
+  .bible-overview-card,
+  .bible-testament-heading,
+  .bible-book-card {
+    border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
+  }
+
+  .bible-hero-card {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .bible-hero-card span,
+  .bible-stat-card span,
+  .bible-overview-card span,
+  .bible-testament-heading span,
+  .bible-book-main span {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .bible-hero-card strong {
+    color: #2d2418;
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .bible-hero-card p,
+  .bible-overview-card p,
+  .bible-testament-heading p,
+  .bible-book-main p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .bible-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .bible-stat-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+  }
+
+  .bible-stat-card span {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .bible-stat-card strong {
+    display: block;
+    color: #2d2418;
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .bible-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .bible-overview-card {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    min-height: 180px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  a.bible-overview-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .bible-overview-card strong {
+    color: #2d2418;
+    font-size: 1.25rem;
+    line-height: 1.35;
+  }
+
+  .bible-testament-groups {
+    display: grid;
+    gap: 34px;
+  }
+
+  .bible-testament-group {
+    display: grid;
+    grid-template-columns: minmax(210px, 280px) 1fr;
+    gap: 22px;
+    scroll-margin-top: 120px;
+  }
+
+  .bible-testament-heading {
+    position: sticky;
+    top: 100px;
+    align-self: start;
+    display: grid;
+    gap: 8px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+  }
+
+  .bible-testament-heading h3 {
+    margin: 0;
+    color: #2d2418;
+    font-size: 1.65rem;
+    line-height: 1.15;
+  }
+
+  .bible-testament-heading strong {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 32px;
+    align-items: center;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #eadcc4;
+    color: #5d3212;
+    font-size: 0.88rem;
+  }
+
+  .bible-book-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .bible-book-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    min-height: 250px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .bible-book-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .bible-book-order {
+    display: inline-flex;
+    width: 54px;
+    height: 54px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: #5d3212;
+    color: #fffaf0;
+    font-size: 1.25rem;
+    font-weight: 900;
+  }
+
+  .bible-book-main {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .bible-book-main h2 {
+    margin: 0;
+    color: #2d2418;
+    font-size: 1.25rem;
+    line-height: 1.3;
+  }
+
+  .bible-book-meta {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .bible-book-meta span {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid #eadcc4;
+    color: #5d3212;
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+
+  .bible-book-footer {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid #eadcc4;
+  }
+
+  .bible-book-footer small {
+    color: #6a5c4d;
+    font-size: 0.88rem;
+    font-weight: 800;
+  }
+
+  .bible-book-footer strong {
+    color: #5d3212;
+    font-size: 0.92rem;
+  }
+
+  .bible-copyright-box {
+    margin-top: 32px;
+  }
+
+  :global(html[data-theme="dark"]) .bible-hero-card,
+  :global(html[data-theme="dark"]) .bible-stat-card,
+  :global(html[data-theme="dark"]) .bible-overview-section,
+  :global(html[data-theme="dark"]) .bible-directory-section {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(html[data-theme="dark"]) .bible-overview-card,
+  :global(html[data-theme="dark"]) .bible-testament-heading,
+  :global(html[data-theme="dark"]) .bible-book-card {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .bible-hero-card span,
+  :global(html[data-theme="dark"]) .bible-stat-card span,
+  :global(html[data-theme="dark"]) .bible-overview-card span,
+  :global(html[data-theme="dark"]) .bible-testament-heading span,
+  :global(html[data-theme="dark"]) .bible-book-main span,
+  :global(html[data-theme="dark"]) .bible-book-footer strong {
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"]) .bible-hero-card strong,
+  :global(html[data-theme="dark"]) .bible-stat-card strong,
+  :global(html[data-theme="dark"]) .bible-overview-card strong,
+  :global(html[data-theme="dark"]) .bible-testament-heading h3,
+  :global(html[data-theme="dark"]) .bible-book-main h2 {
+    color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"]) .bible-hero-card p,
+  :global(html[data-theme="dark"]) .bible-overview-card p,
+  :global(html[data-theme="dark"]) .bible-testament-heading p,
+  :global(html[data-theme="dark"]) .bible-book-main p,
+  :global(html[data-theme="dark"]) .bible-book-footer small {
+    color: #d8c8b6;
+  }
+
+  :global(html[data-theme="dark"]) .bible-book-order {
+    background: #e9b872;
+    color: #1b120b;
+  }
+
+  :global(html[data-theme="dark"]) .bible-testament-heading strong,
+  :global(html[data-theme="dark"]) .bible-book-meta span {
+    background: #18110c;
+    border-color: #3a2a1d;
+    color: #f3d6ad;
+  }
+
+  :global(html[data-theme="dark"]) .bible-book-footer {
+    border-color: #3a2a1d;
+  }
+
+  @media (max-width: 920px) {
+    .bible-hero,
+    .bible-testament-group {
+      grid-template-columns: 1fr;
+    }
+
+    .bible-testament-heading {
+      position: static;
+    }
+
+    .bible-stats,
+    .bible-overview-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 700px) {
+    .bible-stats,
+    .bible-overview-grid,
+    .bible-book-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .bible-book-card {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+
+    .bible-book-footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+</style>

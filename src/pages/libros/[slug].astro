@@ -1,5 +1,13 @@
 ---
 import { sitePath } from "../../lib/site-paths";
+import {
+  getBibleBookPath,
+  getBibleChapterPath,
+} from "../../lib/bible-routes";
+
+import {
+  getDefaultBibleVersionId,
+} from "../../lib/bible-config";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllBooks,
@@ -46,6 +54,8 @@ const categoryLabel = book.category ?? "Categoría pendiente";
 const genreLabel = book.genre ?? "Género pendiente";
 const abbreviationLabel = book.abbreviation ?? "Pendiente";
 const testamentLabel = book.testament;
+const bibleVersionId =
+  getDefaultBibleVersionId("es");
 ---
 
 <BaseLayout
@@ -70,7 +80,14 @@ const testamentLabel = book.testament;
         </p>
 
         <div class="actions">
-          <a href={sitePath(`/biblia/${book.slug}/`)} class="button">
+          <a
+            href={getBibleBookPath(
+              "es",
+              bibleVersionId,
+              book.usfm_code
+            )}
+            class="button"
+          >
             Leer en la Biblia
           </a>
 
@@ -148,7 +165,12 @@ const testamentLabel = book.testament;
         <div class="book-chapter-grid">
           {chapters.map((chapter) => (
             <a
-              href={sitePath(`/biblia/${book.slug}/${chapter.chapter_number}/`)}
+              href={getBibleChapterPath(
+                      "es",
+                      bibleVersionId,
+                      book.usfm_code,
+                      chapter.chapter_number
+                    )}
               class="book-chapter-link"
             >
               {chapter.chapter_number}
@@ -277,7 +299,14 @@ const testamentLabel = book.testament;
         Volver a libros
       </a>
 
-      <a href={sitePath(`/biblia/${book.slug}/`)} class="button">
+      <a
+        href={getBibleBookPath(
+          "es",
+          bibleVersionId,
+          book.usfm_code
+        )}
+        class="button"
+      >
         Leer en la Biblia
       </a>
 

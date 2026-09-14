@@ -1,0 +1,150 @@
+---
+import { sitePath } from "../../../../lib/site-paths";
+
+import {
+  getBibleBookPath,
+  getBibleRootPath,
+} from "../../../../lib/bible-routes";
+
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+
+import {
+  getAllBooksByLanguage,
+  getBibleVersionsByLanguage,
+  type BibleVersion,
+  type Book,
+} from "../../../../lib/queries";
+
+type Props = {
+  version: BibleVersion;
+  books: Book[];
+};
+
+export function getStaticPaths() {
+  const versions = getBibleVersionsByLanguage("en");
+
+  const books = getAllBooksByLanguage("en").filter(
+    (book) =>
+      book.status !== "Borrador" &&
+      book.usfm_code
+  );
+
+  return versions.map((version) => ({
+    params: {
+      versionId: version.id,
+    },
+
+    props: {
+      version,
+      books,
+    },
+  }));
+}
+
+const {
+  version,
+  books,
+} = Astro.props as Props;
+
+const oldTestamentBooks = books.filter(
+  (book) => book.testament === "Old Testament"
+);
+
+const newTestamentBooks = books.filter(
+  (book) => book.testament === "New Testament"
+);
+---
+
+<BaseLayout
+  lang="en"
+  title={`Bible · ${version.abbreviation}`}
+  description={`Read the Bible in the ${version.name}.`}
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href={sitePath("/")}>Home</a> →
+      <a href={getBibleRootPath("en")}>Bible</a> →
+      {version.abbreviation}
+    </div>
+
+    <section class="hero">
+      <p class="eyebrow">Bible version</p>
+
+      <h1>{version.abbreviation}</h1>
+
+      <p class="subtitle">
+        {version.name}
+      </p>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Old Testament</p>
+          <h2>Books</h2>
+        </div>
+
+        <span class="section-count">
+          {oldTestamentBooks.length} books
+        </span>
+      </div>
+
+      <div class="cards">
+        {oldTestamentBooks.map((book) => (
+          <a
+            href={getBibleBookPath(
+              "en",
+              version.id,
+              book.usfm_code
+            )}
+            class="card"
+          >
+            <strong>{book.name}</strong>
+
+            <p>
+              {book.abbreviation ?? book.usfm_code}
+            </p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">New Testament</p>
+          <h2>Books</h2>
+        </div>
+
+        <span class="section-count">
+          {newTestamentBooks.length} books
+        </span>
+      </div>
+
+      <div class="cards">
+        {newTestamentBooks.map((book) => (
+          <a
+            href={getBibleBookPath(
+              "en",
+              version.id,
+              book.usfm_code
+            )}
+            class="card"
+          >
+            <strong>{book.name}</strong>
+
+            <p>
+              {book.abbreviation ?? book.usfm_code}
+            </p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    {version.copyright_notice && (
+      <section class="copyright-box">
+        {version.copyright_notice}
+      </section>
+    )}
+  </main>
+</BaseLayout>

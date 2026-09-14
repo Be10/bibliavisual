@@ -1,5 +1,9 @@
 ---
 import { sitePath } from "../../lib/site-paths";
+import {
+  getBibleChapterPath,
+  getBibleVersePath,
+} from "../../lib/bible-routes";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import {
   getAllPassages,
@@ -103,7 +107,15 @@ const versionLabel =
         </p>
 
         <div class="actions">
-          <a href={sitePath(`/biblia/${passage.book_slug}/${passage.start_chapter}/`)} class="button">
+          <a
+            href={getBibleChapterPath(
+              "es",
+              DEFAULT_BIBLE_VERSION_ID,
+              passage.book_usfm_code,
+              passage.start_chapter
+            )}
+            class="button"
+          >
             Leer capítulo completo
           </a>
 
@@ -173,7 +185,13 @@ const versionLabel =
                   <article class="verse passage-verse" id={`v${verse.verse_number}`}>
                     <span class="verse-number">
                       <a
-                        href={sitePath(`/biblia/${passage.book_slug}/${verse.chapter_number}/#v${verse.verse_number}`)}
+                        href={getBibleVersePath(
+                                "es",
+                                DEFAULT_BIBLE_VERSION_ID,
+                                passage.book_usfm_code,
+                                verse.chapter_number,
+                                verse.verse_number
+                              )}
                         class="verse-ref-link"
                       >
                         {verse.verse_number}
@@ -296,7 +314,15 @@ const versionLabel =
         Volver a pasajes
       </a>
 
-      <a href={sitePath(`/biblia/${passage.book_slug}/${passage.start_chapter}/`)} class="button">
+      <a
+        href={getBibleChapterPath(
+          "es",
+          DEFAULT_BIBLE_VERSION_ID,
+          passage.book_usfm_code,
+          passage.start_chapter
+        )}
+        class="button"
+      >
         Leer capítulo completo
       </a>
 

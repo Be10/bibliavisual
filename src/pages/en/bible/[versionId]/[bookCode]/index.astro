@@ -1,0 +1,523 @@
+---
+import { sitePath } from "../../../../../lib/site-paths";
+
+import {
+  getBibleBookPath,
+  getBibleChapterPath,
+  getBibleVersionPath,
+} from "../../../../../lib/bible-routes";
+
+import BaseLayout from "../../../../../layouts/BaseLayout.astro";
+
+import {
+  getAllBooksByLanguage,
+  getBibleChaptersByBookId,
+  getBibleVersionsByLanguage,
+  type BibleChapter,
+  type BibleVersion,
+  type Book,
+} from "../../../../../lib/queries";
+
+import {
+  getDefaultBibleVersionId,
+} from "../../../../../lib/bible-config";
+
+type Props = {
+  version: BibleVersion;
+  book: Book;
+  chapters: BibleChapter[];
+};
+
+export function getStaticPaths() {
+  const versions = getBibleVersionsByLanguage("en");
+
+  const books = getAllBooksByLanguage("en").filter(
+    (book) =>
+      book.status !== "Borrador" &&
+      book.usfm_code
+  );
+
+  return versions.flatMap((version) =>
+    books.map((book) => ({
+      params: {
+        versionId: version.id,
+        bookCode: book.usfm_code.toLowerCase(),
+      },
+
+      props: {
+        version,
+        book,
+        chapters: getBibleChaptersByBookId(book.id),
+      },
+    }))
+  );
+}
+
+const {
+  version,
+  book,
+  chapters,
+} = Astro.props as Props;
+
+const versionLabel = version.abbreviation;
+const abbreviationLabel = book.abbreviation ?? "—";
+
+const firstChapter = chapters[0];
+
+const spanishVersionId =
+  getDefaultBibleVersionId("es");
+---
+
+<BaseLayout
+  lang="en"
+  title={`Bible · ${book.name}`}
+  description={`Read the book of ${book.name} in the ${versionLabel}.`}
+>
+  <main class="page">
+    <div class="breadcrumb">
+      <a href={sitePath("/")}>Home</a> →
+
+      <a href={getBibleVersionPath("en", version.id)}>
+        Bible
+      </a> →
+
+      {book.name}
+    </div>
+
+    <section class="hero bible-book-hero">
+      <div class="bible-book-hero-content">
+        <p class="eyebrow">
+          {book.testament} · {versionLabel}
+        </p>
+
+        <h1>{book.name}</h1>
+
+        <p class="subtitle">
+          Read the book of {book.name} in the
+          {" "}{versionLabel}.
+        </p>
+
+        <div class="actions">
+          {firstChapter && (
+            <a
+              href={getBibleChapterPath(
+                "en",
+                version.id,
+                book.usfm_code,
+                firstChapter.chapter_number
+              )}
+              class="button"
+            >
+              Start reading
+            </a>
+          )}
+
+          <a
+            href={getBibleBookPath(
+              "es",
+              spanishVersionId,
+              book.usfm_code
+            )}
+            class="button secondary"
+          >
+            Leer en Español
+          </a>
+        </div>
+      </div>
+
+      <aside
+        class="bible-book-hero-card"
+        aria-label="Book reading summary"
+      >
+        <span>Book {book.order_number}</span>
+
+        <strong>{abbreviationLabel}</strong>
+
+        <p>
+          {chapters.length}{" "}
+          {chapters.length === 1 ? "chapter" : "chapters"}
+        </p>
+      </aside>
+    </section>
+
+    <section
+      class="bible-book-meta-grid"
+      aria-label="Book information"
+    >
+      <article class="bible-book-meta-card">
+        <span>Testament</span>
+        <strong>{book.testament}</strong>
+      </article>
+
+      <article class="bible-book-meta-card">
+        <span>Book number</span>
+        <strong>{book.order_number}</strong>
+      </article>
+
+      <article class="bible-book-meta-card">
+        <span>Abbreviation</span>
+        <strong>{abbreviationLabel}</strong>
+      </article>
+
+      <article class="bible-book-meta-card">
+        <span>Chapters</span>
+        <strong>{chapters.length}</strong>
+      </article>
+    </section>
+
+    <section
+      class="section bible-book-chapters-section"
+      id="chapters"
+    >
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Chapters</p>
+          <h2>Read {book.name}</h2>
+        </div>
+
+        <span class="section-count">
+          {chapters.length}{" "}
+          {chapters.length === 1 ? "chapter" : "chapters"}
+        </span>
+      </div>
+
+      {chapters.length > 0 ? (
+        <div class="bible-book-chapter-grid">
+          {chapters.map((chapter) => (
+            <a
+              href={getBibleChapterPath(
+                "en",
+                version.id,
+                book.usfm_code,
+                chapter.chapter_number
+              )}
+              class="bible-book-chapter-link"
+            >
+              {chapter.chapter_number}
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="bible-book-empty-card">
+          <strong>No chapters available</strong>
+
+          <p>
+            There are currently no chapters registered for this
+            book.
+          </p>
+        </div>
+      )}
+    </section>
+
+    {version.copyright_notice && (
+      <section class="copyright-box bible-book-copyright-box">
+        {version.copyright_notice}
+      </section>
+    )}
+
+    <section class="section bible-book-footer-nav">
+      <a
+        href={getBibleVersionPath("en", version.id)}
+        class="button secondary"
+      >
+        Back to Bible
+      </a>
+
+      <a
+        href={getBibleBookPath(
+          "es",
+          spanishVersionId,
+          book.usfm_code
+        )}
+        class="button secondary"
+      >
+        Español
+      </a>
+
+      {firstChapter && (
+        <a
+          href={getBibleChapterPath(
+            "en",
+            version.id,
+            book.usfm_code,
+            firstChapter.chapter_number
+          )}
+          class="button"
+        >
+          Read chapter {firstChapter.chapter_number}
+        </a>
+      )}
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .bible-book-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 320px);
+    gap: 28px;
+    align-items: end;
+    overflow: hidden;
+  }
+
+  .bible-book-hero::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    bottom: -120px;
+    width: 320px;
+    height: 320px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(200, 169, 130, 0.28), transparent 68%);
+    pointer-events: none;
+  }
+
+  .bible-book-hero-content,
+  .bible-book-hero-card {
+    position: relative;
+    z-index: 1;
+  }
+
+  .bible-book-hero-card,
+  .bible-book-meta-card,
+  .bible-book-summary-card,
+  .bible-book-empty-card,
+  .bible-book-chapter-link,
+  .bible-book-passage-card {
+    border: 1px solid #eadcc4;
+    box-shadow: 0 14px 34px rgba(45, 36, 24, 0.05);
+  }
+
+  .bible-book-hero-card {
+    display: grid;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 24px;
+    background: white;
+    box-shadow: 0 18px 42px rgba(45, 36, 24, 0.1);
+  }
+
+  .bible-book-hero-card span,
+  .bible-book-meta-card span,
+  .bible-book-passage-card span {
+    color: #8a5a2b;
+    font-size: 0.76rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .bible-book-hero-card strong {
+    color: #2d2418;
+    font-size: 2.4rem;
+    line-height: 1;
+  }
+
+  .bible-book-hero-card p,
+  .bible-book-summary-card p,
+  .bible-book-empty-card p,
+  .bible-book-empty-section p {
+    margin: 0;
+    color: #6a5c4d;
+    line-height: 1.7;
+  }
+
+  .bible-book-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .bible-book-meta-card {
+    padding: 22px;
+    border-radius: 22px;
+    background: white;
+  }
+
+  .bible-book-meta-card span {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .bible-book-meta-card strong {
+    display: block;
+    color: #2d2418;
+    font-size: 1.12rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .bible-book-summary-card,
+  .bible-book-empty-card {
+    padding: 26px;
+    border-radius: 22px;
+    background: #fffaf0;
+  }
+
+  .bible-book-empty-card {
+    display: grid;
+    gap: 8px;
+  }
+
+  .bible-book-empty-card strong {
+    color: #2d2418;
+    font-size: 1.1rem;
+  }
+
+  .bible-book-summary-card p {
+    max-width: 920px;
+    font-size: 1.08rem;
+  }
+
+  .bible-book-chapter-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .bible-book-chapter-link {
+    display: inline-flex;
+    min-width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    border-radius: 16px;
+    background: #fffaf0;
+    color: #5d3212;
+    font-weight: 900;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .bible-book-chapter-link:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .bible-book-passages-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .bible-book-passage-card {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    min-height: 170px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #fffaf0;
+    text-decoration: none;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .bible-book-passage-card:hover {
+    transform: translateY(-2px);
+    border-color: #c8a982;
+    box-shadow: 0 14px 30px rgba(45, 36, 24, 0.08);
+  }
+
+  .bible-book-passage-card strong {
+    color: #2d2418;
+    font-size: 1.12rem;
+    line-height: 1.35;
+  }
+
+  .bible-book-passage-card small {
+    color: #6a5c4d;
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  .bible-book-copyright-box {
+    margin-top: 32px;
+  }
+
+  .bible-book-footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  :global(html[data-theme="dark"]) .bible-book-hero-card,
+  :global(html[data-theme="dark"]) .bible-book-meta-card,
+  :global(html[data-theme="dark"]) .bible-book-summary-section,
+  :global(html[data-theme="dark"]) .bible-book-chapters-section,
+  :global(html[data-theme="dark"]) .bible-book-passages-section,
+  :global(html[data-theme="dark"]) .bible-book-empty-section,
+  :global(html[data-theme="dark"]) .bible-book-footer-nav {
+    background: #18110c;
+    border-color: #3a2a1d;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  :global(html[data-theme="dark"]) .bible-book-summary-card,
+  :global(html[data-theme="dark"]) .bible-book-empty-card,
+  :global(html[data-theme="dark"]) .bible-book-chapter-link,
+  :global(html[data-theme="dark"]) .bible-book-passage-card {
+    background: #21160e;
+    border-color: #3a2a1d;
+  }
+
+  :global(html[data-theme="dark"]) .bible-book-hero-card span,
+  :global(html[data-theme="dark"]) .bible-book-meta-card span,
+  :global(html[data-theme="dark"]) .bible-book-passage-card span,
+  :global(html[data-theme="dark"]) .bible-book-chapter-link {
+    color: #e9b872;
+  }
+
+  :global(html[data-theme="dark"]) .bible-book-hero-card strong,
+  :global(html[data-theme="dark"]) .bible-book-meta-card strong,
+  :global(html[data-theme="dark"]) .bible-book-empty-card strong,
+  :global(html[data-theme="dark"]) .bible-book-passage-card strong {
+    color: #fff5e8;
+  }
+
+  :global(html[data-theme="dark"]) .bible-book-hero-card p,
+  :global(html[data-theme="dark"]) .bible-book-summary-card p,
+  :global(html[data-theme="dark"]) .bible-book-empty-card p,
+  :global(html[data-theme="dark"]) .bible-book-empty-section p,
+  :global(html[data-theme="dark"]) .bible-book-passage-card small {
+    color: #d8c8b6;
+  }
+
+  @media (max-width: 860px) {
+    .bible-book-hero {
+      grid-template-columns: 1fr;
+    }
+
+    .bible-book-meta-grid,
+    .bible-book-passages-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .bible-book-meta-grid,
+    .bible-book-passages-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .bible-book-passage-card {
+      min-height: auto;
+    }
+
+    .bible-book-chapter-link {
+      min-width: 44px;
+      height: 44px;
+      border-radius: 14px;
+    }
+  }
+</style>

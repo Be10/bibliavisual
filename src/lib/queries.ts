@@ -588,6 +588,7 @@ export function getEventsByTopicId(topicId: string): Event[] {
 
 export type Book = {
   id: string;
+  usfm_code: string;
   name: string;
   slug: string;
   abbreviation: string | null;
@@ -597,6 +598,18 @@ export type Book = {
   genre: string | null;
   summary: string | null;
   status: string;
+};
+
+export type BookTranslation = {
+  book_id: string;
+  language: string;
+  name: string;
+  slug: string;
+  abbreviation: string | null;
+  testament: string;
+  category: string | null;
+  genre: string | null;
+  summary: string | null;
 };
 
 export function getAllBooks(): Book[] {
@@ -609,6 +622,62 @@ export function getAllBooks(): Book[] {
       `
     )
     .all() as Book[];
+}
+
+export function getAllBooksByLanguage(language: string): Book[] {
+  return db
+    .prepare(
+      `
+      SELECT
+        books.id,
+        books.usfm_code,
+        COALESCE(book_translations.name, books.name) AS name,
+        COALESCE(book_translations.slug, books.slug) AS slug,
+        COALESCE(book_translations.abbreviation, books.abbreviation) AS abbreviation,
+        COALESCE(book_translations.testament, books.testament) AS testament,
+        books.order_number,
+        COALESCE(book_translations.category, books.category) AS category,
+        COALESCE(book_translations.genre, books.genre) AS genre,
+        COALESCE(book_translations.summary, books.summary) AS summary,
+        books.status
+      FROM books
+      LEFT JOIN book_translations
+        ON book_translations.book_id = books.id
+        AND book_translations.language = ?
+      ORDER BY books.order_number ASC
+      `
+    )
+    .all(language) as Book[];
+}
+
+export function getBookByLocalizedSlug(
+  slug: string,
+  language: string
+): Book | undefined {
+  return db
+    .prepare(
+      `
+      SELECT
+        books.id,
+        COALESCE(book_translations.name, books.name) AS name,
+        COALESCE(book_translations.slug, books.slug) AS slug,
+        COALESCE(book_translations.abbreviation, books.abbreviation) AS abbreviation,
+        COALESCE(book_translations.testament, books.testament) AS testament,
+        books.order_number,
+        COALESCE(book_translations.category, books.category) AS category,
+        COALESCE(book_translations.genre, books.genre) AS genre,
+        COALESCE(book_translations.summary, books.summary) AS summary,
+        books.status
+      FROM books
+      JOIN book_translations
+        ON book_translations.book_id = books.id
+      WHERE
+        book_translations.language = ?
+        AND book_translations.slug = ?
+      LIMIT 1
+      `
+    )
+    .get(language, slug) as Book | undefined;
 }
 
 export function getBooksByLessonId(lessonId: string): Book[] {
@@ -674,6 +743,7 @@ export type Passage = {
   book_id: string;
   book_name: string;
   book_slug: string;
+  book_usfm_code: string;
   start_chapter: number;
   start_verse: number | null;
   end_chapter: number;
@@ -689,7 +759,8 @@ export function getAllPassages(): Passage[] {
       SELECT
         passages.*,
         books.name AS book_name,
-        books.slug AS book_slug
+        books.slug AS book_slug,
+        books.usfm_code AS book_usfm_code
       FROM passages
       JOIN books ON books.id = passages.book_id
       ORDER BY books.order_number ASC, passages.start_chapter ASC, passages.start_verse ASC
@@ -705,7 +776,8 @@ export function getPassagesByBookId(bookId: string): Passage[] {
       SELECT
         passages.*,
         books.name AS book_name,
-        books.slug AS book_slug
+        books.slug AS book_slug,
+        books.usfm_code AS book_usfm_code
       FROM passages
       JOIN books ON books.id = passages.book_id
       WHERE
@@ -724,7 +796,8 @@ export function getPassagesByLessonId(lessonId: string): Passage[] {
       SELECT
         passages.*,
         books.name AS book_name,
-        books.slug AS book_slug
+        books.slug AS book_slug,
+        books.usfm_code AS book_usfm_code
       FROM lesson_passages
       JOIN passages ON passages.id = lesson_passages.passage_id
       JOIN books ON books.id = passages.book_id
@@ -742,7 +815,8 @@ export function getPassagesByEventId(eventId: string): Passage[] {
       SELECT
         passages.*,
         books.name AS book_name,
-        books.slug AS book_slug
+        books.slug AS book_slug,
+        books.usfm_code AS book_usfm_code
       FROM event_passages
       JOIN passages ON passages.id = event_passages.passage_id
       JOIN books ON books.id = passages.book_id
@@ -795,6 +869,7 @@ export type BibleSearchVerse = {
   id: string;
   book_name: string;
   book_slug: string;
+  book_usfm_code: string;
   chapter_number: number;
   verse_number: number;
   verse_text: string | null;
@@ -810,6 +885,7 @@ export function getBibleSearchVerses(
         bible_verses.id,
         books.name AS book_name,
         books.slug AS book_slug,
+        books.usfm_code AS book_usfm_code,
         bible_verses.chapter_number,
         bible_verses.verse_number,
         bible_verses.verse_text
@@ -903,6 +979,23 @@ export function getAllBibleVersions(): BibleVersion[] {
       `
     )
     .all() as BibleVersion[];
+}
+
+export function getBibleVersionsByLanguage(
+  language: string
+): BibleVersion[] {
+  return db
+    .prepare(
+      `
+      SELECT *
+      FROM bible_versions
+      WHERE
+        language = ?
+        AND status != 'Borrador'
+      ORDER BY name ASC
+      `
+    )
+    .all(language) as BibleVersion[];
 }
 
 export function getBibleVersesByPassageId(

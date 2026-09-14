@@ -3,11 +3,13 @@ import { sitePath } from "../lib/site-paths";
 interface Props {
   title: string;
   description?: string;
+  lang?: "es" | "en";
 }
 
 const {
   title,
   description = "Enciclopedia Bíblica Visual con rutas guiadas, mapas, líneas de tiempo y recursos visuales.",
+  lang = "es",
 } = Astro.props;
 
 const siteName = "Enciclopedia Bíblica Visual";
@@ -16,7 +18,7 @@ const pageTitle = title === siteName ? title : `${title} | ${siteName}`;
 const searchDataUrl = sitePath("/buscar/datos.json");
 ---
 
-<html lang="es">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
@@ -434,7 +436,7 @@ const searchDataUrl = sitePath("/buscar/datos.json");
       >
         <a href={sitePath("/buscar/")}>Búsqueda avanzada</a>
         <a href={sitePath("/rutas/panorama-visual-de-la-biblia/")}>Ruta principal</a>
-        <a href={sitePath("/biblia/")}>Leer la Biblia</a>
+        <a href={sitePath("/es/biblia/")}>Leer la Biblia</a>
         <a href={sitePath("/recursos/")}>Recursos visuales</a>
         <a href={sitePath("/acerca/")}>Acerca de EBV</a>
 
@@ -477,7 +479,7 @@ const searchDataUrl = sitePath("/buscar/datos.json");
 
         <nav class="footer-links" aria-label="Navegación secundaria">
           <a href={sitePath("/buscar/")}>Búsqueda avanzada</a>
-          <a href={sitePath("/biblia/")}>Leer la Biblia</a>
+          <a href={sitePath("/es/biblia/")}>Leer la Biblia</a>
           <a href={sitePath("/acerca/")}>Acerca de EBV</a>
           <a href={sitePath("/legal/")}>Avisos legales</a>
         </nav>

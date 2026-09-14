@@ -1,43 +1,180 @@
-# Astro Starter Kit: Minimal
+# Bibli — Enciclopedia Bíblica Visual
 
-```sh
-npm create astro@latest -- --template minimal
+Bibli es una Enciclopedia Bíblica Visual construida con Astro, SQLite, better-sqlite3 y TypeScript.
+
+El proyecto combina contenido editorial estructurado, estudio bíblico, navegación por libros y pasajes, lecciones, personajes, lugares, eventos, temas, recursos visuales, mapas y búsqueda.
+
+## Stack
+
+* Astro
+* TypeScript
+* SQLite
+* better-sqlite3
+* Leaflet
+* MapLibre GL
+* GitHub Pages
+
+## Desarrollo
+
+Instalar dependencias:
+
+```bash
+npm ci
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Iniciar el servidor de desarrollo:
 
-## 🚀 Project Structure
+```bash
+npm run dev
+```
 
-Inside of your Astro project, you'll see the following folders and files:
+Generar la versión de producción:
+
+```bash
+npm run build
+```
+
+Previsualizar la compilación:
+
+```bash
+npm run preview
+```
+
+## Estructura editorial
+
+La estructura principal de datos se divide en:
 
 ```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+data/schema.sql
+data/seed.sql
+data/content/*.sql
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+* `schema.sql`: estructura de la base de datos.
+* `seed.sql`: datos base globales.
+* `data/content/*.sql`: contenido editorial específico de las lecciones.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+La base generada se encuentra en:
 
-Any static assets, like images, can be placed in the `public/` directory.
+```text
+data/enciclopedia.sqlite
+```
 
-## 🧞 Commands
+## Reconstrucción de la base
 
-All commands are run from the root of the project, from a terminal:
+```bash
+npm run db:reset
+```
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+Este comando reconstruye SQLite desde `schema.sql`, `seed.sql` y los archivos de `data/content`.
 
-## 👀 Want to learn more?
+Después de un reset deben volver a importarse los textos bíblicos.
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## Versiones bíblicas
+
+Actualmente Bibli contiene:
+
+* RVR1960 — español
+* KJV 1769 — inglés
+
+### RVR1960
+
+La fuente local se encuentra en:
+
+```text
+data/import/rvr1960.csv
+```
+
+Este archivo no debe incluirse en Git ni en archivos compartidos.
+
+Importación:
+
+```bash
+npm run bible:import:rvr1960
+```
+
+### KJV 1769
+
+La fuente utilizada por Bibli es:
+
+```text
+data/import/kjv-study/json/verses-1769.json
+```
+
+Validación:
+
+```bash
+npm run bible:validate:kjv
+```
+
+Importación:
+
+```bash
+npm run bible:import:kjv
+```
+
+Auditorías:
+
+```bash
+npm run bible:audit:kjv
+npm run bible:audit:kjv:spacing
+```
+
+La KJV contiene 31.102 versículos.
+
+Las diferencias legítimas de versificación respecto a RVR1960 son:
+
+* Salmos 47:10
+* 3 Juan 1:15
+
+No deben crearse versículos KJV artificiales para esas posiciones.
+
+## Convenciones editoriales importantes
+
+Las tablas:
+
+```text
+lesson_bible_refs
+lesson_points
+lesson_questions
+```
+
+utilizan:
+
+```text
+position
+```
+
+para determinar el orden.
+
+La tabla `lessons` incluye, entre otros:
+
+```text
+eyebrow
+main_idea
+summary
+explanation
+remember
+application
+estimated_time
+status
+```
+
+No deben inventarse IDs, columnas ni relaciones sin verificar previamente `schema.sql`, `seed.sql` y `data/content`.
+
+## Despliegue
+
+El proyecto se publica de forma estática mediante GitHub Actions y GitHub Pages.
+
+Workflow:
+
+```text
+.github/workflows/deploy.yml
+```
+
+Antes de guardar cambios:
+
+```bash
+npm run build
+git status
+```
