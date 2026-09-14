@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { DEFAULT_BIBLE_VERSION_ID } from "./bible-config";
 
 export type Route = {
   id: string;
@@ -799,7 +800,9 @@ export type BibleSearchVerse = {
   verse_text: string | null;
 };
 
-export function getBibleSearchVerses(versionId = "rvr1960"): BibleSearchVerse[] {
+export function getBibleSearchVerses(
+  versionId = DEFAULT_BIBLE_VERSION_ID
+): BibleSearchVerse[] {
   return db
     .prepare(
       `
@@ -847,7 +850,7 @@ export function getBibleChaptersByBookId(bookId: string): BibleChapter[] {
 export function getBibleVersesByChapter(
   bookId: string,
   chapterNumber: number,
-  versionId = "rvr1960"
+  versionId = DEFAULT_BIBLE_VERSION_ID
 ): BibleVerse[] {
   return db
     .prepare(
@@ -889,9 +892,22 @@ export function getBibleVersionById(versionId: string): BibleVersion | undefined
     .get(versionId) as BibleVersion | undefined;
 }
 
+export function getAllBibleVersions(): BibleVersion[] {
+  return db
+    .prepare(
+      `
+      SELECT *
+      FROM bible_versions
+      WHERE status != 'Borrador'
+      ORDER BY language ASC, name ASC
+      `
+    )
+    .all() as BibleVersion[];
+}
+
 export function getBibleVersesByPassageId(
   passageId: string,
-  versionId = "rvr1960"
+  versionId = DEFAULT_BIBLE_VERSION_ID
 ): BibleVerse[] {
   return db
     .prepare(

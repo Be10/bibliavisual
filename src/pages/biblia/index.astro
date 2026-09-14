@@ -1,9 +1,13 @@
 ---
 import { sitePath } from "../../lib/site-paths";
+import {
+  DEFAULT_BIBLE_VERSION_ABBREVIATION,
+  DEFAULT_BIBLE_VERSION_ID,
+} from "../../lib/bible-config";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getAllBooks, getBibleVersionById, type Book } from "../../lib/queries";
 
-const version = getBibleVersionById("rvr1960");
+const version = getBibleVersionById(DEFAULT_BIBLE_VERSION_ID);
 
 const books = getAllBooks().filter((book) => book.status !== "Borrador");
 
@@ -32,7 +36,8 @@ const testamentGroups = [
   },
 ];
 
-const versionLabel = version?.abbreviation ?? "RVR1960";
+const versionLabel =
+  version?.abbreviation ?? DEFAULT_BIBLE_VERSION_ABBREVIATION;
 
 function getBookLabel(book: Book) {
   return book.category ?? book.genre ?? book.testament;

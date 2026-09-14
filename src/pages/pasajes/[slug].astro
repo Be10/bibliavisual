@@ -13,6 +13,11 @@ import {
   type Passage,
 } from "../../lib/queries";
 
+import {
+  DEFAULT_BIBLE_VERSION_ABBREVIATION,
+  DEFAULT_BIBLE_VERSION_ID,
+} from "../../lib/bible-config";
+
 type Props = {
   passage: Passage;
   lessons: Lesson[];
@@ -31,14 +36,17 @@ export function getStaticPaths() {
         passage,
         lessons: getLessonsByPassageId(passage.id),
         events: getEventsByPassageId(passage.id),
-        verses: getBibleVersesByPassageId(passage.id),
+        verses: getBibleVersesByPassageId(
+          passage.id,
+          DEFAULT_BIBLE_VERSION_ID
+        ),
       },
     }));
 }
 
 const { passage, lessons, events, verses } = Astro.props as Props;
 
-const version = getBibleVersionById("rvr1960");
+const version = getBibleVersionById(DEFAULT_BIBLE_VERSION_ID);
 
 const versesByChapter = verses.reduce<Record<number, BibleVerse[]>>(
   (groups, verse) => {
@@ -67,7 +75,8 @@ const endReference = `Capítulo ${passage.end_chapter}${
   passage.end_verse ? `:${passage.end_verse}` : ""
 }`;
 
-const versionLabel = version?.abbreviation ?? "RVR1960";
+const versionLabel =
+  version?.abbreviation ?? DEFAULT_BIBLE_VERSION_ABBREVIATION;
 ---
 
 <BaseLayout

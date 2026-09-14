@@ -11,6 +11,11 @@ import {
   type Book,
 } from "../../../lib/queries";
 
+import {
+  DEFAULT_BIBLE_VERSION_ABBREVIATION,
+  DEFAULT_BIBLE_VERSION_ID,
+} from "../../../lib/bible-config";
+
 type Props = {
   book: Book;
   chapter: BibleChapter;
@@ -33,7 +38,11 @@ export function getStaticPaths() {
         book,
         chapter,
         chapters,
-        verses: getBibleVersesByChapter(book.id, chapter.chapter_number),
+        verses: getBibleVersesByChapter(
+          book.id,
+          chapter.chapter_number,
+          DEFAULT_BIBLE_VERSION_ID
+        ),
       },
     }));
   });
@@ -41,10 +50,11 @@ export function getStaticPaths() {
 
 const { book, chapter, chapters, verses } = Astro.props as Props;
 
-const version = getBibleVersionById("rvr1960");
+const version = getBibleVersionById(DEFAULT_BIBLE_VERSION_ID);
 
 const currentChapterNumber = chapter.chapter_number;
-const versionLabel = version?.abbreviation ?? "RVR1960";
+const versionLabel =
+  version?.abbreviation ?? DEFAULT_BIBLE_VERSION_ABBREVIATION;
 
 const previousChapter = chapters.find(
   (item) => item.chapter_number === currentChapterNumber - 1

@@ -26,3 +26,5 @@ pnpm-debug.log*
 # Archivos fuente de importacion biblica con texto licenciado
 data/import/rvr1960.csv
 data/import/*.private.csv
+
+# Fuentes bíblicas locales de importación

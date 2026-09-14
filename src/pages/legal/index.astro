@@ -3,7 +3,12 @@ import { sitePath } from "../../lib/site-paths";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getBibleVersionById } from "../../lib/queries";
 
-const version = getBibleVersionById("rvr1960");
+import {
+  DEFAULT_BIBLE_VERSION_ABBREVIATION,
+  DEFAULT_BIBLE_VERSION_ID,
+} from "../../lib/bible-config";
+
+const version = getBibleVersionById(DEFAULT_BIBLE_VERSION_ID);
 
 const legalChecklist = [
   {
@@ -111,7 +116,7 @@ const resourceNotices = [
       <div class="section-header">
         <div>
           <p class="eyebrow">Texto bíblico</p>
-          <h2>Versión objetivo: {version?.abbreviation ?? "RVR1960"}</h2>
+          <h2>Versión objetivo: {version?.abbreviation ?? DEFAULT_BIBLE_VERSION_ABBREVIATION}</h2>
         </div>
 
         <span class="section-count">
@@ -121,9 +126,8 @@ const resourceNotices = [
 
       <div class="legal-notice-card">
         <p>
-          Este proyecto está preparado para usar como versión bíblica principal:
-          <strong> {version?.name ?? "Reina-Valera 1960"} </strong>
-          ({version?.abbreviation ?? "RVR1960"}).
+          Este proyecto está preparado para usar las versiones bíblicas:
+          ({version?.abbreviation ?? DEFAULT_BIBLE_VERSION_ABBREVIATION}).
         </p>
 
         {version?.copyright_notice ? (

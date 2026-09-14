@@ -114,6 +114,31 @@ INSERT INTO bible_versions (
   'Publicado básico'
 );
 
+INSERT INTO bible_versions (
+  id,
+  name,
+  abbreviation,
+  language,
+  copyright_status,
+  copyright_notice,
+  license_notes,
+  permission_scope,
+  source_notes,
+  status
+) VALUES
+(
+  'kjv',
+  'King James Version',
+  'KJV',
+  'en',
+  'Public Domain',
+  'King James Version, edición de 1769.',
+  'La fuente digital utilizada declara el texto como Public Domain.',
+  'Uso como texto bíblico en Bibli.',
+  'Fuente de importación: farskipper/kjv, archivo json/verses-1769.json (KJV 1769).',
+  'Publicado básico'
+);
+
 INSERT INTO bible_chapters (id, book_id, chapter_number) VALUES
 ('chap-genesis-1', 'book-genesis', 1),
 ('chap-genesis-2', 'book-genesis', 2),

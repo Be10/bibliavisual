@@ -11,6 +11,11 @@ import {
   type Passage,
 } from "../../../lib/queries";
 
+import {
+  DEFAULT_BIBLE_VERSION_ABBREVIATION,
+  DEFAULT_BIBLE_VERSION_ID,
+} from "../../../lib/bible-config";
+
 type Props = {
   book: Book;
   chapters: BibleChapter[];
@@ -32,10 +37,11 @@ export function getStaticPaths() {
 
 const { book, chapters, passages } = Astro.props as Props;
 
-const version = getBibleVersionById("rvr1960");
+const version = getBibleVersionById(DEFAULT_BIBLE_VERSION_ID);
 
 const summaryLabel = book.summary ?? "Resumen pendiente.";
-const versionLabel = version?.abbreviation ?? "RVR1960";
+const versionLabel =
+  version?.abbreviation ?? DEFAULT_BIBLE_VERSION_ABBREVIATION;
 const categoryLabel = book.category ?? "Categoría pendiente";
 const genreLabel = book.genre ?? "Género pendiente";
 const abbreviationLabel = book.abbreviation ?? "Pendiente";
